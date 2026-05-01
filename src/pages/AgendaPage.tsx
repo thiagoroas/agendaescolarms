@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { format, addDays, startOfWeek, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Search, Info, Filter, X, Calendar, Monitor, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search, Info, Filter, X, Calendar, Monitor, Users, Bell, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../contexts/AuthContext";
 import { escolas, recursos, reservas, Reserva, Recurso } from "../data/mockData";
