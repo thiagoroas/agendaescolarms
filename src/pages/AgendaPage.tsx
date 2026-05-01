@@ -322,9 +322,6 @@ const AgendaPage = () => {
           </div>
         </div>
       </div>
-          </div>
-        </div>
-      </div>
 
       {/* FAB Discreto */}
       <div className="fixed bottom-6 right-8 flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-lg border border-slate-100 animate-in slide-in-from-bottom-4 duration-500">
