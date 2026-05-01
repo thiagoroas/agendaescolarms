@@ -18,6 +18,7 @@ const AgendaPage = () => {
   const { user } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
   const [isModalDetalhesOpen, setIsModalDetalhesOpen] = useState(false);
