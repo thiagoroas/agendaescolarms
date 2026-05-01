@@ -12,6 +12,7 @@ import { horarios } from "../../data/horarios";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface NovaReservaModalProps {
   isOpen: boolean;
