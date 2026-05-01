@@ -83,7 +83,7 @@ const AgendaPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-slate-50/50 animate-in fade-in duration-500">
+    <div className="flex flex-col h-screen overflow-hidden animate-in fade-in duration-500" style={{ backgroundColor: '#f7f8fb' }}>
       {/* Header Compacto - Estilo Cal.com */}
       <header className="flex items-center justify-between h-[80px] px-8 border-b border-slate-200 bg-white shrink-0">
         <div className="flex flex-col">
@@ -190,9 +190,9 @@ const AgendaPage = () => {
       </div>
 
       {/* Grade Semanal Compacta - Centralizada */}
-      <div className="flex-1 overflow-auto py-8 flex flex-col items-center px-8">
-        <div className="w-full max-w-[1320px] bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hidden md:block shrink-0">
-          <div className="min-w-[1000px]">
+      <div className="flex-1 overflow-auto p-6 flex flex-col items-center">
+        <div className="w-full max-w-[1320px] bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hidden md:block shrink-0">
+          <div className="min-w-[900px]">
             {/* Cabeçalho de Dias */}
             <div className="grid grid-cols-[125px_repeat(5,1fr)] border-b border-slate-200 bg-white sticky top-0 z-10">
               <div className="h-[92px] border-r border-slate-100"></div>
@@ -255,7 +255,7 @@ const AgendaPage = () => {
                               initial={{ opacity: 0, scale: 0.98 }}
                               animate={{ opacity: 1, scale: 1 }}
                               exit={{ opacity: 0, scale: 0.98 }}
-                              className="absolute inset-[4px] rounded-[10px] border-l-4 p-2.5 text-left shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 relative overflow-hidden group/card"
+                              className="absolute inset-[6px] rounded-[10px] border-l-[3px] p-2.5 text-left shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden group/card"
                               style={{
                                 backgroundColor: `${recurso?.cor_borda}10`,
                                 color: recurso?.cor_texto,
@@ -285,9 +285,9 @@ const AgendaPage = () => {
                               </button>
                             </motion.div>
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="px-2 py-1 rounded bg-blue-50 border border-dashed border-blue-200 text-[10px] font-bold text-blue-500 flex items-center gap-1">
-                                <Plus className="h-3 w-3" /> RESERVAR
+                            <div className="absolute inset-[6px] rounded-[10px] border border-dashed border-transparent group-hover:border-blue-300 group-hover:bg-blue-50/40 transition-all flex items-center justify-center">
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[11px] font-bold text-blue-500 flex items-center gap-1">
+                                <Plus className="h-3 w-3" /> Reservar
                               </div>
                             </div>
                           )}
