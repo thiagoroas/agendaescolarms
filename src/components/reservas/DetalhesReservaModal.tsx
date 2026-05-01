@@ -19,76 +19,86 @@ const DetalhesReservaModal = ({ isOpen, onClose, reserva, recurso, canEdit }: De
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Detalhes do Agendamento</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-6 pt-4">
-          <div className="flex items-center gap-4">
-            <div 
-              className="h-12 w-12 rounded-xl border flex items-center justify-center"
-              style={{ backgroundColor: recurso?.cor_fundo, color: recurso?.cor_texto, borderColor: recurso?.cor_borda }}
-            >
-              <CalendarIcon className="h-6 w-6" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900">{reserva.disciplina}</h3>
-              <p className="text-sm text-slate-500">{recurso?.nome}</p>
+      <DialogContent className="max-w-md p-0 border-none rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div 
+          className="p-8 relative text-white"
+          style={{ 
+            background: `linear-gradient(135deg, ${recurso?.cor_borda} 0%, ${recurso?.cor_texto} 100%)`,
+          }}
+        >
+          <Badge className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-md px-3 py-1 text-[10px] font-black uppercase tracking-widest">
+            {recurso?.tipo}
+          </Badge>
+          <div className="flex flex-col gap-1 mt-4">
+            <h2 className="text-3xl font-black leading-tight tracking-tight uppercase">{reserva.disciplina}</h2>
+            <div className="flex items-center gap-2 opacity-80 font-bold text-sm tracking-tight">
+              <span>{recurso?.nome}</span>
             </div>
           </div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-y-4 text-sm">
-            <div className="flex items-center gap-2 text-slate-600">
-              <User className="h-4 w-4" />
-              <span>Professor:</span>
+        <div className="p-8 space-y-8 bg-white">
+          <div className="grid grid-cols-2 gap-8">
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <User className="h-3 w-3" /> Professor
+              </div>
+              <p className="text-sm font-black text-slate-900 truncate tracking-tight">{reserva.nome_professor}</p>
             </div>
-            <div className="font-medium text-slate-900">{reserva.nome_professor}</div>
-
-            <div className="flex items-center gap-2 text-slate-600">
-              <Users className="h-4 w-4" />
-              <span>Turma:</span>
-            </div>
-            <div className="font-medium text-slate-900">{reserva.turma}</div>
-
-            <div className="flex items-center gap-2 text-slate-600">
-              <CalendarIcon className="h-4 w-4" />
-              <span>Data:</span>
-            </div>
-            <div className="font-medium text-slate-900">
-              {format(new Date(reserva.data + 'T12:00:00'), "dd 'de' MMMM", { locale: ptBR })}
+            
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <Users className="h-3 w-3" /> Turma
+              </div>
+              <p className="text-sm font-black text-slate-900 tracking-tight">{reserva.turma}</p>
             </div>
 
-            <div className="flex items-center gap-2 text-slate-600">
-              <Clock className="h-4 w-4" />
-              <span>Horário:</span>
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <CalendarIcon className="h-3 w-3" /> Data
+              </div>
+              <p className="text-sm font-black text-slate-900 tracking-tight">
+                {format(new Date(reserva.data + 'T12:00:00'), "dd 'de' MMMM", { locale: ptBR })}
+              </p>
             </div>
-            <div className="font-medium text-slate-900">
-              {reserva.horario} (Aula {reserva.aula})
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <Clock className="h-3 w-3" /> Horário
+              </div>
+              <p className="text-sm font-black text-slate-900 tracking-tight">
+                Aula {reserva.aula} • {reserva.horario}
+              </p>
             </div>
           </div>
 
           {reserva.observacao && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
-                <Info className="h-4 w-4" />
-                <span>Observações:</span>
+            <div className="space-y-3 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <Info className="h-3 w-3" /> Observações
               </div>
-              <p className="bg-slate-50 p-3 rounded-lg text-sm text-slate-600">{reserva.observacao}</p>
+              <p className="text-sm text-slate-600 font-medium leading-relaxed italic">"{reserva.observacao}"</p>
             </div>
           )}
 
-          {canEdit && (
-            <div className="flex gap-2 pt-2">
-              <Button variant="outline" className="flex-1">
-                <Edit className="mr-2 h-4 w-4" />
-                Editar
+          <div className="flex flex-col sm:flex-row gap-3">
+            {canEdit ? (
+              <>
+                <Button variant="ghost" className="flex-1 h-12 rounded-xl font-black uppercase tracking-widest text-red-500 hover:text-red-600 hover:bg-red-50 transition-all">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Excluir
+                </Button>
+                <Button className="flex-[2] h-12 bg-slate-900 hover:bg-slate-800 rounded-xl font-black uppercase tracking-widest text-white shadow-xl shadow-slate-200 active:scale-95 transition-all">
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar Reserva
+                </Button>
+              </>
+            ) : (
+              <Button onClick={onClose} className="w-full h-12 bg-slate-900 hover:bg-slate-800 rounded-xl font-black uppercase tracking-widest text-white active:scale-95 transition-all">
+                Fechar Detalhes
               </Button>
-              <Button variant="destructive" className="flex-1">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Cancelar
-              </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
