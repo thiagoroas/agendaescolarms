@@ -137,22 +137,38 @@ const AdminRecursosPage = () => {
           <form onSubmit={handleSalvarRecurso} className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="nome">Nome do Recurso</Label>
-              <Input id="nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Laboratório 01, Projetor Epson..." required />
+              <Input id="nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Caixa de Som, Projetor 2, Kit Robótica..." required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tipo">Tipo de Recurso</Label>
+              <Label htmlFor="tipo">Categoria</Label>
               <Select onValueChange={setTipo} value={tipo}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
+                  <SelectValue placeholder="Selecione a categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="laboratorio">Laboratório</SelectItem>
-                  <SelectItem value="projetor">Projetor</SelectItem>
-                  <SelectItem value="sala">Sala de Aula / Especial</SelectItem>
-                  <SelectItem value="auditorio">Auditório</SelectItem>
-                  <SelectItem value="outro">Outro</SelectItem>
+                  {categorias.map(cat => (
+                    <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Cor personalizada (opcional)</Label>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {coresDisponiveis.map(cor => (
+                  <button
+                    key={cor.nome}
+                    type="button"
+                    onClick={() => setCorPersonalizada(cor.cor_fundo)}
+                    className={cn(
+                      "h-8 w-8 rounded-full border-2 transition-all",
+                      corPersonalizada === cor.cor_fundo ? "border-slate-900 scale-110 shadow-sm" : "border-transparent hover:scale-105"
+                    )}
+                    style={{ backgroundColor: cor.cor_fundo }}
+                    title={cor.nome}
+                  />
+                ))}
+              </div>
             </div>
             <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
