@@ -98,7 +98,7 @@ const AdminRecursosPage = () => {
         </Button>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 pb-20 md:pb-0">
         {schoolRecursos.map((r) => (
           <Card key={r.id} className="overflow-hidden border-slate-200 hover:border-blue-300 transition-colors shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -114,14 +114,14 @@ const AdminRecursosPage = () => {
             </CardHeader>
             <CardContent>
               <CardTitle className="text-lg font-bold text-slate-900">{r.nome}</CardTitle>
-              <p className="text-xs text-slate-500 capitalize mt-1">Tipo: {r.tipo}</p>
+              <p className="text-xs text-slate-500 capitalize mt-1">Categoria: {r.tipo}</p>
               
               <div className="mt-4 flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.info("Edição em breve")}>
+                <Button variant="outline" size="sm" className="flex-1 h-10 md:h-9" onClick={() => toast.info("Edição em breve")}>
                   <Settings2 className="mr-2 h-3.5 w-3.5" />
                   Editar
                 </Button>
-                <Button variant="outline" size="sm" className={r.ativo ? "text-red-600 hover:bg-red-50 border-red-100" : "text-emerald-600 hover:bg-emerald-50 border-emerald-100"} onClick={() => toast.success("Status alterado")}>
+                <Button variant="outline" size="sm" className={cn("flex-1 h-10 md:h-9", r.ativo ? "text-red-600 hover:bg-red-50 border-red-100" : "text-emerald-600 hover:bg-emerald-50 border-emerald-100")} onClick={() => toast.success("Status alterado")}>
                   {r.ativo ? "Desativar" : "Ativar"}
                 </Button>
               </div>
