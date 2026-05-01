@@ -53,7 +53,7 @@ const AdminReservasPage = () => {
         </Button>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border bg-white shadow-sm overflow-hidden hidden md:block">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
@@ -107,6 +107,43 @@ const AdminReservasPage = () => {
             })}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="grid gap-4 md:hidden pb-20">
+        {schoolReservas.map((r) => {
+          const rec = recursos.find(rec => rec.id === r.recurso_id);
+          return (
+            <div key={r.id} className="bg-white p-4 rounded-xl border shadow-sm space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-bold text-slate-900">{r.nome_professor}</h3>
+                  <p className="text-xs text-slate-500">{r.disciplina} • {r.turma}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-blue-600">{format(new Date(r.data + 'T12:00:00'), "dd/MM/yy")}</p>
+                  <p className="text-[10px] text-slate-400">Aula {r.aula}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge 
+                  style={{ backgroundColor: rec?.cor_fundo, color: rec?.cor_texto, borderColor: rec?.cor_borda }}
+                  variant="outline"
+                  className="text-[10px]"
+                >
+                  {rec?.nome}
+                </Badge>
+              </div>
+              <div className="flex gap-2 pt-2 border-t">
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.info("Edição")}>
+                  Editar
+                </Button>
+                <Button variant="outline" size="sm" className="flex-1 text-red-600 border-red-100" onClick={() => toast.error("Reserva excluída")}>
+                  Excluir
+                </Button>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

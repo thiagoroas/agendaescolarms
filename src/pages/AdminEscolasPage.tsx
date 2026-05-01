@@ -84,7 +84,7 @@ const AdminEscolasPage = () => {
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 pb-20 md:pb-0">
         {filteredEscolas.map((e) => (
           <Card key={e.id} className="border-slate-200 shadow-sm overflow-hidden hover:border-blue-300 transition-colors">
             <CardHeader className="bg-slate-50/50 pb-4">
@@ -106,12 +106,12 @@ const AdminEscolasPage = () => {
                 </Badge>
               </div>
             </CardHeader>
-            <CardFooter className="bg-white border-t p-4 flex justify-between gap-3">
-              <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.success("Agenda acessada")}>
+            <CardFooter className="bg-white border-t p-4 flex flex-col sm:flex-row justify-between gap-3">
+              <Button variant="outline" size="sm" className="flex-1 h-10" onClick={() => toast.success("Agenda acessada")}>
                 <ExternalLink className="mr-2 h-4 w-4" />
                 Acessar Agenda
               </Button>
-              <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.info("Edição")}>
+              <Button variant="outline" size="sm" className="flex-1 h-10" onClick={() => toast.info("Edição")}>
                 Editar Dados
               </Button>
             </CardFooter>

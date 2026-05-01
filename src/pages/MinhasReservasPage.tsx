@@ -65,7 +65,7 @@ const MinhasReservasPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 md:pb-0">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
           {user?.papel === 'professor' ? 'Minhas Reservas' : 'Gerenciar Reservas'}
@@ -76,9 +76,9 @@ const MinhasReservasPage = () => {
       </div>
 
       <Tabs defaultValue="upcoming" className="w-full">
-        <TabsList className="bg-slate-100 p-1">
-          <TabsTrigger value="upcoming">Próximas</TabsTrigger>
-          <TabsTrigger value="past">Passadas</TabsTrigger>
+        <TabsList className="bg-slate-100 p-1 w-full sm:w-auto">
+          <TabsTrigger value="upcoming" className="flex-1 sm:flex-none">Próximas</TabsTrigger>
+          <TabsTrigger value="past" className="flex-1 sm:flex-none">Passadas</TabsTrigger>
         </TabsList>
         <TabsContent value="upcoming" className="mt-6">
           {upcoming.length > 0 ? (

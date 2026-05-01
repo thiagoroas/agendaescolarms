@@ -112,7 +112,7 @@ const AgendaPage = () => {
         ))}
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden overflow-x-auto">
+      <div className="rounded-xl border bg-white shadow-sm overflow-hidden overflow-x-auto hidden md:block">
         <div className="min-w-[800px]">
           <div className="grid grid-cols-[120px_repeat(5,1fr)] border-b bg-slate-50/50">
             <div className="p-4 border-r"></div>
@@ -185,6 +185,80 @@ const AgendaPage = () => {
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="md:hidden space-y-4 pb-20">
+        <div className="flex items-center justify-between bg-white p-4 rounded-xl border shadow-sm">
+          <Button variant="ghost" size="icon" onClick={() => setCurrentDate(prev => addDays(prev, -1))}>
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <div className="text-center">
+            <div className="text-sm font-bold text-blue-600 uppercase tracking-wide">
+              {format(currentDate, "EEEE", { locale: ptBR })}
+            </div>
+            <div className="text-lg font-bold text-slate-900">
+              {format(currentDate, "d 'de' MMMM", { locale: ptBR })}
+            </div>
+          </div>
+          <Button variant="ghost" size="icon" onClick={() => setCurrentDate(prev => addDays(prev, 1))}>
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </div>
+
+        <div className="space-y-3">
+          {horarios.map((h, idx) => {
+            if (h.isIntervalo) {
+              return (
+                <div key={idx} className="flex items-center justify-center py-2 px-4 bg-slate-100 rounded-lg text-xs font-bold text-slate-400 uppercase tracking-widest">
+                  Intervalo
+                </div>
+              );
+            }
+
+            const reserva = getReservaForSlot(currentDate, h.aula);
+            const recurso = recursos.find(r => r.id === reserva?.recurso_id);
+
+            return (
+              <div 
+                key={idx}
+                onClick={() => handleSlotClick(currentDate, h)}
+                className={cn(
+                  "flex items-stretch rounded-xl border shadow-sm overflow-hidden transition-all active:scale-[0.98]",
+                  reserva ? "bg-white" : "bg-slate-50/50 border-dashed"
+                )}
+              >
+                <div className="w-20 flex flex-col items-center justify-center bg-slate-50 border-r py-3">
+                  <span className="text-xs font-bold text-slate-900">{h.label}</span>
+                  <span className="text-[10px] text-slate-500 mt-1">{h.inicio}</span>
+                </div>
+                
+                <div className="flex-1 p-3 flex flex-col justify-center">
+                  {reserva ? (
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="h-10 w-1 bg-blue-600 rounded-full"
+                        style={{ backgroundColor: recurso?.cor_texto }}
+                      ></div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{reserva.nome_professor}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{reserva.turma} • {recurso?.nome}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-400 font-medium italic">Disponível — toque para reservar</p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}
+          className="fixed bottom-20 right-4 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg shadow-blue-200 flex items-center justify-center z-50 active:scale-95 transition-transform md:hidden"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
       </div>
 
       <NovaReservaModal 

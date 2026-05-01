@@ -93,7 +93,7 @@ const AdminProfessoresPage = () => {
         />
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border bg-white shadow-sm overflow-hidden hidden md:block">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
@@ -131,6 +131,35 @@ const AdminProfessoresPage = () => {
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="grid gap-4 md:hidden pb-20">
+        {schoolUsers.map((u) => (
+          <div key={u.id} className="bg-white p-4 rounded-xl border shadow-sm space-y-3">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-bold text-slate-900">{u.nome}</h3>
+                <p className="text-xs text-slate-500">{u.email}</p>
+              </div>
+              {getStatusBadge(u.status)}
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="capitalize text-[10px]">
+                {u.papel === "admin_lab" ? "Admin Lab" : "Professor"}
+              </Badge>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.info("Edição em breve")}>
+                Editar
+              </Button>
+              {u.status === "pendente" && (
+                <Button size="sm" className="flex-1 bg-emerald-600 hover:bg-emerald-700" onClick={() => toast.success("Acesso aprovado!")}>
+                  Aprovar
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

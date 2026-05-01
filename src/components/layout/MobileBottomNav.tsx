@@ -8,7 +8,7 @@ const MobileBottomNav = () => {
   const isAdmin = user?.papel !== "professor";
 
   return (
-    <nav className="fixed bottom-0 left-0 flex w-full items-center justify-around border-t bg-white p-2 md:hidden">
+    <nav className="fixed bottom-0 left-0 flex w-full items-center justify-around border-t bg-white p-2 md:hidden z-40">
       <NavLink
         to="/agenda"
         className={({ isActive }) =>
