@@ -79,7 +79,22 @@ const LoginPage = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Senha</Label>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!email) {
+                    toast.error("Por favor, digite seu e-mail primeiro.");
+                    return;
+                  }
+                  toast.success(`Um link de recuperação foi enviado para ${email}`);
+                }}
+                className="text-xs text-blue-600 hover:underline"
+              >
+                Esqueceu a senha?
+              </button>
+            </div>
             <div className="relative">
               <Lock className="absolute left-3 top-2.5 h-5 w-5 text-slate-400" />
               <Input
