@@ -7,6 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import AppLayout from "./components/layout/AppLayout";
 import LoginPage from "./pages/LoginPage";
+import AgendaPage from "./pages/AgendaPage";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +24,13 @@ const App = () => (
               <ProtectedRoute>
                 <AppLayout>
                   <Routes>
-                    <Route path="/agenda" element={<div>Agenda (em construção)</div>} />
+                    <Route path="/agenda" element={<AgendaPage />} />
+                    <Route path="/minhas-reservas" element={<div>Minhas Reservas (em construção)</div>} />
+                    <Route path="/perfil" element={<div>Perfil (em construção)</div>} />
+                    <Route path="/admin/professores" element={<div>Admin Professores (em construção)</div>} />
+                    <Route path="/admin/recursos" element={<div>Admin Recursos (em construção)</div>} />
+                    <Route path="/admin/reservas" element={<div>Admin Reservas (em construção)</div>} />
+                    <Route path="/admin/escolas" element={<div>Admin Escolas (em construção)</div>} />
                     <Route path="*" element={<Navigate to="/agenda" replace />} />
                   </Routes>
                 </AppLayout>
