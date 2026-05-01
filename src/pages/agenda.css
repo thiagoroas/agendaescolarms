@@ -1,0 +1,477 @@
+/* ============================================
+   Agenda Escolar Digital — estilos do protótipo
+   Escopados sob .agenda-proto para não vazar
+   ============================================ */
+
+.agenda-proto {
+  --bg: #f7f8fb;
+  --bg-elevated: #ffffff;
+  --sidebar-bg: #ffffff;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
+
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-soft: #eff6ff;
+  --primary-ring: rgba(37, 99, 235, 0.18);
+
+  --accent-blue: #3b82f6;
+  --accent-blue-soft: #dbeafe;
+  --accent-blue-text: #1e40af;
+  --accent-green: #10b981;
+  --accent-green-soft: #d1fae5;
+  --accent-green-text: #047857;
+  --accent-amber: #f59e0b;
+  --accent-amber-soft: #fef3c7;
+  --accent-amber-text: #92400e;
+  --accent-purple: #8b5cf6;
+  --accent-purple-soft: #ede9fe;
+  --accent-purple-text: #5b21b6;
+  --accent-pink: #ec4899;
+  --accent-pink-soft: #fce7f3;
+  --accent-pink-text: #9d174d;
+
+  --danger: #ef4444;
+  --danger-soft: #fee2e2;
+  --danger-text: #991b1b;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+
+  --radius-lg: 14px;
+  --row-h: 72px;
+  --col-min-w: 140px;
+  --time-col-w: 110px;
+
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.agenda-proto button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+/* Topbar */
+.agenda-proto .topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 28px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+  flex-shrink: 0;
+}
+.agenda-proto .topbar-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+.agenda-proto .topbar-sub {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.agenda-proto .topbar-sub .dot {
+  width: 3px; height: 3px; border-radius: 50%;
+  background: var(--text-subtle);
+}
+.agenda-proto .topbar-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.agenda-proto .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: background 0.12s, border-color 0.12s, transform 0.08s, box-shadow 0.12s;
+}
+.agenda-proto .btn:active { transform: translateY(1px); }
+.agenda-proto .btn-ghost {
+  border-color: var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+}
+.agenda-proto .btn-ghost:hover { background: var(--bg); border-color: var(--border-strong); }
+.agenda-proto .btn-icon {
+  width: 34px; height: 34px;
+  padding: 0;
+  display: grid; place-items: center;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  color: var(--text-muted);
+}
+.agenda-proto .btn-icon:hover { background: var(--bg); color: var(--text); }
+.agenda-proto .btn-primary {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+.agenda-proto .btn-primary:hover { background: var(--primary-hover); }
+
+/* Toolbar */
+.agenda-proto .toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.agenda-proto .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  background: var(--bg);
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+.agenda-proto .chip:hover { color: var(--text); }
+.agenda-proto .chip.active {
+  background: var(--text);
+  color: var(--bg-elevated);
+}
+.agenda-proto .chip .chip-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+.agenda-proto .toolbar-divider {
+  width: 1px; height: 22px;
+  background: var(--border);
+  margin: 0 4px;
+}
+.agenda-proto .search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.agenda-proto .search input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px 7px 32px;
+  font-size: 13px;
+  width: 220px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.agenda-proto .search input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-ring);
+}
+.agenda-proto .search input::placeholder { color: var(--text-subtle); }
+.agenda-proto .search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-subtle);
+  pointer-events: none;
+  display: flex;
+}
+.agenda-proto .toolbar-meta {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.agenda-proto .toolbar-meta strong { color: var(--text); font-weight: 600; }
+.agenda-proto .legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.agenda-proto .legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+.agenda-proto .legend-swatch {
+  width: 10px; height: 10px; border-radius: 3px;
+}
+
+/* Calendar wrap */
+.agenda-proto .calendar-wrap {
+  flex: 1;
+  overflow: auto;
+  padding: 18px 28px 28px;
+  background: var(--bg);
+  position: relative;
+  min-height: 0;
+}
+.agenda-proto .calendar {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  min-width: 880px;
+}
+.agenda-proto .cal-header {
+  display: grid;
+  grid-template-columns: var(--time-col-w) repeat(5, minmax(var(--col-min-w), 1fr));
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.agenda-proto .cal-header-cell {
+  padding: 14px 12px;
+  text-align: center;
+  border-left: 1px solid var(--border);
+  position: relative;
+}
+.agenda-proto .cal-header-cell:first-child { border-left: none; }
+.agenda-proto .cal-day-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.agenda-proto .cal-day-num {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 4px;
+  letter-spacing: -0.02em;
+}
+.agenda-proto .cal-day-num.today { color: var(--primary); }
+.agenda-proto .cal-header-cell.today::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--primary);
+}
+
+.agenda-proto .cal-row {
+  display: grid;
+  grid-template-columns: var(--time-col-w) repeat(5, minmax(var(--col-min-w), 1fr));
+  border-bottom: 1px solid var(--border);
+  min-height: var(--row-h);
+}
+.agenda-proto .cal-row:last-child { border-bottom: none; }
+.agenda-proto .cal-row.break {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent 0,
+    transparent 8px,
+    rgba(15, 23, 42, 0.025) 8px,
+    rgba(15, 23, 42, 0.025) 16px
+  );
+  min-height: 36px;
+}
+
+.agenda-proto .cal-time {
+  padding: 10px 14px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--bg-elevated);
+}
+.agenda-proto .cal-time-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.agenda-proto .cal-time-range {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.agenda-proto .cal-row.break .cal-time-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.agenda-proto .cal-cell {
+  border-left: 1px solid var(--border);
+  position: relative;
+  padding: 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.agenda-proto .cal-cell:first-of-type { border-left: none; }
+.agenda-proto .cal-cell:hover { background: var(--primary-soft); }
+.agenda-proto .cal-cell .add-hint {
+  position: absolute;
+  inset: 6px;
+  border: 1.5px dashed var(--primary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+.agenda-proto .cal-cell:hover .add-hint { opacity: 1; }
+.agenda-proto .cal-cell.break-cell { cursor: default; }
+.agenda-proto .cal-cell.break-cell:hover { background: transparent; }
+.agenda-proto .cal-cell.break-cell .break-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-subtle);
+  text-transform: uppercase;
+  text-align: center;
+  padding: 6px 0;
+}
+
+/* Event */
+.agenda-proto .event {
+  position: relative;
+  border-radius: 8px;
+  padding: 8px 10px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+  border-left: 3px solid var(--c-strong, var(--accent-blue));
+  background: var(--c-soft, var(--accent-blue-soft));
+  color: var(--c-text, var(--accent-blue-text));
+  overflow: hidden;
+  transition: transform 0.12s, box-shadow 0.12s;
+  user-select: none;
+  text-align: left;
+  width: 100%;
+}
+.agenda-proto .event:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  z-index: 2;
+}
+.agenda-proto .event.conflict {
+  border-left-color: var(--danger);
+  box-shadow: 0 0 0 1.5px var(--danger) inset;
+}
+.agenda-proto .event-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.agenda-proto .event-meta {
+  font-size: 11px;
+  opacity: 0.85;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.agenda-proto .event-conflict-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+.agenda-proto .event-actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.agenda-proto .event:hover .event-actions { opacity: 1; }
+.agenda-proto .event-action-btn {
+  width: 22px; height: 22px;
+  display: grid; place-items: center;
+  background: var(--bg-elevated);
+  border-radius: 5px;
+  color: var(--text-muted);
+  box-shadow: var(--shadow-sm);
+}
+.agenda-proto .event-action-btn:hover { color: var(--text); }
+.agenda-proto .event-avatar {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* Color tokens */
+.agenda-proto .c-blue   { --c-strong: var(--accent-blue);   --c-soft: var(--accent-blue-soft);   --c-text: var(--accent-blue-text); }
+.agenda-proto .c-green  { --c-strong: var(--accent-green);  --c-soft: var(--accent-green-soft);  --c-text: var(--accent-green-text); }
+.agenda-proto .c-amber  { --c-strong: var(--accent-amber);  --c-soft: var(--accent-amber-soft);  --c-text: var(--accent-amber-text); }
+.agenda-proto .c-purple { --c-strong: var(--accent-purple); --c-soft: var(--accent-purple-soft); --c-text: var(--accent-purple-text); }
+.agenda-proto .c-pink   { --c-strong: var(--accent-pink);   --c-soft: var(--accent-pink-soft);   --c-text: var(--accent-pink-text); }
+
+/* Scrollbar */
+.agenda-proto .calendar-wrap::-webkit-scrollbar { width: 12px; height: 12px; }
+.agenda-proto .calendar-wrap::-webkit-scrollbar-track { background: transparent; }
+.agenda-proto .calendar-wrap::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 3px solid var(--bg);
+}
+.agenda-proto .calendar-wrap::-webkit-scrollbar-thumb:hover { background: var(--text-subtle); }
