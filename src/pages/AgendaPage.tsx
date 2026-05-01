@@ -83,7 +83,7 @@ const AgendaPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-slate-50/50 animate-in fade-in duration-500">
+    <div className="flex flex-col h-screen overflow-hidden animate-in fade-in duration-500" style={{ backgroundColor: '#f7f8fb' }}>
       {/* Header Compacto - Estilo Cal.com */}
       <header className="flex items-center justify-between h-[80px] px-8 border-b border-slate-200 bg-white shrink-0">
         <div className="flex flex-col">
