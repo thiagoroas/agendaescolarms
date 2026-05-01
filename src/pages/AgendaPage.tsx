@@ -8,23 +8,24 @@ import { escolas, recursos, reservas, Reserva, Recurso } from "../data/mockData"
 import { horarios, diasSemana } from "../data/horarios";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import NovaReservaModal from "../components/reservas/NovaReservaModal";
+import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
 
 const AgendaPage = () => {
   const { user } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
+  
+  const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
+  const [isModalDetalhesOpen, setIsModalDetalhesOpen] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<{date: string, aula: number, turno: "manha" | "tarde"} | null>(null);
+  const [activeReserva, setActiveReserva] = useState<{reserva: Reserva, recurso: Recurso} | null>(null);
 
   const escola = escolas.find(e => e.id === user?.escola_id);
   const schoolRecursos = recursos.filter(r => r.escola_id === user?.escola_id);
   
   const monday = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(monday, i));
-
-  const formatWeekRange = () => {
-    const start = format(weekDates[0], "d");
-    const end = format(weekDates[4], "d 'de' MMMM", { locale: ptBR });
-    return `Semana de ${start} a ${end}`;
-  };
 
   const navigateWeek = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => addDays(prev, direction === 'prev' ? -7 : 7));
@@ -40,6 +41,22 @@ const AgendaPage = () => {
     );
   };
 
+  const handleSlotClick = (date: Date, h: typeof horarios[0]) => {
+    const res = getReservaForSlot(date, h.aula);
+    if (res) {
+      const rec = recursos.find(r => r.id === res.recurso_id);
+      setActiveReserva({ reserva: res, recurso: rec! });
+      setIsModalDetalhesOpen(true);
+    } else {
+      setSelectedSlot({
+        date: format(date, "yyyy-MM-dd"),
+        aula: h.aula,
+        turno: h.turno
+      });
+      setIsModalNovaOpen(true);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -48,7 +65,7 @@ const AgendaPage = () => {
           <div className="flex items-center gap-2 text-sm text-slate-500">
             <span className="font-semibold">{escola?.nome}</span>
             <span>•</span>
-            <span>{formatWeekRange()}</span>
+            <span className="capitalize">{format(weekDates[0], "d 'de' MMM", { locale: ptBR })} - {format(weekDates[4], "d 'de' MMM", { locale: ptBR })}</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -57,7 +74,7 @@ const AgendaPage = () => {
             <Button variant="ghost" size="icon" onClick={() => navigateWeek('prev')}><ChevronLeft className="h-4 w-4" /></Button>
             <Button variant="ghost" size="icon" onClick={() => navigateWeek('next')}><ChevronRight className="h-4 w-4" /></Button>
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" />
             Nova reserva
           </Button>
@@ -97,7 +114,6 @@ const AgendaPage = () => {
 
       <div className="rounded-xl border bg-white shadow-sm overflow-hidden overflow-x-auto">
         <div className="min-w-[800px]">
-          {/* Header da Grade */}
           <div className="grid grid-cols-[120px_repeat(5,1fr)] border-b bg-slate-50/50">
             <div className="p-4 border-r"></div>
             {weekDates.map((date, i) => (
@@ -116,7 +132,6 @@ const AgendaPage = () => {
             ))}
           </div>
 
-          {/* Corpo da Grade */}
           <div className="divide-y">
             {horarios.map((h, hIdx) => (
               <div key={hIdx} className={cn(
@@ -144,6 +159,7 @@ const AgendaPage = () => {
                     <div 
                       key={dIdx} 
                       className="group relative border-r last:border-r-0 p-1 transition-colors hover:bg-slate-50 cursor-pointer"
+                      onClick={() => handleSlotClick(date, h)}
                     >
                       {reserva ? (
                         <div 
@@ -170,6 +186,20 @@ const AgendaPage = () => {
           </div>
         </div>
       </div>
+
+      <NovaReservaModal 
+        isOpen={isModalNovaOpen} 
+        onClose={() => { setIsModalNovaOpen(false); setSelectedSlot(null); }} 
+        initialData={selectedSlot || undefined}
+      />
+
+      <DetalhesReservaModal 
+        isOpen={isModalDetalhesOpen} 
+        onClose={() => setIsModalDetalhesOpen(false)}
+        reserva={activeReserva?.reserva || null}
+        recurso={activeReserva?.recurso || null}
+        canEdit={activeReserva?.reserva.professor_id === user?.id || user?.papel !== 'professor'}
+      />
     </div>
   );
 };
