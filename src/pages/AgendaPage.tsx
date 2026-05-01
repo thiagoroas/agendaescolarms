@@ -255,7 +255,7 @@ const AgendaPage = () => {
                               initial={{ opacity: 0, scale: 0.98 }}
                               animate={{ opacity: 1, scale: 1 }}
                               exit={{ opacity: 0, scale: 0.98 }}
-                              className="absolute inset-[4px] rounded-[10px] border-l-4 p-2.5 text-left shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 relative overflow-hidden group/card"
+                              className="absolute inset-[6px] rounded-[10px] border-l-[3px] p-2.5 text-left shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden group/card"
                               style={{
                                 backgroundColor: `${recurso?.cor_borda}10`,
                                 color: recurso?.cor_texto,
