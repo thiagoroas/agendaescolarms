@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "../../contexts/AuthContext";
 import { recursos } from "../../data/mockData";
 import { horarios } from "../../data/horarios";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { toast } from "sonner";
 
 interface NovaReservaModalProps {
   isOpen: boolean;
@@ -22,66 +24,93 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
   const [formData, setFormData] = useState({
     disciplina: "",
     turma: "",
-    data: initialData?.date || "",
-    turno: initialData?.turno || "manha",
+    data: "",
+    turno: "manha" as "manha" | "tarde",
     recursoId: "",
-    aulas: initialData?.aula ? [initialData.aula] : [],
+    aulas: [] as number[],
     observacao: ""
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        disciplina: "",
+        turma: "",
+        data: initialData?.date || "",
+        turno: initialData?.turno || "manha",
+        recursoId: "",
+        aulas: initialData?.aula ? [initialData.aula] : [],
+        observacao: ""
+      });
+    }
+  }, [isOpen, initialData]);
 
   const availableRecursos = recursos.filter(r => r.escola_id === user?.escola_id);
   const availableHorarios = horarios.filter(h => h.turno === formData.turno && !h.isIntervalo);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Reserva enviada:", { ...formData, professor: user?.nome });
+    if (!formData.data) { toast.error("Selecione uma data"); return; }
+    if (!formData.recursoId) { toast.error("Selecione um recurso"); return; }
+    if (formData.aulas.length === 0) { toast.error("Selecione pelo menos uma aula"); return; }
+    
+    console.log("Reserva enviada:", { ...formData, professor: user?.nome, escola_id: user?.escola_id });
+    toast.success("Reserva realizada com sucesso!");
     onClose();
   };
 
+  const formattedDate = formData.data ? format(parseISO(formData.data), "EEEE · d 'de' MMMM 'de' yyyy", { locale: ptBR }) : "";
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Nova reserva</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label>Professor</Label>
-            <Input value={user?.nome} disabled />
+            <Input value={user?.nome} disabled className="bg-slate-50" />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-2">
               <Label>Disciplina</Label>
-              <Input required value={formData.disciplina} onChange={e => setFormData({...formData, disciplina: e.target.value})} />
+              <Input required value={formData.disciplina} onChange={e => setFormData({...formData, disciplina: e.target.value})} placeholder="Ex: Matemática" />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Turma</Label>
               <Input required placeholder="Ex: 3º A" value={formData.turma} onChange={e => setFormData({...formData, turma: e.target.value})} />
             </div>
           </div>
-          <div>
+          <div className="space-y-2">
             <Label>Data</Label>
-            <Input type="date" required value={formData.data} onChange={e => setFormData({...formData, data: e.target.value})} />
+            {initialData?.date ? (
+              <div className="p-2 border rounded-md bg-blue-50 text-blue-800 font-medium text-sm capitalize">
+                {formattedDate}
+              </div>
+            ) : (
+              <Input type="date" required value={formData.data} onChange={e => setFormData({...formData, data: e.target.value})} />
+            )}
           </div>
-          <div>
+          <div className="space-y-2">
             <Label>Recurso</Label>
             <RadioGroup value={formData.recursoId} onValueChange={v => setFormData({...formData, recursoId: v})} className="grid grid-cols-2 gap-2 mt-2">
               {availableRecursos.map(r => (
-                <div key={r.id} className="flex items-center space-x-2 border p-2 rounded-lg cursor-pointer hover:bg-slate-50">
-                  <RadioGroupItem value={r.id} id={r.id} />
-                  <Label htmlFor={r.id} className="cursor-pointer">{r.nome}</Label>
+                <div key={r.id} className="flex items-center space-x-2 border p-2 rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+                  <RadioGroupItem value={r.id} id={`rec-${r.id}`} />
+                  <Label htmlFor={`rec-${r.id}`} className="cursor-pointer flex-1 text-sm">{r.nome}</Label>
                 </div>
               ))}
             </RadioGroup>
           </div>
-          <div>
+          <div className="space-y-2">
             <Label>Turno</Label>
             <RadioGroup value={formData.turno} onValueChange={v => setFormData({...formData, turno: v as any, aulas: []})} className="flex space-x-4 mt-2">
               <div className="flex items-center space-x-2"><RadioGroupItem value="manha" id="manha" /><Label htmlFor="manha">Manhã</Label></div>
               <div className="flex items-center space-x-2"><RadioGroupItem value="tarde" id="tarde" /><Label htmlFor="tarde">Tarde</Label></div>
             </RadioGroup>
           </div>
-          <div>
+          <div className="space-y-2">
             <Label>Aulas</Label>
             <div className="grid grid-cols-2 gap-2 mt-2">
               {availableHorarios.map(h => (
@@ -96,17 +125,17 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
                       setFormData({...formData, aulas: newAulas});
                     }}
                   />
-                  <Label htmlFor={`aula-${h.aula}`}>{h.label}</Label>
+                  <Label htmlFor={`aula-${h.aula}`} className="text-sm cursor-pointer">{h.label} ({h.inicio} - {h.fim})</Label>
                 </div>
               ))}
             </div>
           </div>
-          <div>
-            <Label>Observações</Label>
-            <Textarea value={formData.observacao} onChange={e => setFormData({...formData, observacao: e.target.value})} />
+          <div className="space-y-2">
+            <Label>Observações (Opcional)</Label>
+            <Textarea value={formData.observacao} onChange={e => setFormData({...formData, observacao: e.target.value})} placeholder="Alguma observação importante..." />
           </div>
-          <DialogFooter>
-            <Button type="submit" className="w-full">Confirmar agendamento</Button>
+          <DialogFooter className="pt-2">
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Confirmar agendamento</Button>
           </DialogFooter>
         </form>
       </DialogContent>
