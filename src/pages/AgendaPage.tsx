@@ -190,8 +190,8 @@ const AgendaPage = () => {
       </div>
 
       {/* Grade Semanal Compacta - Centralizada */}
-      <div className="flex-1 overflow-auto py-8 flex flex-col items-center px-8">
-        <div className="w-full max-w-[1320px] bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hidden md:block shrink-0">
+      <div className="flex-1 overflow-auto p-6 flex flex-col items-center">
+        <div className="w-full max-w-[1320px] bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hidden md:block shrink-0">
           <div className="min-w-[1000px]">
             {/* Cabeçalho de Dias */}
             <div className="grid grid-cols-[125px_repeat(5,1fr)] border-b border-slate-200 bg-white sticky top-0 z-10">
