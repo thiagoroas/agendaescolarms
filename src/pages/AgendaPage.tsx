@@ -83,208 +83,221 @@ const AgendaPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-white animate-in fade-in duration-500">
-      {/* Header Compacto */}
-      <header className="flex items-center justify-between h-[100px] px-8 border-b border-slate-200 bg-white shrink-0">
+    <div className="flex flex-col h-screen overflow-hidden bg-slate-50/50 animate-in fade-in duration-500">
+      {/* Header Compacto - Estilo Cal.com */}
+      <header className="flex items-center justify-between h-[80px] px-8 border-b border-slate-200 bg-white shrink-0">
         <div className="flex flex-col">
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">Agenda Escolar Digital</h1>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs font-semibold text-slate-500">{escola?.nome}</span>
+            <span className="text-xs font-medium text-slate-500">{escola?.nome}</span>
             <span className="text-slate-300">·</span>
-            <span className="text-xs font-semibold text-slate-500 capitalize">
+            <span className="text-xs font-medium text-slate-500">
               {format(weekDates[0], "d 'de' MMM", { locale: ptBR })} - {format(weekDates[4], "d 'de' MMM", { locale: ptBR })}
             </span>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="flex items-center bg-slate-100 p-1 rounded-lg mr-2">
-            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs font-bold rounded-md" onClick={() => setCurrentDate(new Date())}>Hoje</Button>
-            <div className="flex items-center ml-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md" onClick={() => navigateWeek('prev')}><ChevronLeft className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md" onClick={() => navigateWeek('next')}><ChevronRight className="h-4 w-4" /></Button>
-            </div>
-          </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="h-9 px-4 text-xs font-semibold rounded-lg border-slate-200 hover:bg-slate-50" onClick={() => setCurrentDate(new Date())}>
+            Hoje
+          </Button>
           
-          <Button variant="ghost" size="icon" className="relative h-10 w-10 text-slate-500 hover:bg-slate-50 rounded-full" aria-label="Notificações">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-blue-600 rounded-full border-2 border-white"></span>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg border-slate-200 hover:bg-slate-50" onClick={() => navigateWeek('prev')}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg border-slate-200 hover:bg-slate-50" onClick={() => navigateWeek('next')}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="w-[1px] h-6 bg-slate-200 mx-2"></div>
+          
+          <Button variant="outline" size="icon" className="h-9 w-9 text-slate-500 border-slate-200 hover:bg-slate-50 rounded-lg relative" aria-label="Notificações">
+            <Bell className="h-4 w-4" />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-blue-600 rounded-full border-2 border-white"></span>
           </Button>
 
-          <Button className="bg-blue-600 hover:bg-blue-700 h-10 px-4 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button className="bg-blue-600 hover:bg-blue-700 h-9 px-4 rounded-lg font-bold text-xs shadow-sm ml-2 transition-all active:scale-95" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
+            <Plus className="mr-1.5 h-4 w-4" />
             Nova reserva
           </Button>
         </div>
       </header>
 
-      {/* Área de Filtros e Busca */}
-      <div className="flex items-center justify-between px-8 py-4 border-b border-slate-100 bg-white shrink-0">
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-          <button 
-            className={cn(
-              "px-4 py-1.5 text-xs font-bold rounded-full transition-all",
-              !selectedRecurso 
-                ? "bg-slate-900 text-white shadow-sm" 
-                : "bg-slate-50 text-slate-500 hover:bg-slate-100"
-            )}
-            onClick={() => setSelectedRecurso(null)}
-          >
-            Todos
-          </button>
-          {schoolRecursos.map(r => (
+      {/* Área de Filtros e Busca - Largura Limitada */}
+      <div className="w-full flex justify-center bg-white border-b border-slate-200 shrink-0">
+        <div className="w-full max-w-[1320px] flex items-center justify-between px-8 py-4">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
             <button 
-              key={r.id}
               className={cn(
-                "px-4 py-1.5 text-xs font-bold rounded-full transition-all flex items-center gap-2 border whitespace-nowrap",
-                selectedRecurso === r.id 
-                  ? "border-slate-900 bg-white text-slate-900 shadow-sm" 
-                  : "border-transparent bg-slate-50 text-slate-500 hover:bg-slate-100"
+                "px-4 py-2 text-xs font-bold rounded-lg transition-all border",
+                !selectedRecurso 
+                  ? "bg-slate-900 text-white border-slate-900 shadow-sm" 
+                  : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
               )}
-              onClick={() => setSelectedRecurso(r.id)}
+              onClick={() => setSelectedRecurso(null)}
             >
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: r.cor_borda }}></div>
-              {r.nome}
+              Todos
             </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-            <Input 
-              placeholder="Buscar professor ou turma..." 
-              className="pl-9 h-8 w-56 bg-slate-50 border-transparent text-xs focus:bg-white transition-all rounded-lg"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            {schoolRecursos.map(r => (
+              <button 
+                key={r.id}
+                className={cn(
+                  "px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-2 border whitespace-nowrap",
+                  selectedRecurso === r.id 
+                    ? "border-slate-900 bg-white text-slate-900 shadow-sm" 
+                    : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
+                )}
+                onClick={() => setSelectedRecurso(r.id)}
+              >
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: r.cor_borda }}></div>
+                {r.nome}
+              </button>
+            ))}
           </div>
-          
-          <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            <span className="text-slate-900">{filteredReservationsCount} de {reservas.filter(r => r.escola_id === user?.escola_id).length} reservas</span>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                <span>Lab</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                <span>Projetor</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full bg-amber-500"></div>
-                <span>Conflito</span>
+
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <Input 
+                placeholder="Buscar professor ou turma..." 
+                className="pl-9 h-9 w-[300px] bg-slate-50 border-slate-200 text-xs focus:bg-white focus:ring-0 focus:border-slate-400 transition-all rounded-lg"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">
+              <span className="text-slate-900">{filteredReservationsCount} de {reservas.filter(r => r.escola_id === user?.escola_id).length} reservas</span>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                  <span>Lab</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  <span>Projetor</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="h-2 w-2 rounded-full bg-red-500"></div>
+                  <span>Conflito</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Grade Semanal Compacta */}
-      <div className="flex-1 overflow-auto bg-white">
-        <div className="hidden md:block min-w-[1000px]">
-          {/* Cabeçalho de Dias */}
-          <div className="grid grid-cols-[130px_repeat(5,1fr)] border-b border-slate-100 bg-white sticky top-0 z-10">
-            <div className="h-20 border-r border-slate-100"></div>
-            {weekDates.map((date, i) => {
-              const isToday = isSameDay(date, new Date());
-              return (
-                <div key={i} className="h-20 flex flex-col items-center justify-center border-r border-slate-100 last:border-r-0">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{diasSemana[i].substring(0, 3)}</span>
-                  <div className={cn(
-                    "mt-1 text-2xl font-black relative",
-                    isToday ? "text-blue-600" : "text-slate-900"
-                  )}>
-                    {format(date, "d")}
-                    {isToday && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-blue-600 rounded-full"></div>}
+      {/* Grade Semanal Compacta - Centralizada */}
+      <div className="flex-1 overflow-auto py-8 flex flex-col items-center px-8">
+        <div className="w-full max-w-[1320px] bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hidden md:block shrink-0">
+          <div className="min-w-[1000px]">
+            {/* Cabeçalho de Dias */}
+            <div className="grid grid-cols-[125px_repeat(5,1fr)] border-b border-slate-200 bg-white sticky top-0 z-10">
+              <div className="h-[92px] border-r border-slate-100"></div>
+              {weekDates.map((date, i) => {
+                const isToday = isSameDay(date, new Date());
+                return (
+                  <div key={i} className="h-[92px] flex flex-col items-center justify-center border-r border-slate-100 last:border-r-0">
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{diasSemana[i].substring(0, 3)}</span>
+                    <div className={cn(
+                      "mt-1 text-2xl font-bold relative transition-colors",
+                      isToday ? "text-blue-600" : "text-slate-900"
+                    )}>
+                      {format(date, "d")}
+                      {isToday && <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-blue-600 rounded-full"></div>}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
 
-          <div className="divide-y divide-slate-100">
-            {horarios.map((h, hIdx) => (
-              <div key={hIdx} className={cn(
-                "grid grid-cols-[130px_repeat(5,1fr)]",
-                h.isIntervalo ? "h-12 bg-striped" : "h-[72px]"
-              )}>
-                <div className="flex flex-col justify-center items-center p-2 border-r border-slate-100 bg-slate-50/30">
-                  <span className="text-[10px] font-black text-slate-900 tracking-tight uppercase">{h.label}</span>
-                  {!h.isIntervalo && (
-                    <span className="text-[9px] font-bold text-slate-400 mt-0.5">
-                      {h.inicio} – {h.fim}
-                    </span>
-                  )}
-                </div>
-                
-                {weekDates.map((date, dIdx) => {
-                  if (h.isIntervalo) {
+            <div className="divide-y divide-slate-100">
+              {horarios.map((h, hIdx) => (
+                <div key={hIdx} className={cn(
+                  "grid grid-cols-[125px_repeat(5,1fr)]",
+                  h.isIntervalo ? "h-[44px] bg-striped" : "h-[80px]"
+                )}>
+                  <div className="flex flex-col justify-center items-center p-2 border-r border-slate-100 bg-white">
+                    <span className="text-[12px] font-bold text-slate-900 tracking-tight uppercase">{h.label}</span>
+                    {!h.isIntervalo && (
+                      <span className="text-[11px] font-medium text-slate-400 mt-0.5">
+                        {h.inicio} – {h.fim}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {weekDates.map((date, dIdx) => {
+                    if (h.isIntervalo) {
+                      return (
+                        <div key={dIdx} className="flex items-center justify-center border-r border-slate-100 last:border-r-0 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">
+                          {dIdx === 2 && "INTERVALO"}
+                        </div>
+                      );
+                    }
+
+                    const reserva = getReservaForSlot(date, h.aula);
+                    const recurso = recursos.find(r => r.id === reserva?.recurso_id);
+
                     return (
-                      <div key={dIdx} className="flex items-center justify-center border-r border-slate-100 last:border-r-0 text-[9px] font-black uppercase tracking-[0.3em] text-slate-300">
-                        {dIdx === 2 && "Intervalo"}
-                      </div>
-                    );
-                  }
-
-                  const reserva = getReservaForSlot(date, h.aula);
-                  const recurso = recursos.find(r => r.id === reserva?.recurso_id);
-
-                  return (
-                    <div 
-                      key={dIdx} 
-                      className={cn(
-                        "group relative border-r border-slate-100 last:border-r-0 p-1 transition-all cursor-pointer",
-                        !reserva && "hover:bg-slate-50/50"
-                      )}
-                      onClick={() => handleSlotClick(date, h)}
-                    >
-                      <AnimatePresence mode="wait">
-                        {reserva ? (
-                          <motion.div 
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="h-full w-full rounded-lg border-l-[3px] p-2 text-left shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 relative overflow-hidden group/card"
-                            style={{
-                              backgroundColor: `${recurso?.cor_borda}15`,
-                              color: recurso?.cor_texto,
-                              borderColor: recurso?.cor_borda
-                            }}
-                          >
-                            <div className="flex items-center gap-2">
-                              <div className="h-5 w-5 rounded-full bg-white/50 flex items-center justify-center text-[10px] font-black border border-white/50 shrink-0">
-                                {reserva.nome_professor.charAt(0)}
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-[10px] font-black leading-tight truncate tracking-tight uppercase">{reserva.nome_professor}</p>
-                                <p className="text-[9px] font-bold opacity-70 leading-tight truncate uppercase tracking-tighter">
-                                  {reserva.turma} • {recurso?.nome}
-                                </p>
-                              </div>
-                            </div>
-                            
-                            <button 
-                              className="absolute top-1 right-1 p-1 rounded-md hover:bg-black/5 opacity-0 group-hover/card:opacity-100 transition-opacity text-red-500"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toast.info("Funcionalidade de exclusão em breve");
+                      <div 
+                        key={dIdx} 
+                        className={cn(
+                          "group relative border-r border-slate-100 last:border-r-0 p-0 transition-all cursor-pointer",
+                          !reserva && "hover:bg-blue-50/20"
+                        )}
+                        onClick={() => handleSlotClick(date, h)}
+                      >
+                        <AnimatePresence mode="wait">
+                          {reserva ? (
+                            <motion.div 
+                              initial={{ opacity: 0, scale: 0.98 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.98 }}
+                              className="absolute inset-[4px] rounded-[10px] border-l-4 p-2.5 text-left shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 relative overflow-hidden group/card"
+                              style={{
+                                backgroundColor: `${recurso?.cor_borda}10`,
+                                color: recurso?.cor_texto,
+                                borderColor: recurso?.cor_borda
                               }}
                             >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          </motion.div>
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Plus className="h-4 w-4 text-slate-300 stroke-[3px]" />
-                          </div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+                              <div className="flex items-start gap-2 h-full">
+                                <div className="h-6 w-6 rounded-full bg-white/60 flex items-center justify-center text-[11px] font-bold border border-white/50 shrink-0 mt-0.5">
+                                  {reserva.nome_professor.charAt(0)}
+                                </div>
+                                <div className="min-w-0 flex-1 h-full flex flex-col justify-center">
+                                  <p className="text-[13px] font-semibold leading-tight truncate tracking-tight text-slate-900">{reserva.nome_professor}</p>
+                                  <p className="text-[12px] font-medium opacity-80 leading-tight truncate tracking-tight mt-0.5">
+                                    {reserva.turma} • {recurso?.nome}
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <button 
+                                className="absolute top-1.5 right-1.5 p-1 rounded-md hover:bg-black/5 opacity-0 group-hover/card:opacity-100 transition-opacity text-red-500"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toast.info("Funcionalidade de exclusão em breve");
+                                }}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </motion.div>
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="px-2 py-1 rounded bg-blue-50 border border-dashed border-blue-200 text-[10px] font-bold text-blue-500 flex items-center gap-1">
+                                <Plus className="h-3 w-3" /> RESERVAR
+                              </div>
+                            </div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
