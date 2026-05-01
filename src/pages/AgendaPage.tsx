@@ -41,9 +41,29 @@ const AgendaPage = () => {
       r.data === dateStr && 
       r.aula === aula && 
       r.escola_id === user?.escola_id &&
-      (!selectedRecurso || r.recurso_id === selectedRecurso)
+      (!selectedRecurso || r.recurso_id === selectedRecurso) &&
+      (!searchQuery || 
+        r.nome_professor.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        r.turma.toLowerCase().includes(searchQuery.toLowerCase())
+      )
     );
   };
+
+  const filteredReservationsCount = useMemo(() => {
+    const mondayStr = format(monday, "yyyy-MM-dd");
+    const fridayStr = format(weekDates[4], "yyyy-MM-dd");
+    
+    return reservas.filter(r => 
+      r.escola_id === user?.escola_id &&
+      r.data >= mondayStr && 
+      r.data <= fridayStr &&
+      (!selectedRecurso || r.recurso_id === selectedRecurso) &&
+      (!searchQuery || 
+        r.nome_professor.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        r.turma.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    ).length;
+  }, [monday, weekDates, selectedRecurso, searchQuery, user?.escola_id]);
 
   const handleSlotClick = (date: Date, h: typeof horarios[0]) => {
     const res = getReservaForSlot(date, h.aula);
@@ -62,58 +82,116 @@ const AgendaPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Agenda Escolar Digital</h1>
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <span className="font-semibold">{escola?.nome}</span>
-            <span>•</span>
+    <div className="space-y-6 pb-12 animate-in fade-in duration-500">
+      <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-black tracking-tight text-slate-900">Agenda de Recursos</h1>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full text-slate-400">
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Visualize e reserve laboratórios, projetores e outros recursos da escola.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="flex items-center gap-3 text-sm font-medium text-slate-500">
+            <span className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold uppercase tracking-wider">
+              {escola?.nome}
+            </span>
+            <span className="text-slate-300">|</span>
             <span className="capitalize">{format(weekDates[0], "d 'de' MMM", { locale: ptBR })} - {format(weekDates[4], "d 'de' MMM", { locale: ptBR })}</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>Hoje</Button>
-          <div className="flex items-center">
-            <Button variant="ghost" size="icon" onClick={() => navigateWeek('prev')}><ChevronLeft className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" onClick={() => navigateWeek('next')}><ChevronRight className="h-4 w-4" /></Button>
+        
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input 
+              placeholder="Buscar professor ou turma..." 
+              className="pl-10 h-10 bg-slate-50 border-transparent focus:bg-white focus:border-blue-200 transition-all rounded-xl"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
-            <Plus className="mr-2 h-4 w-4" />
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl">
+            <Button variant="ghost" size="sm" className="h-8 rounded-lg font-bold" onClick={() => setCurrentDate(new Date())}>Hoje</Button>
+            <div className="flex items-center ml-1 gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => navigateWeek('prev')}><ChevronLeft className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => navigateWeek('next')}><ChevronRight className="h-4 w-4" /></Button>
+            </div>
+          </div>
+          <Button className="bg-blue-600 hover:bg-blue-700 h-10 px-5 rounded-xl shadow-lg shadow-blue-100 font-bold transition-all hover:scale-105 active:scale-95" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
+            <Plus className="mr-2 h-4 w-4 stroke-[3px]" />
             Nova reserva
           </Button>
         </div>
       </header>
 
-      <div className="flex flex-wrap gap-2">
-        <Badge 
-          variant="outline" 
-          className={cn(
-            "cursor-pointer px-4 py-1.5 text-xs transition-all",
-            !selectedRecurso ? "bg-slate-200 text-slate-900 border-slate-300" : "bg-slate-100 text-slate-500 border-transparent hover:bg-slate-200"
-          )}
-          onClick={() => setSelectedRecurso(null)}
-        >
-          Todos
-        </Badge>
-        {schoolRecursos.map(r => (
-          <Badge 
-            key={r.id}
-            variant="outline"
-            style={{ 
-              backgroundColor: selectedRecurso === r.id ? r.cor_fundo : '#f1f5f9',
-              color: selectedRecurso === r.id ? r.cor_texto : '#64748b',
-              borderColor: selectedRecurso === r.id ? r.cor_borda : 'transparent'
-            }}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-slate-400" />
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Filtrar Recurso</span>
+            <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-700 font-bold">{filteredReservationsCount} reservas</Badge>
+          </div>
+          
+          <div className="hidden lg:flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            <div className="flex items-center gap-1.5">
+              <div className="h-3 w-3 rounded bg-blue-500 shadow-sm shadow-blue-100"></div>
+              <span>Ativo</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="h-3 w-3 rounded border border-dashed border-slate-300"></div>
+              <span>Livre</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <button 
             className={cn(
-              "cursor-pointer px-4 py-1.5 text-xs transition-all",
-              selectedRecurso === r.id ? "opacity-100" : "opacity-70 hover:opacity-100"
+              "px-5 py-2 text-xs font-bold rounded-xl transition-all border",
+              !selectedRecurso 
+                ? "bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-100" 
+                : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
             )}
-            onClick={() => setSelectedRecurso(r.id)}
+            onClick={() => setSelectedRecurso(null)}
           >
-            {r.nome}
-          </Badge>
-        ))}
+            Todos os Recursos
+          </button>
+          {schoolRecursos.map(r => (
+            <button 
+              key={r.id}
+              style={{ 
+                backgroundColor: selectedRecurso === r.id ? r.cor_fundo : 'white',
+                color: selectedRecurso === r.id ? r.cor_texto : '#64748b',
+                borderColor: selectedRecurso === r.id ? r.cor_borda : '#e2e8f0',
+                boxShadow: selectedRecurso === r.id ? `0 10px 15px -3px ${r.cor_borda}20` : 'none'
+              }}
+              className={cn(
+                "px-5 py-2 text-xs font-bold rounded-xl transition-all border whitespace-nowrap",
+                selectedRecurso === r.id ? "scale-105" : "hover:border-slate-300 hover:bg-slate-50"
+              )}
+              onClick={() => setSelectedRecurso(r.id)}
+            >
+              {r.nome}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="rounded-xl border bg-white shadow-sm overflow-hidden overflow-x-auto hidden md:block">
