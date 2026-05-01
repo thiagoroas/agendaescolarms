@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import NovaReservaModal from "../components/reservas/NovaReservaModal";
 import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
