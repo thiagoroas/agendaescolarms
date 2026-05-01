@@ -48,7 +48,7 @@ export const escolas: Escola[] = [
 ];
 
 export const usuarios: (Usuario & { senha: string })[] = [
-  { id: "user-1", nome: "Thiago Roas", email: "admin@escola.com", senha: "admin123", escola_id: "escola-1", papel: "admin_plataforma", status: "ativo" },
+  { id: "user-1", nome: "Thiago Roas", email: "thiagomroas@gmail.com", senha: "Sinfr@t3c33#", escola_id: "escola-1", papel: "admin_plataforma", status: "ativo" },
   { id: "user-2", nome: "Maria Silva", email: "lab@escola.com", senha: "lab123", escola_id: "escola-1", papel: "admin_lab", status: "ativo" },
   { id: "user-3", nome: "Carlos Souza", email: "carlos@escola.com", senha: "prof123", escola_id: "escola-1", papel: "professor", status: "ativo" },
   { id: "user-4", nome: "Ana Oliveira", email: "ana@escola.com", senha: "prof123", escola_id: "escola-1", papel: "professor", status: "ativo" },
