@@ -138,13 +138,13 @@ const AgendaPage = () => {
         </div>
       </header>
 
-      {/* Área de Filtros e Busca - Largura Limitada */}
-      <div className="w-full flex justify-center bg-white border-b border-slate-200 shrink-0">
-        <div className="w-full max-w-[1320px] flex items-center justify-between px-8 py-4">
+      {/* Área de Filtros e Busca - Mais compacta */}
+      <div className="w-full bg-white border-b border-slate-200 shrink-0 z-10">
+        <div className="w-full max-w-[1400px] mx-auto flex items-center justify-between px-8 h-12">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
             <button 
               className={cn(
-                "px-4 py-2 text-xs font-bold rounded-lg transition-all border",
+                "px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all border",
                 !selectedRecurso 
                   ? "bg-slate-900 text-white border-slate-900 shadow-sm" 
                   : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
@@ -157,14 +157,14 @@ const AgendaPage = () => {
               <button 
                 key={r.id}
                 className={cn(
-                  "px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-2 border whitespace-nowrap",
+                  "px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all flex items-center gap-1.5 border whitespace-nowrap",
                   selectedRecurso === r.id 
                     ? "border-slate-900 bg-white text-slate-900 shadow-sm" 
                     : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
                 )}
                 onClick={() => setSelectedRecurso(r.id)}
               >
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: r.cor_borda }}></div>
+                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: r.cor_borda }}></div>
                 {r.nome}
               </button>
             ))}
@@ -172,29 +172,29 @@ const AgendaPage = () => {
 
           <div className="flex items-center gap-6">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-              <Input 
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+              <input 
                 placeholder="Buscar professor ou turma..." 
-                className="pl-9 h-9 w-[300px] bg-slate-50 border-slate-200 text-xs focus:bg-white focus:ring-0 focus:border-slate-400 transition-all rounded-lg"
+                className="pl-8 h-8 w-[240px] bg-slate-50 border-slate-200 text-[11px] focus:bg-white focus:ring-1 focus:ring-blue-100 focus:border-blue-400 transition-all rounded-md outline-none"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             
-            <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">
-              <span className="text-slate-900">{filteredReservationsCount} de {reservas.filter(r => r.escola_id === user?.escola_id).length} reservas</span>
+            <div className="flex items-center gap-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">
+              <span className="text-slate-900">{filteredReservationsCount} reservas</span>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1">
-                  <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                  <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
                   <span>Lab</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>
                   <span>Projetor</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="h-2 w-2 rounded-full bg-red-500"></div>
-                  <span>Conflito</span>
+                  <div className="h-1.5 w-1.5 rounded-full bg-red-500"></div>
+                  <span className="text-red-500">Conflito</span>
                 </div>
               </div>
             </div>
@@ -202,24 +202,30 @@ const AgendaPage = () => {
         </div>
       </div>
 
-      {/* Grade Semanal Compacta - Centralizada */}
-      <div className="flex-1 overflow-auto p-6 flex flex-col items-center">
-        <div className="w-full max-w-[1320px] bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hidden md:block shrink-0">
-          <div className="min-w-[900px]">
+      {/* Grade Semanal - Estilo Dashboard Cal.com */}
+      <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-8 flex flex-col items-center">
+        <div className="w-full max-w-[1400px] bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hidden md:block shrink-0">
+          <div className="min-w-[1000px]">
             {/* Cabeçalho de Dias */}
-            <div className="grid grid-cols-[125px_repeat(5,1fr)] border-b border-slate-200 bg-white sticky top-0 z-10">
-              <div className="h-[92px] border-r border-slate-100"></div>
+            <div className="grid grid-cols-[100px_repeat(5,1fr)] border-b border-slate-100 bg-white sticky top-0 z-30">
+              <div className="h-16 border-r border-slate-100 bg-slate-50/30 flex items-center justify-center">
+                <Calendar className="h-4 w-4 text-slate-300" />
+              </div>
               {weekDates.map((date, i) => {
                 const isToday = isSameDay(date, new Date());
                 return (
-                  <div key={i} className="h-[92px] flex flex-col items-center justify-center border-r border-slate-100 last:border-r-0">
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{diasSemana[i].substring(0, 3)}</span>
+                  <div key={i} className="h-16 flex flex-col items-center justify-center border-r border-slate-100 last:border-r-0 bg-white">
+                    <span className={cn(
+                      "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                      isToday ? "text-blue-600" : "text-slate-400"
+                    )}>
+                      {diasSemana[i].substring(0, 3)}
+                    </span>
                     <div className={cn(
-                      "mt-1 text-2xl font-bold relative transition-colors",
+                      "mt-0.5 text-xl font-bold transition-colors",
                       isToday ? "text-blue-600" : "text-slate-900"
                     )}>
                       {format(date, "d")}
-                      {isToday && <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-blue-600 rounded-full"></div>}
                     </div>
                   </div>
                 );
