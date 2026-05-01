@@ -301,21 +301,21 @@ const AgendaPage = () => {
         </div>
       </div>
 
-      <div className="md:hidden space-y-4 pb-20">
-        <div className="flex items-center justify-between bg-white p-4 rounded-xl border shadow-sm">
-          <Button variant="ghost" size="icon" onClick={() => setCurrentDate(prev => addDays(prev, -1))}>
-            <ChevronLeft className="h-5 w-5" />
+      <div className="md:hidden space-y-4 pb-24">
+        <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/50">
+          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-slate-50" onClick={() => setCurrentDate(prev => addDays(prev, -1))}>
+            <ChevronLeft className="h-5 w-5 text-slate-600" />
           </Button>
           <div className="text-center">
-            <div className="text-sm font-bold text-blue-600 uppercase tracking-wide">
+            <div className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">
               {format(currentDate, "EEEE", { locale: ptBR })}
             </div>
-            <div className="text-lg font-bold text-slate-900">
+            <div className="text-lg font-black text-slate-900 leading-tight">
               {format(currentDate, "d 'de' MMMM", { locale: ptBR })}
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => setCurrentDate(prev => addDays(prev, 1))}>
-            <ChevronRight className="h-5 w-5" />
+          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-slate-50" onClick={() => setCurrentDate(prev => addDays(prev, 1))}>
+            <ChevronRight className="h-5 w-5 text-slate-600" />
           </Button>
         </div>
 
@@ -323,7 +323,7 @@ const AgendaPage = () => {
           {horarios.map((h, idx) => {
             if (h.isIntervalo) {
               return (
-                <div key={idx} className="flex items-center justify-center py-2 px-4 bg-slate-100 rounded-lg text-xs font-bold text-slate-400 uppercase tracking-widest">
+                <div key={idx} className="flex items-center justify-center py-3 px-4 bg-striped rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
                   Intervalo
                 </div>
               );
@@ -333,45 +333,56 @@ const AgendaPage = () => {
             const recurso = recursos.find(r => r.id === reserva?.recurso_id);
 
             return (
-              <div 
+              <motion.div 
                 key={idx}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => handleSlotClick(currentDate, h)}
                 className={cn(
-                  "flex items-stretch rounded-xl border shadow-sm overflow-hidden transition-all active:scale-[0.98]",
-                  reserva ? "bg-white" : "bg-slate-50/50 border-dashed"
+                  "flex items-stretch rounded-2xl border overflow-hidden transition-all shadow-sm",
+                  reserva ? "bg-white border-slate-100" : "bg-slate-50/50 border-dashed border-slate-200"
                 )}
               >
-                <div className="w-20 flex flex-col items-center justify-center bg-slate-50 border-r py-3">
-                  <span className="text-xs font-bold text-slate-900">{h.label}</span>
-                  <span className="text-[10px] text-slate-500 mt-1">{h.inicio}</span>
+                <div className="w-20 flex flex-col items-center justify-center bg-slate-50/80 border-r border-slate-100 py-4">
+                  <span className="text-[10px] font-black text-slate-900 uppercase tracking-tighter">{h.label}</span>
+                  <span className="text-[10px] font-bold text-slate-400 mt-1">{h.inicio}</span>
                 </div>
                 
-                <div className="flex-1 p-3 flex flex-col justify-center">
+                <div className="flex-1 p-4 flex flex-col justify-center">
                   {reserva ? (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3">
                       <div 
-                        className="h-10 w-1 bg-blue-600 rounded-full"
-                        style={{ backgroundColor: recurso?.cor_texto }}
+                        className="w-1.5 h-12 rounded-full"
+                        style={{ backgroundColor: recurso?.cor_borda || '#3b82f6' }}
                       ></div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">{reserva.nome_professor}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{reserva.turma} • {recurso?.nome}</p>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <p className="text-sm font-black text-slate-900 truncate tracking-tight">{reserva.nome_professor}</p>
+                          <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">{recurso?.nome}</span>
+                        </div>
+                        <p className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                          <Users className="h-3 w-3 opacity-70" /> {reserva.turma}
+                        </p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-slate-400 font-medium italic">Disponível — toque para reservar</p>
+                    <div className="flex items-center gap-3 text-slate-400">
+                      <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-sm">
+                        <Plus className="h-4 w-4 stroke-[3px]" />
+                      </div>
+                      <p className="text-xs font-bold italic tracking-tight uppercase tracking-wider opacity-60">Toque para reservar</p>
+                    </div>
                   )}
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
 
         <button
           onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg shadow-blue-200 flex items-center justify-center z-50 active:scale-95 transition-transform md:hidden"
+          className="fixed bottom-24 right-6 w-16 h-16 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-2xl shadow-blue-300 flex items-center justify-center z-50 active:scale-90 transition-all border-4 border-white"
         >
-          <Plus className="w-6 h-6" />
+          <Plus className="w-8 h-8 stroke-[3px]" />
         </button>
       </div>
 
