@@ -194,77 +194,109 @@ const AgendaPage = () => {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden overflow-x-auto hidden md:block">
-        <div className="min-w-[800px]">
-          <div className="grid grid-cols-[120px_repeat(5,1fr)] border-b bg-slate-50/50">
-            <div className="p-4 border-r"></div>
-            {weekDates.map((date, i) => (
-              <div key={i} className={cn(
-                "p-4 text-center border-r last:border-r-0",
-                isSameDay(date, new Date()) && "bg-blue-50/50"
-              )}>
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">{diasSemana[i]}</div>
-                <div className={cn(
-                  "mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full text-lg font-bold",
-                  isSameDay(date, new Date()) ? "bg-blue-600 text-white" : "text-slate-900"
-                )}>
-                  {format(date, "d")}
-                </div>
+      <div className="rounded-3xl border border-slate-100 bg-white shadow-xl shadow-slate-200/50 overflow-hidden hidden md:block">
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="min-w-[900px]">
+            <div className="grid grid-cols-[140px_repeat(5,1fr)] bg-slate-50/80 border-b border-slate-100 backdrop-blur-sm sticky top-0 z-10">
+              <div className="p-5 border-r border-slate-100 flex items-center justify-center">
+                <Calendar className="h-5 w-5 text-blue-600 opacity-50" />
               </div>
-            ))}
-          </div>
-
-          <div className="divide-y">
-            {horarios.map((h, hIdx) => (
-              <div key={hIdx} className={cn(
-                "grid grid-cols-[120px_repeat(5,1fr)]",
-                h.isIntervalo ? "h-8 bg-slate-50" : "h-[70px]"
-              )}>
-                <div className="flex flex-col justify-center p-3 border-r bg-slate-50/30">
-                  <span className="text-xs font-bold text-slate-900">{h.label}</span>
-                  {!h.isIntervalo && <span className="text-[10px] text-slate-500">{h.inicio} – {h.fim}</span>}
+              {weekDates.map((date, i) => (
+                <div key={i} className={cn(
+                  "p-5 text-center border-r border-slate-100 last:border-r-0 transition-colors",
+                  isSameDay(date, new Date()) && "bg-blue-600/5"
+                )}>
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{diasSemana[i]}</div>
+                  <div className={cn(
+                    "mt-2 inline-flex h-10 w-10 items-center justify-center rounded-xl text-lg font-black transition-all",
+                    isSameDay(date, new Date()) 
+                      ? "bg-blue-600 text-white shadow-lg shadow-blue-200 scale-110" 
+                      : "text-slate-900"
+                  )}>
+                    {format(date, "d")}
+                  </div>
                 </div>
-                
-                {weekDates.map((date, dIdx) => {
-                  if (h.isIntervalo) {
+              ))}
+            </div>
+
+            <div className="divide-y divide-slate-100">
+              {horarios.map((h, hIdx) => (
+                <div key={hIdx} className={cn(
+                  "grid grid-cols-[140px_repeat(5,1fr)]",
+                  h.isIntervalo ? "h-10 bg-striped" : "h-[90px]"
+                )}>
+                  <div className="flex flex-col justify-center items-center p-4 border-r border-slate-100 bg-slate-50/50">
+                    <span className="text-xs font-black text-slate-900 tracking-tight">{h.label}</span>
+                    {!h.isIntervalo && (
+                      <span className="text-[10px] font-bold text-slate-400 mt-1 px-2 py-0.5 bg-white rounded-full border border-slate-100 shadow-sm">
+                        {h.inicio} – {h.fim}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {weekDates.map((date, dIdx) => {
+                    if (h.isIntervalo) {
+                      return (
+                        <div key={dIdx} className="flex items-center justify-center border-r border-slate-100 last:border-r-0 text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">
+                          {dIdx === 2 && "Intervalo"}
+                        </div>
+                      );
+                    }
+
+                    const reserva = getReservaForSlot(date, h.aula);
+                    const recurso = recursos.find(r => r.id === reserva?.recurso_id);
+
                     return (
-                      <div key={dIdx} className="flex items-center justify-center border-r last:border-r-0 text-[10px] font-bold uppercase tracking-widest text-slate-300">
-                        Intervalo
+                      <div 
+                        key={dIdx} 
+                        className={cn(
+                          "group relative border-r border-slate-100 last:border-r-0 p-1.5 transition-all cursor-pointer",
+                          !reserva && "hover:bg-blue-50/30"
+                        )}
+                        onClick={() => handleSlotClick(date, h)}
+                      >
+                        <AnimatePresence mode="wait">
+                          {reserva ? (
+                            <motion.div 
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.9 }}
+                              className="h-full w-full rounded-2xl border-2 p-3 text-left shadow-sm transition-all hover:shadow-md hover:-translate-y-1 relative overflow-hidden"
+                              style={{
+                                backgroundColor: recurso?.cor_fundo,
+                                color: recurso?.cor_texto,
+                                borderColor: recurso?.cor_borda
+                              }}
+                            >
+                              <div className="absolute top-0 right-0 p-1 opacity-20">
+                                <Monitor className="h-8 w-8 -mr-2 -mt-2" />
+                              </div>
+                              <p className="text-[11px] font-black leading-tight truncate uppercase tracking-tight">{reserva.nome_professor}</p>
+                              <p className="mt-1 text-[10px] font-bold opacity-80 leading-tight truncate flex items-center gap-1">
+                                <Users className="h-3 w-3" /> {reserva.turma}
+                              </p>
+                              <div className="mt-2 inline-block px-1.5 py-0.5 rounded-lg bg-white/20 text-[9px] font-black uppercase tracking-wider">
+                                {recurso?.nome}
+                              </div>
+                            </motion.div>
+                          ) : (
+                            <motion.div 
+                              initial={{ opacity: 0 }}
+                              whileHover={{ opacity: 1 }}
+                              className="flex h-full w-full items-center justify-center transition-opacity"
+                            >
+                              <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform shadow-inner">
+                                <Plus className="h-5 w-5 stroke-[3px]" />
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     );
-                  }
-
-                  const reserva = getReservaForSlot(date, h.aula);
-                  const recurso = recursos.find(r => r.id === reserva?.recurso_id);
-
-                  return (
-                    <div 
-                      key={dIdx} 
-                      className="group relative border-r last:border-r-0 p-1 transition-colors hover:bg-slate-50 cursor-pointer"
-                      onClick={() => handleSlotClick(date, h)}
-                    >
-                      {reserva ? (
-                        <div 
-                          className="h-full w-full rounded-lg border p-2 text-left shadow-sm transition-transform hover:scale-[1.02]"
-                          style={{
-                            backgroundColor: recurso?.cor_fundo,
-                            color: recurso?.cor_texto,
-                            borderColor: recurso?.cor_borda
-                          }}
-                        >
-                          <p className="text-[10px] font-bold leading-tight truncate">{reserva.nome_professor}</p>
-                          <p className="mt-0.5 text-[9px] opacity-80 leading-tight truncate">{reserva.turma} • {recurso?.nome}</p>
-                        </div>
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-                          <Plus className="h-5 w-5 text-blue-400" />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
