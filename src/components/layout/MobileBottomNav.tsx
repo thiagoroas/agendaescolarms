@@ -8,55 +8,55 @@ const MobileBottomNav = () => {
   const isAdmin = user?.papel !== "professor";
 
   return (
-    <nav className="fixed bottom-0 left-0 flex w-full items-center justify-around border-t bg-white p-2 md:hidden z-40">
+    <nav className="fixed bottom-0 left-0 flex w-full items-center justify-around border-t border-slate-100 bg-white/90 backdrop-blur-lg px-2 py-3 md:hidden z-40 pb-safe">
       <NavLink
         to="/agenda"
         className={({ isActive }) =>
           cn(
-            "flex flex-col items-center gap-1 p-2 text-[10px]",
-            isActive ? "text-blue-600" : "text-slate-400"
+            "flex flex-col items-center gap-1.5 p-1 transition-all duration-300",
+            isActive ? "text-blue-600 scale-110 font-bold" : "text-slate-400"
           )
         }
       >
-        <Calendar className="h-6 w-6" />
-        Agenda
+        <Calendar className={cn("h-6 w-6 transition-all", "stroke-[2.5px]")} />
+        <span className="text-[10px] tracking-tight uppercase font-black">Agenda</span>
       </NavLink>
       <NavLink
         to="/minhas-reservas"
         className={({ isActive }) =>
           cn(
-            "flex flex-col items-center gap-1 p-2 text-[10px]",
-            isActive ? "text-blue-600" : "text-slate-400"
+            "flex flex-col items-center gap-1.5 p-1 transition-all duration-300",
+            isActive ? "text-blue-600 scale-110 font-bold" : "text-slate-400"
           )
         }
       >
-        <BookOpen className="h-6 w-6" />
-        Reservas
+        <BookOpen className={cn("h-6 w-6 transition-all", "stroke-[2.5px]")} />
+        <span className="text-[10px] tracking-tight uppercase font-black">Reservas</span>
       </NavLink>
       <NavLink
         to="/perfil"
         className={({ isActive }) =>
           cn(
-            "flex flex-col items-center gap-1 p-2 text-[10px]",
-            isActive ? "text-blue-600" : "text-slate-400"
+            "flex flex-col items-center gap-1.5 p-1 transition-all duration-300",
+            isActive ? "text-blue-600 scale-110 font-bold" : "text-slate-400"
           )
         }
       >
-        <User className="h-6 w-6" />
-        Perfil
+        <User className={cn("h-6 w-6 transition-all", "stroke-[2.5px]")} />
+        <span className="text-[10px] tracking-tight uppercase font-black">Perfil</span>
       </NavLink>
       {isAdmin && (
         <NavLink
           to="/admin/professores"
           className={({ isActive }) =>
             cn(
-              "flex flex-col items-center gap-1 p-2 text-[10px]",
-              isActive ? "text-blue-600" : "text-slate-400"
+              "flex flex-col items-center gap-1.5 p-1 transition-all duration-300",
+              isActive ? "text-blue-600 scale-110 font-bold" : "text-slate-400"
             )
           }
         >
-          <Settings className="h-6 w-6" />
-          Admin
+          <Settings className={cn("h-6 w-6 transition-all", "stroke-[2.5px]")} />
+          <span className="text-[10px] tracking-tight uppercase font-black">Painel</span>
         </NavLink>
       )}
     </nav>
