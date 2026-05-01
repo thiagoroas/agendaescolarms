@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import AppLayout from "./components/layout/AppLayout";
 import LoginPage from "./pages/LoginPage";
 
 const queryClient = new QueryClient();
@@ -18,9 +19,16 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/agenda" element={<ProtectedRoute><div>Agenda (em construção)</div></ProtectedRoute>} />
-            <Route path="/" element={<Navigate to="/agenda" replace />} />
-            <Route path="*" element={<Navigate to="/agenda" replace />} />
+            <Route path="/*" element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Routes>
+                    <Route path="/agenda" element={<div>Agenda (em construção)</div>} />
+                    <Route path="*" element={<Navigate to="/agenda" replace />} />
+                  </Routes>
+                </AppLayout>
+              </ProtectedRoute>
+            } />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
