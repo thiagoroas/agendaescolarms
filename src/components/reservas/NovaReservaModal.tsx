@@ -119,7 +119,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
                     )}
                   >
                     <span className="text-xs font-black text-slate-900">{r.nome}</span>
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{r.categoria}</span>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{r.tipo}</span>
                   </Label>
                 </div>
               ))}
