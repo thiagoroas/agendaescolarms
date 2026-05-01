@@ -6,8 +6,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import AppLayout from "./components/layout/AppLayout";
+
 import LoginPage from "./pages/LoginPage";
 import AgendaPage from "./pages/AgendaPage";
+import MinhasReservasPage from "./pages/MinhasReservasPage";
+import PerfilPage from "./pages/PerfilPage";
+import AdminProfessoresPage from "./pages/AdminProfessoresPage";
+import AdminRecursosPage from "./pages/AdminRecursosPage";
+import AdminReservasPage from "./pages/AdminReservasPage";
+import AdminEscolasPage from "./pages/AdminEscolasPage";
 
 const queryClient = new QueryClient();
 
@@ -20,17 +27,40 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/*" element={
+            
+            <Route path="/" element={
               <ProtectedRoute>
                 <AppLayout>
                   <Routes>
                     <Route path="/agenda" element={<AgendaPage />} />
-                    <Route path="/minhas-reservas" element={<div>Minhas Reservas (em construção)</div>} />
-                    <Route path="/perfil" element={<div>Perfil (em construção)</div>} />
-                    <Route path="/admin/professores" element={<div>Admin Professores (em construção)</div>} />
-                    <Route path="/admin/recursos" element={<div>Admin Recursos (em construção)</div>} />
-                    <Route path="/admin/reservas" element={<div>Admin Reservas (em construção)</div>} />
-                    <Route path="/admin/escolas" element={<div>Admin Escolas (em construção)</div>} />
+                    <Route path="/minhas-reservas" element={<MinhasReservasPage />} />
+                    <Route path="/perfil" element={<PerfilPage />} />
+                    
+                    {/* Admin Lab + Admin Plataforma */}
+                    <Route path="/admin/professores" element={
+                      <ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}>
+                        <AdminProfessoresPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin/recursos" element={
+                      <ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}>
+                        <AdminRecursosPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin/reservas" element={
+                      <ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}>
+                        <AdminReservasPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Admin Plataforma apenas */}
+                    <Route path="/admin/escolas" element={
+                      <ProtectedRoute allowedRoles={["admin_plataforma"]}>
+                        <AdminEscolasPage />
+                      </ProtectedRoute>
+                    } />
+
+                    <Route path="/" element={<Navigate to="/agenda" replace />} />
                     <Route path="*" element={<Navigate to="/agenda" replace />} />
                   </Routes>
                 </AppLayout>
