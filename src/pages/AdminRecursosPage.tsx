@@ -86,42 +86,59 @@ const AdminRecursosPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Recursos</h1>
-          <p className="text-sm text-slate-500">Cadastre laboratórios, projetores e outros itens para reserva.</p>
+    <div className="space-y-8 animate-in fade-in duration-500 pb-20 md:pb-8">
+      <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 uppercase">Gestão de Recursos</h1>
+          <p className="text-sm font-medium text-slate-500">Administre laboratórios, projetores e equipamentos da escola.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setIsModalOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button className="bg-blue-600 hover:bg-blue-700 h-12 px-6 rounded-2xl shadow-xl shadow-blue-100 font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95" onClick={() => setIsModalOpen(true)}>
+          <Plus className="mr-2 h-5 w-5 stroke-[3px]" />
           Novo Recurso
         </Button>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 pb-20 md:pb-0">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {schoolRecursos.map((r) => (
-          <Card key={r.id} className="overflow-hidden border-slate-200 hover:border-blue-300 transition-colors shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card key={r.id} className="group overflow-hidden border-slate-100 bg-white rounded-3xl transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 border-2">
+            <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
               <div 
-                className="h-10 w-10 rounded-lg flex items-center justify-center border"
+                className="h-14 w-14 rounded-2xl flex items-center justify-center border-2 shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3"
                 style={{ backgroundColor: r.cor_fundo, color: r.cor_texto, borderColor: r.cor_borda }}
               >
                 {getIcon(r.tipo)}
               </div>
-              <Badge variant={r.ativo ? "default" : "secondary"} className={r.ativo ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-emerald-200" : ""}>
+              <Badge 
+                variant={r.ativo ? "default" : "secondary"} 
+                className={cn(
+                  "px-3 py-1 text-[10px] font-black uppercase tracking-widest",
+                  r.ativo ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-slate-200 text-slate-500"
+                )}
+              >
                 {r.ativo ? "Ativo" : "Inativo"}
               </Badge>
             </CardHeader>
-            <CardContent>
-              <CardTitle className="text-lg font-bold text-slate-900">{r.nome}</CardTitle>
-              <p className="text-xs text-slate-500 capitalize mt-1">Categoria: {r.tipo}</p>
+            <CardContent className="p-6 pt-4">
+              <CardTitle className="text-xl font-black text-slate-900 tracking-tight leading-tight mb-1">{r.nome}</CardTitle>
+              <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">
+                <div className="h-1.5 w-1.5 rounded-full bg-slate-200"></div>
+                {r.tipo}
+              </div>
               
-              <div className="mt-4 flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1 h-10 md:h-9" onClick={() => toast.info("Edição em breve")}>
-                  <Settings2 className="mr-2 h-3.5 w-3.5" />
+              <div className="flex gap-3">
+                <Button variant="ghost" size="sm" className="flex-1 h-11 rounded-xl font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all" onClick={() => toast.info("Edição em breve")}>
+                  <Settings2 className="mr-2 h-4 w-4" />
                   Editar
                 </Button>
-                <Button variant="outline" size="sm" className={cn("flex-1 h-10 md:h-9", r.ativo ? "text-red-600 hover:bg-red-50 border-red-100" : "text-emerald-600 hover:bg-emerald-50 border-emerald-100")} onClick={() => toast.success("Status alterado")}>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={cn(
+                    "flex-[1.5] h-11 rounded-xl font-black uppercase tracking-widest transition-all", 
+                    r.ativo ? "text-red-500 hover:bg-red-50 border-red-100 hover:border-red-200" : "text-emerald-500 hover:bg-emerald-50 border-emerald-100 hover:border-emerald-200"
+                  )} 
+                  onClick={() => toast.success("Status alterado")}
+                >
                   {r.ativo ? "Desativar" : "Ativar"}
                 </Button>
               </div>
@@ -131,49 +148,63 @@ const AdminRecursosPage = () => {
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Novo Recurso</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSalvarRecurso} className="space-y-4 py-4">
+        <DialogContent className="max-w-md p-0 border-none rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black tracking-tight text-white uppercase">Novo Recurso</DialogTitle>
+            </DialogHeader>
+            <p className="text-blue-100 text-sm font-medium mt-1 opacity-90">Cadastre laboratórios, projetores e equipamentos.</p>
+          </div>
+
+          <form onSubmit={handleSalvarRecurso} className="p-8 space-y-6 bg-white">
             <div className="space-y-2">
-              <Label htmlFor="nome">Nome do Recurso</Label>
-              <Input id="nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Caixa de Som, Projetor 2, Kit Robótica..." required />
+              <Label htmlFor="nome" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nome do Recurso</Label>
+              <Input id="nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Laboratório de Química, Tablet 01..." className="h-12 rounded-xl bg-slate-50 border-slate-100 focus:bg-white transition-all font-bold" required />
             </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="tipo">Categoria</Label>
+              <Label htmlFor="tipo" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Categoria</Label>
               <Select onValueChange={setTipo} value={tipo}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a categoria" />
+                <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-100 focus:ring-blue-500 transition-all font-bold">
+                  <SelectValue placeholder="Selecione..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl border-slate-100 shadow-xl">
                   {categorias.map(cat => (
-                    <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                    <SelectItem key={cat.value} value={cat.value} className="font-bold text-slate-600 focus:text-blue-600 focus:bg-blue-50 rounded-lg">{cat.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Cor personalizada (opcional)</Label>
-              <div className="flex flex-wrap gap-2 pt-1">
+
+            <div className="space-y-3">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Paleta de Cor</Label>
+              <div className="flex flex-wrap gap-3 pt-1">
                 {coresDisponiveis.map(cor => (
                   <button
                     key={cor.nome}
                     type="button"
                     onClick={() => setCorPersonalizada(cor.cor_fundo)}
                     className={cn(
-                      "h-8 w-8 rounded-full border-2 transition-all",
-                      corPersonalizada === cor.cor_fundo ? "border-slate-900 scale-110 shadow-sm" : "border-transparent hover:scale-105"
+                      "h-10 w-10 rounded-2xl border-4 transition-all relative overflow-hidden",
+                      corPersonalizada === cor.cor_fundo 
+                        ? "border-blue-600 scale-110 shadow-lg shadow-blue-100" 
+                        : "border-white hover:scale-105 shadow-sm"
                     )}
                     style={{ backgroundColor: cor.cor_fundo }}
-                    title={cor.nome}
-                  />
+                  >
+                    {corPersonalizada === cor.cor_fundo && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-blue-600/10">
+                        <Plus className="h-4 w-4 text-blue-600 stroke-[3px]" />
+                      </div>
+                    )}
+                  </button>
                 ))}
               </div>
             </div>
-            <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Salvar Recurso</Button>
+
+            <DialogFooter className="pt-4 flex flex-col sm:flex-row gap-3">
+              <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} className="flex-1 rounded-xl font-black uppercase tracking-widest text-slate-400">Cancelar</Button>
+              <Button type="submit" className="flex-[2] h-12 bg-blue-600 hover:bg-blue-700 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-blue-100 active:scale-95 transition-all">Salvar Recurso</Button>
             </DialogFooter>
           </form>
         </DialogContent>
