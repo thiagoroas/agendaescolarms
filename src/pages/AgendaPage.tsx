@@ -235,14 +235,14 @@ const AgendaPage = () => {
             <div className="divide-y divide-slate-100">
               {horarios.map((h, hIdx) => (
                 <div key={hIdx} className={cn(
-                  "grid grid-cols-[125px_repeat(5,1fr)]",
-                  h.isIntervalo ? "h-[44px] bg-striped" : "h-[80px]"
+                  "grid grid-cols-[100px_repeat(5,1fr)]",
+                  h.isIntervalo ? "h-10 bg-slate-50/50" : "h-[76px]"
                 )}>
-                  <div className="flex flex-col justify-center items-center p-2 border-r border-slate-100 bg-white">
-                    <span className="text-[12px] font-bold text-slate-900 tracking-tight uppercase">{h.label}</span>
+                  <div className="flex flex-col justify-center items-center p-2 border-r border-slate-100 bg-white group-hover:bg-slate-50 transition-colors">
+                    <span className="text-[11px] font-bold text-slate-800 tracking-tight uppercase leading-none">{h.label}</span>
                     {!h.isIntervalo && (
-                      <span className="text-[11px] font-medium text-slate-400 mt-0.5">
-                        {h.inicio} – {h.fim}
+                      <span className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">
+                        {h.inicio}
                       </span>
                     )}
                   </div>
@@ -250,8 +250,8 @@ const AgendaPage = () => {
                   {weekDates.map((date, dIdx) => {
                     if (h.isIntervalo) {
                       return (
-                        <div key={dIdx} className="flex items-center justify-center border-r border-slate-100 last:border-r-0 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">
-                          {dIdx === 2 && "INTERVALO"}
+                        <div key={dIdx} className="flex items-center justify-center border-r border-slate-100 last:border-r-0 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-300">
+                          {dIdx === 2 && "Intervalo"}
                         </div>
                       );
                     }
@@ -274,38 +274,40 @@ const AgendaPage = () => {
                               initial={{ opacity: 0, scale: 0.98 }}
                               animate={{ opacity: 1, scale: 1 }}
                               exit={{ opacity: 0, scale: 0.98 }}
-                              className="absolute inset-[6px] rounded-[10px] border-l-[3px] p-2.5 text-left shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden group/card"
+                              className="absolute inset-[3px] rounded-lg border-l-[3px] p-2 text-left shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden group/card z-10"
                               style={{
-                                backgroundColor: `${recurso?.cor_borda}10`,
+                                backgroundColor: `${recurso?.cor_borda}08`,
                                 color: recurso?.cor_texto,
                                 borderColor: recurso?.cor_borda
                               }}
                             >
-                              <div className="flex items-start gap-2 h-full">
-                                <div className="h-6 w-6 rounded-full bg-white/60 flex items-center justify-center text-[11px] font-bold border border-white/50 shrink-0 mt-0.5">
-                                  {reserva.nome_professor.charAt(0)}
+                              <div className="flex flex-col h-full min-w-0">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <div className="h-4 w-4 rounded-full bg-white/80 flex items-center justify-center text-[8px] font-bold border border-white/50 shrink-0">
+                                    {reserva.nome_professor.charAt(0)}
+                                  </div>
+                                  <span className="text-[11px] font-bold text-slate-900 truncate tracking-tight leading-none">{reserva.nome_professor}</span>
                                 </div>
-                                <div className="min-w-0 flex-1 h-full flex flex-col justify-center">
-                                  <p className="text-[13px] font-semibold leading-tight truncate tracking-tight text-slate-900">{reserva.nome_professor}</p>
-                                  <p className="text-[12px] font-medium opacity-80 leading-tight truncate tracking-tight mt-0.5">
+                                <div className="flex-1 min-w-0 flex flex-col justify-end">
+                                  <p className="text-[10px] font-bold opacity-80 leading-none truncate tracking-tight text-slate-600">
                                     {reserva.turma} • {recurso?.nome}
                                   </p>
                                 </div>
                               </div>
                               
                               <button 
-                                className="absolute top-1.5 right-1.5 p-1 rounded-md hover:bg-black/5 opacity-0 group-hover/card:opacity-100 transition-opacity text-red-500"
+                                className="absolute top-1 right-1 p-0.5 rounded-md hover:bg-black/5 opacity-0 group-hover/card:opacity-100 transition-opacity text-red-500"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   toast.info("Funcionalidade de exclusão em breve");
                                 }}
                               >
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Trash2 className="h-3 w-3" />
                               </button>
                             </motion.div>
                           ) : (
-                            <div className="absolute inset-[6px] rounded-[10px] border border-dashed border-transparent group-hover:border-blue-300 group-hover:bg-blue-50/40 transition-all flex items-center justify-center">
-                              <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[11px] font-bold text-blue-500 flex items-center gap-1">
+                            <div className="absolute inset-0 group-hover:bg-blue-50/30 transition-all flex items-center justify-center">
+                              <div className="opacity-0 group-hover:opacity-100 transition-all text-[10px] font-bold text-blue-500 flex items-center gap-1 scale-90 group-hover:scale-100">
                                 <Plus className="h-3 w-3" /> Reservar
                               </div>
                             </div>
@@ -317,6 +319,9 @@ const AgendaPage = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </div>
           </div>
         </div>
       </div>
