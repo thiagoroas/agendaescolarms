@@ -82,117 +82,125 @@ const AgendaPage = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12 animate-in fade-in duration-500">
-      <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black tracking-tight text-slate-900">Agenda de Recursos</h1>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full text-slate-400">
-                    <Info className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Visualize e reserve laboratórios, projetores e outros recursos da escola.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="flex items-center gap-3 text-sm font-medium text-slate-500">
-            <span className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold uppercase tracking-wider">
-              {escola?.nome}
+    <div className="flex flex-col h-screen overflow-hidden bg-white animate-in fade-in duration-500">
+      {/* Header Compacto */}
+      <header className="flex items-center justify-between h-[100px] px-8 border-b border-slate-200 bg-white shrink-0">
+        <div className="flex flex-col">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Agenda Escolar Digital</h1>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-xs font-semibold text-slate-500">{escola?.nome}</span>
+            <span className="text-slate-300">·</span>
+            <span className="text-xs font-semibold text-slate-500 capitalize">
+              {format(weekDates[0], "d 'de' MMM", { locale: ptBR })} - {format(weekDates[4], "d 'de' MMM", { locale: ptBR })}
             </span>
-            <span className="text-slate-300">|</span>
-            <span className="capitalize">{format(weekDates[0], "d 'de' MMM", { locale: ptBR })} - {format(weekDates[4], "d 'de' MMM", { locale: ptBR })}</span>
           </div>
         </div>
         
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input 
-              placeholder="Buscar professor ou turma..." 
-              className="pl-10 h-10 bg-slate-50 border-transparent focus:bg-white focus:border-blue-200 transition-all rounded-xl"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 hover:text-slate-600"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            )}
-          </div>
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl">
-            <Button variant="ghost" size="sm" className="h-8 rounded-lg font-bold" onClick={() => setCurrentDate(new Date())}>Hoje</Button>
-            <div className="flex items-center ml-1 gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => navigateWeek('prev')}><ChevronLeft className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => navigateWeek('next')}><ChevronRight className="h-4 w-4" /></Button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center bg-slate-100 p-1 rounded-lg mr-2">
+            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs font-bold rounded-md" onClick={() => setCurrentDate(new Date())}>Hoje</Button>
+            <div className="flex items-center ml-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md" onClick={() => navigateWeek('prev')}><ChevronLeft className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md" onClick={() => navigateWeek('next')}><ChevronRight className="h-4 w-4" /></Button>
             </div>
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700 h-10 px-5 rounded-xl shadow-lg shadow-blue-100 font-bold transition-all hover:scale-105 active:scale-95" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
-            <Plus className="mr-2 h-4 w-4 stroke-[3px]" />
+          
+          <Button variant="ghost" size="icon" className="relative h-10 w-10 text-slate-500 hover:bg-slate-50 rounded-full" aria-label="Notificações">
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-blue-600 rounded-full border-2 border-white"></span>
+          </Button>
+
+          <Button className="bg-blue-600 hover:bg-blue-700 h-10 px-4 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
+            <Plus className="mr-2 h-4 w-4" />
             Nova reserva
           </Button>
         </div>
       </header>
 
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-slate-400" />
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Filtrar Recurso</span>
-            <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-700 font-bold">{filteredReservationsCount} reservas</Badge>
-          </div>
-          
-          <div className="hidden lg:flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            <div className="flex items-center gap-1.5">
-              <div className="h-3 w-3 rounded bg-blue-500 shadow-sm shadow-blue-100"></div>
-              <span>Ativo</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="h-3 w-3 rounded border border-dashed border-slate-300"></div>
-              <span>Livre</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      {/* Área de Filtros e Busca */}
+      <div className="flex items-center justify-between px-8 py-4 border-b border-slate-100 bg-white shrink-0">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
           <button 
             className={cn(
-              "px-5 py-2 text-xs font-bold rounded-xl transition-all border",
+              "px-4 py-1.5 text-xs font-bold rounded-full transition-all",
               !selectedRecurso 
-                ? "bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-100" 
-                : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                ? "bg-slate-900 text-white shadow-sm" 
+                : "bg-slate-50 text-slate-500 hover:bg-slate-100"
             )}
             onClick={() => setSelectedRecurso(null)}
           >
-            Todos os Recursos
+            Todos
           </button>
           {schoolRecursos.map(r => (
             <button 
               key={r.id}
-              style={{ 
-                backgroundColor: selectedRecurso === r.id ? r.cor_fundo : 'white',
-                color: selectedRecurso === r.id ? r.cor_texto : '#64748b',
-                borderColor: selectedRecurso === r.id ? r.cor_borda : '#e2e8f0',
-                boxShadow: selectedRecurso === r.id ? `0 10px 15px -3px ${r.cor_borda}20` : 'none'
-              }}
               className={cn(
-                "px-5 py-2 text-xs font-bold rounded-xl transition-all border whitespace-nowrap",
-                selectedRecurso === r.id ? "scale-105" : "hover:border-slate-300 hover:bg-slate-50"
+                "px-4 py-1.5 text-xs font-bold rounded-full transition-all flex items-center gap-2 border whitespace-nowrap",
+                selectedRecurso === r.id 
+                  ? "border-slate-900 bg-white text-slate-900 shadow-sm" 
+                  : "border-transparent bg-slate-50 text-slate-500 hover:bg-slate-100"
               )}
               onClick={() => setSelectedRecurso(r.id)}
             >
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: r.cor_borda }}></div>
               {r.nome}
             </button>
           ))}
         </div>
+
+        <div className="flex items-center gap-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <Input 
+              placeholder="Buscar professor ou turma..." 
+              className="pl-9 h-8 w-56 bg-slate-50 border-transparent text-xs focus:bg-white transition-all rounded-lg"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            <span className="text-slate-900">{filteredReservationsCount} de {reservas.filter(r => r.escola_id === user?.escola_id).length} reservas</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                <span>Lab</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                <span>Projetor</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="h-2 w-2 rounded-full bg-amber-500"></div>
+                <span>Conflito</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Grade Semanal Compacta */}
+      <div className="flex-1 overflow-auto bg-white">
+        <div className="hidden md:block min-w-[1000px]">
+          {/* Cabeçalho de Dias */}
+          <div className="grid grid-cols-[130px_repeat(5,1fr)] border-b border-slate-100 bg-white sticky top-0 z-10">
+            <div className="h-20 border-r border-slate-100"></div>
+            {weekDates.map((date, i) => {
+              const isToday = isSameDay(date, new Date());
+              return (
+                <div key={i} className="h-20 flex flex-col items-center justify-center border-r border-slate-100 last:border-r-0">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{diasSemana[i].substring(0, 3)}</span>
+                  <div className={cn(
+                    "mt-1 text-2xl font-black relative",
+                    isToday ? "text-blue-600" : "text-slate-900"
+                  )}>
+                    {format(date, "d")}
+                    {isToday && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-blue-600 rounded-full"></div>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
       <div className="rounded-3xl border border-slate-100 bg-white shadow-xl shadow-slate-200/50 overflow-hidden hidden md:block">
         <div className="overflow-x-auto scrollbar-hide">
