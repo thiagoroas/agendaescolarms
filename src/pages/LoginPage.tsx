@@ -16,6 +16,10 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mostrarRecuperarSenha, setMostrarRecuperarSenha] = useState(false);
+  const [recuperarEmail, setRecuperarEmail] = useState("");
+  const [emailEnviado, setEmailEnviado] = useState(false);
+  const [isEnviando, setIsEnviando] = useState(false);
   
   const { login, user } = useAuth();
   const navigate = useNavigate();
