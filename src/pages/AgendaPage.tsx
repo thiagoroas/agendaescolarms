@@ -285,9 +285,9 @@ const AgendaPage = () => {
                               </button>
                             </motion.div>
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="px-2 py-1 rounded bg-blue-50 border border-dashed border-blue-200 text-[10px] font-bold text-blue-500 flex items-center gap-1">
-                                <Plus className="h-3 w-3" /> RESERVAR
+                            <div className="absolute inset-[6px] rounded-[10px] border border-dashed border-transparent group-hover:border-blue-300 group-hover:bg-blue-50/40 transition-all flex items-center justify-center">
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[11px] font-bold text-blue-500 flex items-center gap-1">
+                                <Plus className="h-3 w-3" /> Reservar
                               </div>
                             </div>
                           )}
