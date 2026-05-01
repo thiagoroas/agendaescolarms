@@ -83,45 +83,58 @@ const AgendaPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden animate-in fade-in duration-500" style={{ backgroundColor: '#f7f8fb' }}>
+    <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-500" style={{ backgroundColor: '#f7f8fb' }}>
       {/* Header Compacto - Estilo Cal.com */}
-      <header className="flex items-center justify-between h-[80px] px-8 border-b border-slate-200 bg-white shrink-0">
+      <header className="flex items-center justify-between h-16 px-8 border-b border-slate-200 bg-white shrink-0 z-20">
         <div className="flex flex-col">
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Agenda Escolar Digital</h1>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs font-medium text-slate-500">{escola?.nome}</span>
+          <h1 className="text-lg font-bold text-slate-900 tracking-tight leading-none">Agenda Escolar Digital</h1>
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{escola?.nome}</span>
             <span className="text-slate-300">·</span>
-            <span className="text-xs font-medium text-slate-500">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               {format(weekDates[0], "d 'de' MMM", { locale: ptBR })} - {format(weekDates[4], "d 'de' MMM", { locale: ptBR })}
             </span>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-9 px-4 text-xs font-semibold rounded-lg border-slate-200 hover:bg-slate-50" onClick={() => setCurrentDate(new Date())}>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 px-3 text-[11px] font-bold rounded-md border-slate-200 hover:bg-slate-50 transition-colors shadow-sm" 
+            onClick={() => setCurrentDate(new Date())}
+          >
             Hoje
           </Button>
           
-          <div className="flex items-center gap-1">
-            <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg border-slate-200 hover:bg-slate-50" onClick={() => navigateWeek('prev')}>
+          <div className="flex items-center bg-white border border-slate-200 rounded-md shadow-sm overflow-hidden">
+            <button 
+              className="p-1.5 hover:bg-slate-50 text-slate-600 transition-colors border-r border-slate-200"
+              onClick={() => navigateWeek('prev')}
+            >
               <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg border-slate-200 hover:bg-slate-50" onClick={() => navigateWeek('next')}>
+            </button>
+            <button 
+              className="p-1.5 hover:bg-slate-50 text-slate-600 transition-colors"
+              onClick={() => navigateWeek('next')}
+            >
               <ChevronRight className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
 
-          <div className="w-[1px] h-6 bg-slate-200 mx-2"></div>
+          <div className="w-[1px] h-4 bg-slate-200 mx-1"></div>
           
-          <Button variant="outline" size="icon" className="h-9 w-9 text-slate-500 border-slate-200 hover:bg-slate-50 rounded-lg relative" aria-label="Notificações">
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-blue-600 rounded-full border-2 border-white"></span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:bg-slate-50 rounded-md relative" aria-label="Notificações">
+              <Bell className="h-4 w-4" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-blue-600 rounded-full ring-2 ring-white"></span>
+            </Button>
 
-          <Button className="bg-blue-600 hover:bg-blue-700 h-9 px-4 rounded-lg font-bold text-xs shadow-sm ml-2 transition-all active:scale-95" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            Nova reserva
-          </Button>
+            <Button className="bg-blue-600 hover:bg-blue-700 h-8 px-3 rounded-md font-bold text-[11px] shadow-sm transition-all active:scale-95 text-white" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
+              <Plus className="mr-1 h-3.5 w-3.5" />
+              Nova reserva
+            </Button>
+          </div>
         </div>
       </header>
 
