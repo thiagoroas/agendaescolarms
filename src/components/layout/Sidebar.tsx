@@ -67,8 +67,12 @@ const Sidebar = () => {
               )
             }
           >
-            <item.icon className={cn("h-4 w-4 transition-transform", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
-            {item.label}
+            {({ isActive }) => (
+              <>
+                <item.icon className={cn("h-4 w-4 transition-transform", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
+                {item.label}
+              </>
+            )}
           </NavLink>
         ))}
 
@@ -89,8 +93,12 @@ const Sidebar = () => {
                     )
                   }
                 >
-                  <item.icon className={cn("h-4 w-4 transition-transform", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
-                  {item.label}
+                  {({ isActive }) => (
+                    <>
+                      <item.icon className={cn("h-4 w-4 transition-transform", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
+                      {item.label}
+                    </>
+                  )}
                 </NavLink>
               ))}
             </div>
@@ -114,8 +122,12 @@ const Sidebar = () => {
                     )
                   }
                 >
-                  <item.icon className={cn("h-4 w-4 transition-transform", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
-                  {item.label}
+                  {({ isActive }) => (
+                    <>
+                      <item.icon className={cn("h-4 w-4 transition-transform", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
+                      {item.label}
+                    </>
+                  )}
                 </NavLink>
               ))}
             </div>
