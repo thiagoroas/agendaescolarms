@@ -63,7 +63,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg overflow-y-auto max-h-[90vh]">
+      <DialogContent className="max-w-lg w-full mx-auto md:mx-0 overflow-y-auto max-h-[95vh] sm:max-h-[90vh] p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Nova reserva</DialogTitle>
         </DialogHeader>
