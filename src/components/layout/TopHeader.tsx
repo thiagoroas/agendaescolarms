@@ -1,6 +1,6 @@
 import { useAuth } from "../../contexts/AuthContext";
-import { escolas } from "../../data/mockData";
-import { Building, ChevronRight } from "lucide-react";
+import { useEscolas } from "@/hooks/useEscolas";
+import { Building, ChevronRight, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
@@ -13,6 +13,8 @@ import { toast } from "sonner";
 
 const TopHeader = () => {
   const { profile, selectedEscolaId, setSelectedEscolaId } = useAuth();
+  const { escolas, loading } = useEscolas();
+  
   const escola = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
   const isAdminPlataforma = profile?.role === "admin_plataforma";
 
