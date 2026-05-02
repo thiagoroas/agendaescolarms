@@ -279,39 +279,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    if (isSupabaseConfigured) {
-      await supabase.auth.signOut();
+    console.log("[AUTH] Iniciando logout seguro...");
+    try {
+      if (isSupabaseConfigured) {
+        await supabase.auth.signOut();
+      }
+    } catch (err) {
+      console.error("[AUTH] Erro ao deslogar do Supabase:", err);
     }
     
+    // Limpar estados locais
     setUser(null);
     setProfile(null);
     setSelectedEscolaIdState(null);
+    setLoading(false);
+    setProfileLoading(false);
     
-    // Clear all session storage
-    localStorage.removeItem("agenda_mock_user");
-    localStorage.removeItem("agenda_mock_profile");
-    localStorage.removeItem("agenda_selected_escola_id");
-    localStorage.removeItem("agenda_remembered_email");
-    localStorage.removeItem("agenda_remembered_password");
-    
-    // Also clear any other related session items but NOT the mock database
-    const sessionKeys = [
-      "agenda_mock_user",
-      "agenda_mock_profile",
-      "agenda_selected_escola_id",
-      "agenda_remembered_email",
-      "agenda_remembered_password"
-    ];
-    
-    sessionKeys.forEach(key => localStorage.removeItem(key));
-    
-    // Clear Supabase keys
+    // Limpar apenas chaves de sessão específicas do Supabase no localStorage
+    const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith("sb-")) {
-        localStorage.removeItem(key);
+      if (key && (key.startsWith("sb-") || key.includes("supabase.auth.token"))) {
+        keysToRemove.push(key);
       }
     }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+
+    // Limpar dados de sessão mock se existirem
+    localStorage.removeItem("agenda_mock_user");
+    localStorage.removeItem("agenda_mock_profile");
+    
+    console.log("[AUTH] Logout concluído.");
   };
 
   const updateProfile = (updatedProfile: Partial<Profile>) => {
