@@ -212,7 +212,7 @@ const LoginPage = () => {
         )}
       </div>
 
-      {!isSupabaseConfigured && (
+      {/* {!isSupabaseConfigured && (
         <div className="md:fixed md:bottom-4 md:right-4 w-full max-w-md md:max-w-sm rounded-xl bg-white p-4 shadow-xl border border-blue-100 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-4 mx-auto md:mx-0">
           <div className="mb-3">
             <h3 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
@@ -261,7 +261,7 @@ const LoginPage = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       <footer className="w-full py-6 mt-auto text-center">
         <p className="text-sm text-slate-500">
