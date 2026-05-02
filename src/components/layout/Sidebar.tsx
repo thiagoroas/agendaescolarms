@@ -11,59 +11,93 @@ import {
   Building2, 
   LogOut,
   LayoutDashboard,
-  CheckCircle
+  CheckCircle,
+  ChevronDown,
+  Building
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const Sidebar = () => {
-  const { user, profile, logout, selectedEscolaId, setSelectedEscolaId } = useAuth();
+  const { profile, logout, selectedEscolaId, setSelectedEscolaId } = useAuth();
   const escola = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
 
+  const handleEscolaChange = (id: string) => {
+    const novaEscola = escolas.find(e => e.id === id);
+    setSelectedEscolaId(id);
+    if (novaEscola) {
+      toast.success(`Escola ativa alterada para ${novaEscola.nome}`);
+    }
+  };
+
   const menuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-    { icon: Calendar, label: "Agenda", path: "/agenda" },
-    { icon: BookOpen, label: "Minhas Reservas", path: "/minhas-reservas" },
-    { icon: User, label: "Perfil", path: "/perfil" },
-  ];
-
-  const adminItems = [
-    { icon: CheckCircle, label: "Aprovações", path: "/admin/aprovacoes", roles: ["admin_lab", "admin_plataforma"] },
-    { icon: Users, label: "Professores", path: "/admin/professores", roles: ["admin_lab", "admin_plataforma"] },
-    { icon: Monitor, label: "Recursos", path: "/admin/recursos", roles: ["admin_lab", "admin_plataforma"] },
-    { icon: ClipboardList, label: "Todas as Reservas", path: "/admin/reservas", roles: ["admin_lab", "admin_plataforma"] },
-  ];
-
-  const platformItems = [
-    { icon: Building2, label: "Escolas", path: "/admin/escolas", roles: ["admin_plataforma"] },
-  ];
-
+// ... keep existing code
   const filteredAdmin = adminItems.filter(i => i.roles.includes(profile?.role || ""));
   const filteredPlatform = platformItems.filter(i => i.roles?.includes(profile?.role || ""));
 
   return (
     <aside className="fixed left-0 top-0 hidden h-full w-[264px] flex-col border-r bg-white md:flex z-40">
       <div className="flex flex-col p-5">
-        <div className="flex items-center gap-3 mb-1">
+        <div className="flex items-center gap-3 mb-6">
           <div className="rounded-lg bg-blue-600 p-2 text-white shadow-sm">
             <Calendar className="h-5 w-5" />
           </div>
           <span className="text-lg font-bold tracking-tight text-slate-900">Agenda Escolar</span>
         </div>
+
         {profile?.role === "admin_plataforma" ? (
-          <div className="mt-1">
-            <select 
-              value={selectedEscolaId || ""} 
-              onChange={(e) => setSelectedEscolaId(e.target.value)}
-              className="w-full text-xs bg-slate-50 border-none text-slate-600 font-medium px-0.5 focus:ring-0 cursor-pointer"
-            >
-              {escolas.map(e => (
-                <option key={e.id} value={e.id}>{e.nome}</option>
-              ))}
-            </select>
+          <div className="mb-2">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block px-1">
+              Escola ativa
+            </label>
+            <div className="relative group">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50/50 border border-blue-100 hover:bg-blue-50 transition-colors cursor-pointer group-focus-within:ring-2 group-focus-within:ring-blue-100 group-focus-within:border-blue-200">
+                <div className="bg-blue-600 rounded-lg p-1.5 text-white shrink-0">
+                  <Building className="h-3.5 w-3.5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1">
+                    <p className="text-xs font-bold text-slate-900 truncate leading-none">
+                      {escola?.nome || "Selecione..."}
+                    </p>
+                    <ChevronDown className="h-3 w-3 text-slate-400 shrink-0" />
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5 truncate leading-none">
+                    Troque para gerenciar outra
+                  </p>
+                </div>
+              </div>
+              <select 
+                value={selectedEscolaId || ""} 
+                onChange={(e) => handleEscolaChange(e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              >
+                {escolas.map(e => (
+                  <option key={e.id} value={e.id}>{e.nome}</option>
+                ))}
+              </select>
+            </div>
           </div>
         ) : (
-          <p className="text-xs text-slate-500 font-medium px-0.5 truncate">{escola?.nome || "Sem Escola"}</p>
+          <div className="mb-2">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block px-1">
+              Minha escola
+            </label>
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div className="bg-slate-400 rounded-lg p-1.5 text-white shrink-0">
+                <Building className="h-3.5 w-3.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-slate-900 truncate leading-none">
+                  {escola?.nome || "Sem Escola"}
+                </p>
+                <p className="text-[10px] text-slate-500 mt-0.5 truncate leading-none capitalize">
+                  {profile?.role.replace("_", " ")}
+                </p>
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
