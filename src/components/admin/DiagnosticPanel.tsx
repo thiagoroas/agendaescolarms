@@ -1,53 +1,62 @@
 import { useState, useEffect } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, CheckCircle2, Server, Shield, User, Globe } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, CheckCircle2, Server, Shield, User, Globe, RefreshCcw, Terminal, Lock } from "lucide-react";
 
 export const DiagnosticPanel = () => {
   const { user, profile } = useAuth();
-  const [edgeFunctionStatus, setEdgeFunctionStatus] = useState<"checking" | "ok" | "error" | "unauthorized">("checking");
+  const [edgeFunctionStatus, setEdgeFunctionStatus] = useState<"idle" | "checking" | "ok" | "error" | "unauthorized">("idle");
   const [edgeError, setEdgeError] = useState<string | null>(null);
+  const [lastResponse, setLastResponse] = useState<any>(null);
+  const [tokenSent, setTokenSent] = useState<boolean>(false);
 
-  useEffect(() => {
-    const checkEdgeFunction = async () => {
-      if (!isSupabaseConfigured || !user) {
-        setEdgeFunctionStatus("unauthorized");
-        return;
-      }
+  const checkEdgeFunction = async () => {
+    if (!isSupabaseConfigured || !user) {
+      setEdgeFunctionStatus("unauthorized");
+      return;
+    }
 
-      try {
-        // Try to call with an invalid action just to see if it responds (CORS check and connectivity)
-        const { data, error } = await supabase.functions.invoke('manage-user', {
-          body: { action: 'ping' } 
-        });
+    setEdgeFunctionStatus("checking");
+    setEdgeError(null);
+    setLastResponse(null);
+    
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      setTokenSent(!!sessionData.session?.access_token);
 
-        // We expect an error "Invalid action" but status 400 or 200 means it's reachable
-        if (error) {
-          if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")) {
-            setEdgeFunctionStatus("error");
-            setEdgeError("Não foi possível alcançar a Edge Function (Network Error/Not Deployed)");
-          } else {
-            // If we got a response from the function (even an error message like "Invalid action")
-            setEdgeFunctionStatus("ok");
-          }
-        } else if (data?.error) {
-           // Function responded with an error object
-           setEdgeFunctionStatus("ok");
+      const { data, error } = await supabase.functions.invoke('manage-user', {
+        body: { action: 'ping' } 
+      });
+
+      setLastResponse(data || error);
+
+      if (error) {
+        if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")) {
+          setEdgeFunctionStatus("error");
+          setEdgeError("Não foi possível alcançar a Edge Function (Network Error/Not Deployed)");
         } else {
           setEdgeFunctionStatus("ok");
         }
-      } catch (err: any) {
-        setEdgeFunctionStatus("error");
-        setEdgeError(err.message || "Erro desconhecido");
+      } else if (data?.error) {
+        setEdgeFunctionStatus("ok");
+      } else {
+        setEdgeFunctionStatus("ok");
       }
-    };
+    } catch (err: any) {
+      setEdgeFunctionStatus("error");
+      setEdgeError(err.message || "Erro desconhecido");
+      setLastResponse(err);
+    }
+  };
 
-    if (isSupabaseConfigured && user && profile?.role === "admin_plataforma") {
+  useEffect(() => {
+    if (isSupabaseConfigured && user && profile?.role === "admin_plataforma" && edgeFunctionStatus === "idle") {
       checkEdgeFunction();
     }
-  }, [user, profile]);
+  }, [user, profile, edgeFunctionStatus]);
 
   if (profile?.role !== "admin_plataforma") return null;
 
@@ -123,27 +132,69 @@ export const DiagnosticPanel = () => {
             <Server className="h-4 w-4 text-slate-400" />
             <span className="text-xs font-medium">Edge Function (manage-user)</span>
           </div>
-          {edgeFunctionStatus === "checking" && (
-            <span className="text-xs text-slate-400 animate-pulse">Testando conectividade...</span>
-          )}
-          {edgeFunctionStatus === "ok" && (
-            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
-              <CheckCircle2 className="h-3 w-3" /> Acessível
-            </Badge>
-          )}
-          {edgeFunctionStatus === "error" && (
-            <div className="flex flex-col items-end">
-              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 gap-1">
-                <AlertCircle className="h-3 w-3" /> Erro/Não Deployada
+          <div className="flex items-center gap-2">
+            {edgeFunctionStatus === "checking" && (
+              <span className="text-xs text-slate-400 animate-pulse">Testando...</span>
+            )}
+            {edgeFunctionStatus === "ok" && (
+              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
+                <CheckCircle2 className="h-3 w-3" /> Acessível
               </Badge>
-              {edgeError && <span className="text-[10px] text-red-500 mt-1">{edgeError}</span>}
-            </div>
-          )}
-          {edgeFunctionStatus === "unauthorized" && (
-            <span className="text-xs text-slate-400">Requer Login Supabase</span>
-          )}
+            )}
+            {edgeFunctionStatus === "error" && (
+              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 gap-1">
+                <AlertCircle className="h-3 w-3" /> Erro
+              </Badge>
+            )}
+            {edgeFunctionStatus === "unauthorized" && (
+              <span className="text-xs text-slate-400">Requer Login</span>
+            )}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 w-7 p-0" 
+              onClick={() => checkEdgeFunction()}
+              disabled={edgeFunctionStatus === "checking"}
+            >
+              <RefreshCcw className={`h-3 w-3 ${edgeFunctionStatus === "checking" ? "animate-spin" : ""}`} />
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
+          <div className="flex items-center gap-2">
+            <Lock className="h-4 w-4 text-slate-400" />
+            <span className="text-xs font-medium">Auth Token Sent</span>
+          </div>
+          <Badge variant="outline" className={tokenSent ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
+            {tokenSent ? "Sim" : "Não"}
+          </Badge>
         </div>
       </CardContent>
+
+      {(edgeError || lastResponse) && (
+        <CardFooter className="flex flex-col items-start bg-slate-50 border-t border-blue-100 p-4 gap-3">
+          {edgeError && (
+            <div className="w-full p-2 bg-red-50 border border-red-100 rounded text-[10px] text-red-700 font-mono">
+              <strong>Erro:</strong> {edgeError}
+            </div>
+          )}
+          
+          {lastResponse && (
+            <div className="w-full">
+              <span className="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Última Resposta (JSON):</span>
+              <pre className="p-2 bg-slate-900 text-slate-300 rounded text-[10px] font-mono overflow-auto max-h-32 w-full">
+                {JSON.stringify(lastResponse, null, 2)}
+              </pre>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 text-[10px] text-blue-700 bg-blue-100/50 p-2 rounded w-full">
+            <Terminal className="h-3 w-3 shrink-0" />
+            <span>Se aparecer erro, faça deploy com: <strong>supabase functions deploy manage-user</strong></span>
+          </div>
+        </CardFooter>
+      )}
     </Card>
   );
 };
