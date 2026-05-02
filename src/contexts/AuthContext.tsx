@@ -94,6 +94,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = async (userId: string) => {
     setProfileLoading(true);
     try {
+      if (import.meta.env.DEV || true) {
+        console.log("AuthContext: Buscando perfil para ID:", userId, "User email:", user?.email);
+      }
+
       // First try real profiles table
       const { data, error } = await supabase
         .from("profiles")
@@ -102,30 +106,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (error) {
-        // Se o erro for de RLS ou outro erro real, logamos
-        if (error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-          console.error("Erro real ao buscar perfil no Supabase:", error.message, error.code);
-        } else {
-          console.warn("Perfil não encontrado no banco (PGRST116), verificando mock...");
-        }
+        console.error("AuthContext: Erro ao buscar perfil no Supabase:", error.message, "Código:", error.code);
         
-        // Fallback for transition: if not in Supabase, check if mock exists
-        const savedProfile = localStorage.getItem("agenda_mock_profile");
-        if (savedProfile) {
-          const parsed = JSON.parse(savedProfile);
-          if (parsed.id === userId) {
-            setProfile(parsed);
-            const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
-            setSelectedEscolaIdState(savedEscolaId || parsed.escola_id);
-            setProfileLoading(false);
-            setLoading(false);
-            return;
+        // APENAS se o Supabase real NÃO estiver configurado, verificamos mock
+        if (!isSupabaseConfigured) {
+          const savedProfile = localStorage.getItem("agenda_mock_profile");
+          if (savedProfile) {
+            const parsed = JSON.parse(savedProfile);
+            if (parsed.id === userId) {
+              setProfile(parsed);
+              const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
+              setSelectedEscolaIdState(savedEscolaId || parsed.escola_id);
+              setProfileLoading(false);
+              setLoading(false);
+              return;
+            }
           }
         }
         
-        // Se chegou aqui e é Supabase, e não achou nem no mock, limpamos o perfil
         setProfile(null);
         throw error;
+      }
+
+      if (data) {
+        if (import.meta.env.DEV || true) {
+          console.log("AuthContext: Perfil encontrado no banco:", data.nome, "Status:", data.status);
+        }
+      } else {
+        console.warn("AuthContext: Perfil retornado como null, limpando estado...");
+        setProfile(null);
+        return;
       }
 
       // Map real profile to App's Profile interface
@@ -143,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
       setSelectedEscolaIdState(savedEscolaId || data.escola_id);
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("AuthContext: Exceção no fetchProfile:", error);
       setProfile(null);
     } finally {
       setProfileLoading(false);
