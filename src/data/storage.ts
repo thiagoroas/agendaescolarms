@@ -1,5 +1,8 @@
 import { Escola, Usuario, Recurso, Reserva, escolas as initialEscolas, usuarios as initialUsuarios, recursos as initialRecursos, reservas as initialReservas } from "./mockData";
 
+// Flag to prevent clearing localStorage unless explicitly asked
+const INITIALIZED_KEY = "agenda_app_initialized";
+
 const STORAGE_KEYS = {
   ESCOLAS: "agenda_mock_escolas",
   USUARIOS: "agenda_mock_usuarios",
@@ -8,7 +11,19 @@ const STORAGE_KEYS = {
 };
 
 function getFromStorage<T>(key: string, defaultValue: T): T {
+  const isInitialized = localStorage.getItem(INITIALIZED_KEY);
   const stored = localStorage.getItem(key);
+  
+  // Se ainda não inicializado no navegador e não existe dado salvo, persiste o mock inicial
+  if (!isInitialized && !stored) {
+    localStorage.setItem(key, JSON.stringify(defaultValue));
+    // Marca como inicializado após processar os usuários (garante persistência futura)
+    if (key === STORAGE_KEYS.USUARIOS) {
+      localStorage.setItem(INITIALIZED_KEY, "true");
+    }
+    return defaultValue;
+  }
+  
   if (!stored) return defaultValue;
   try {
     return JSON.parse(stored);
@@ -35,6 +50,7 @@ export const getMockReservas = () => getFromStorage<Reserva[]>(STORAGE_KEYS.RESE
 export const saveMockReservas = (data: Reserva[]) => saveToStorage(STORAGE_KEYS.RESERVAS, data);
 
 export const resetMockData = () => {
+  localStorage.removeItem(INITIALIZED_KEY);
   localStorage.removeItem(STORAGE_KEYS.ESCOLAS);
   localStorage.removeItem(STORAGE_KEYS.USUARIOS);
   localStorage.removeItem(STORAGE_KEYS.RECURSOS);
