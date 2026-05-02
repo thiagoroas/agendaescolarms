@@ -112,12 +112,15 @@ export const recursos: Recurso[] = [
 
 function getWeekDates(): string[] {
   const today = new Date();
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  const day = today.getDay();
+  // Se for sábado (6) ou domingo (0), mostra a próxima semana
+  // Caso contrário, mostra a semana atual (seg-sex)
+  const baseDate = (day === 0 || day === 6) ? addDays(today, (8 - day) % 7) : today;
+  
+  const monday = startOfWeek(baseDate, { weekStartsOn: 1 });
   return Array.from({ length: 5 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return d.toISOString().split("T")[0];
+    const d = addDays(monday, i);
+    return format(d, "yyyy-MM-dd");
   });
 }
 
