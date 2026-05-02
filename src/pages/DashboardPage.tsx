@@ -378,7 +378,7 @@ const DashboardPage = () => {
       </div>
 
       {/* Seção Admin Plataforma: Modo Protótipo */}
-      {/* {profile?.role === "admin_plataforma" && !isSupabaseConfigured && (
+      {profile?.role === "admin_plataforma" && !isSupabaseConfigured && (
         <div className="mt-12 pt-8 border-t border-slate-100 animate-in slide-in-from-bottom duration-700">
           <div className="bg-slate-50 rounded-[2.5rem] p-8 md:p-10 border border-slate-200 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
@@ -388,7 +388,7 @@ const DashboardPage = () => {
                     <Trash2 size={22} />
                   </div>
                   Modo Protótipo
-                </h3> */}
+                </h3>
                 <p className="text-sm font-medium text-slate-500 max-w-xl leading-relaxed">
                   Use esta opção apenas antes de iniciar um novo teste piloto. Isso restaurará as configurações e dados iniciais do sistema, removendo todas as alterações feitas nesta sessão de demonstração.
                 </p>
