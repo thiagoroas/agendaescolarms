@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useAvisos } from "@/hooks/useAvisos";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { useAuth } from "../../contexts/AuthContext";
 import { Usuario, Reserva } from "../../data/mockData";
-import { getMockUsuarios, getMockReservas, getMockAvisos } from "../../data/storage";
+import { getMockUsuarios, getMockReservas } from "../../data/storage";
 import { useRecursos } from "@/hooks/useRecursos";
 import { useReservas } from "@/hooks/useReservas";
 import { supabase, isSupabaseConfigured } from "../../lib/supabase";
@@ -50,6 +51,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
   const { user, profile } = useAuth();
   const { recursos: availableRecursos } = useRecursos();
   const { createReserva } = useReservas();
+  const { avisos: avisosState, loading: loadingAvisos } = useAvisos();
 
   const [formData, setFormData] = useState({
     professorId: "",
@@ -67,7 +69,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
   const [conflictingAulas, setConflictingAulas] = useState<number[]>([]);
   const [avisosConfirmados, setAvisosConfirmados] = useState<Record<string, boolean>>({});
 
-  const avisosState = useMemo(() => getMockAvisos(), [isOpen]);
+  // avisosState is now loaded via useAvisos hook
   
   const currentSchoolId = profile?.escola_id;
 

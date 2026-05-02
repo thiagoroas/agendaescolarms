@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { getMockAvisos, saveMockAvisos, createMockAviso, updateMockAviso, deleteMockAviso, getMockRecursos } from "../data/storage";
 import { useRecursos } from "@/hooks/useRecursos";
-import { AvisoLaboratorio, Recurso } from "../data/mockData";
+import { useAvisos } from "@/hooks/useAvisos";
+import { AvisoLaboratorio } from "../data/mockData";
 import { Button } from "@/components/ui/button";
-import { Plus, Bell, Edit2, Trash2, Power, PowerOff, Filter, Calendar as CalendarIcon, Clock, CheckCircle2, AlertTriangle, Info } from "lucide-react";
+import { Plus, Edit2, Trash2, Power, PowerOff, Filter, AlertTriangle, Info, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -16,13 +16,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
 
 const AdminAvisosPage = () => {
   const { profile, selectedEscolaId } = useAuth();
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
   
-  const [avisos, setAvisos] = useState<AvisoLaboratorio[]>([]);
+  const { avisos, loading: loadingAvisos, createAviso, updateAviso, deleteAviso, toggleAvisoAtivo } = useAvisos();
   const { recursos, loading: loadingRecursos } = useRecursos();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAviso, setEditingAviso] = useState<AvisoLaboratorio | null>(null);
@@ -47,14 +46,7 @@ const AdminAvisosPage = () => {
     ativo: true
   });
 
-  useEffect(() => {
-    setAvisos(getMockAvisos());
-  }, [currentEscolaId]);
-
-
-  const schoolAvisos = avisos.filter(a => a.escola_id === currentEscolaId);
-  
-  const filteredAvisos = schoolAvisos.filter(a => {
+  const filteredAvisos = avisos.filter(a => {
     if (filtroAtivo === "ativo" && !a.ativo) return false;
     if (filtroAtivo === "inativo" && a.ativo) return false;
     if (filtroTipo !== "todos" && a.tipo !== filtroTipo) return false;
@@ -100,7 +92,7 @@ const AdminAvisosPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.titulo.trim() || !formData.mensagem.trim()) {
       toast.error("Preencha título e mensagem");
@@ -115,29 +107,22 @@ const AdminAvisosPage = () => {
     };
 
     if (editingAviso) {
-      updateMockAviso(editingAviso.id, data);
-      toast.success("Aviso atualizado com sucesso!");
+      await updateAviso(editingAviso.id, data);
     } else {
-      createMockAviso(data);
-      toast.success("Aviso criado com sucesso!");
+      await createAviso(data);
     }
 
-    setAvisos(getMockAvisos());
     setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Deseja realmente excluir este aviso?")) {
-      deleteMockAviso(id);
-      setAvisos(getMockAvisos());
-      toast.success("Aviso excluído");
+      await deleteAviso(id);
     }
   };
 
-  const toggleAtivo = (id: string, currentStatus: boolean) => {
-    updateMockAviso(id, { ativo: !currentStatus });
-    setAvisos(getMockAvisos());
-    toast.success(currentStatus ? "Aviso desativado" : "Aviso ativado");
+  const toggleAtivo = async (id: string, currentStatus: boolean) => {
+    await toggleAvisoAtivo(id, currentStatus);
   };
 
   const getTipoInfo = (tipo: string) => {
