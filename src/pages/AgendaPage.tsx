@@ -115,12 +115,8 @@ const AgendaPage = () => {
   };
 
   const filteredReservationsCount = useMemo(() => {
-    const today = new Date();
-    const mondayOfCurrentDate = startOfWeek(currentDate, { weekStartsOn: 1 });
-    const fridayOfCurrentDate = addDays(mondayOfCurrentDate, 4);
-    
-    const mondayStr = format(mondayOfCurrentDate, "yyyy-MM-dd");
-    const fridayStr = format(fridayOfCurrentDate, "yyyy-MM-dd");
+    const mondayStr = format(monday, "yyyy-MM-dd");
+    const fridayStr = format(weekDates[4], "yyyy-MM-dd");
     
     const list = isSupabaseConfigured ? initialReservas : reservasState;
     return list.filter(r =>
