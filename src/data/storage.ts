@@ -1,4 +1,4 @@
-import { Escola, Usuario, Recurso, Reserva, escolas as initialEscolas, usuarios as initialUsuarios, recursos as initialRecursos, reservas as initialReservas } from "./mockData";
+import { Escola, Usuario, Recurso, Reserva, AvisoLaboratorio, escolas as initialEscolas, usuarios as initialUsuarios, recursos as initialRecursos, reservas as initialReservas } from "./mockData";
 
 // Flag to prevent clearing localStorage unless explicitly asked
 const INITIALIZED_KEY = "agenda_app_initialized";
@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   USUARIOS: "agenda_mock_usuarios",
   RECURSOS: "agenda_mock_recursos",
   RESERVAS: "agenda_mock_reservas",
+  AVISOS: "agenda_mock_avisos",
 };
 
 function getFromStorage<T>(key: string, defaultValue: T): T {
@@ -49,11 +50,37 @@ export const saveMockRecursos = (data: Recurso[]) => saveToStorage(STORAGE_KEYS.
 export const getMockReservas = () => getFromStorage<Reserva[]>(STORAGE_KEYS.RESERVAS, initialReservas);
 export const saveMockReservas = (data: Reserva[]) => saveToStorage(STORAGE_KEYS.RESERVAS, data);
 
+export const getMockAvisos = () => getFromStorage<AvisoLaboratorio[]>(STORAGE_KEYS.AVISOS, []);
+export const saveMockAvisos = (data: AvisoLaboratorio[]) => saveToStorage(STORAGE_KEYS.AVISOS, data);
+
+export const createMockAviso = (aviso: Omit<AvisoLaboratorio, "id" | "criado_em">) => {
+  const avisos = getMockAvisos();
+  const novoAviso: AvisoLaboratorio = {
+    ...aviso,
+    id: `aviso-${Date.now()}`,
+    criado_em: new Date().toISOString()
+  };
+  saveMockAvisos([...avisos, novoAviso]);
+  return novoAviso;
+};
+
+export const updateMockAviso = (id: string, updates: Partial<AvisoLaboratorio>) => {
+  const avisos = getMockAvisos();
+  const novosAvisos = avisos.map(a => a.id === id ? { ...a, ...updates } : a);
+  saveMockAvisos(novosAvisos);
+};
+
+export const deleteMockAviso = (id: string) => {
+  const avisos = getMockAvisos();
+  saveMockAvisos(avisos.filter(a => a.id !== id));
+};
+
 export const resetMockData = () => {
   localStorage.removeItem(INITIALIZED_KEY);
   localStorage.removeItem(STORAGE_KEYS.ESCOLAS);
   localStorage.removeItem(STORAGE_KEYS.USUARIOS);
   localStorage.removeItem(STORAGE_KEYS.RECURSOS);
   localStorage.removeItem(STORAGE_KEYS.RESERVAS);
+  localStorage.removeItem(STORAGE_KEYS.AVISOS);
   window.location.reload();
 };

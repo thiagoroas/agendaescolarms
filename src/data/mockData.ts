@@ -31,6 +31,26 @@ export interface Recurso {
 
 export type ReservaStatus = "confirmada" | "cancelada" | "finalizada" | "manutencao" | "bloqueada" | "pendente" | "aprovada" | "recusada";
 
+export interface AvisoLaboratorio {
+  id: string;
+  escola_id: string;
+  recurso_id?: string;
+  titulo: string;
+  mensagem: string;
+  tipo: "informativo" | "atencao" | "urgente";
+  ativo: boolean;
+  data_inicio: string;
+  data_fim: string;
+  hora_inicio?: string;
+  hora_fim?: string;
+  exibir_na_agenda: boolean;
+  exibir_no_modal_reserva: boolean;
+  exibir_no_dashboard: boolean;
+  exigir_confirmacao: boolean;
+  criado_por: string;
+  criado_em: string;
+}
+
 export interface Reserva {
   id: string;
   escola_id: string;
@@ -48,6 +68,8 @@ export interface Reserva {
   status: ReservaStatus;
   motivo_recusa?: string;
   criado_em: string;
+  aviso_confirmado_id?: string;
+  aviso_confirmado_em?: string;
 }
 
 export const escolas: Escola[] = [
