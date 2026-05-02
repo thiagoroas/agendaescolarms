@@ -10,7 +10,7 @@ import { Reserva, Recurso, AvisoLaboratorio } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
 import { useRecursos } from "@/hooks/useRecursos";
 import { useReservas } from "@/hooks/useReservas";
-import { getMockEscolas, resetMockData, getMockAvisos, getMockRecursos } from "../data/storage";
+import { getMockEscolas, resetMockData, getMockAvisos, getMockRecursos, getMockReservas } from "../data/storage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { horarios, diasSemana } from "../data/horarios";
@@ -19,7 +19,36 @@ import NovaReservaModal from "../components/reservas/NovaReservaModal";
 import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
 import RelatorioReservasModal from "../components/reservas/RelatorioReservasModal";
 import "./agenda.css";
-// ... (keep helper functions)
+
+const tipoColor = (tipo: string) => {
+  switch (tipo) {
+    case "laboratorio": return "c-blue";
+    case "projetor":
+    case "equipamento": return "c-green";
+    case "biblioteca": return "c-amber";
+    case "auditorio": return "c-purple";
+    case "quadra": return "c-pink";
+    case "sala": return "c-amber";
+    default: return "c-blue";
+  }
+};
+
+const tipoSwatch = (tipo: string) => {
+  switch (tipo) {
+    case "laboratorio": return "var(--accent-blue)";
+    case "projetor":
+    case "equipamento": return "var(--accent-green)";
+    case "biblioteca": return "var(--accent-amber)";
+    case "auditorio": return "var(--accent-purple)";
+    case "quadra": return "var(--accent-pink)";
+    case "sala": return "var(--accent-amber)";
+    default: return "var(--accent-blue)";
+  }
+};
+
+const initialsOf = (name: string) =>
+  name.split(" ").filter(Boolean).slice(0, 2).map(n => n[0]?.toUpperCase()).join("");
+
 const AgendaPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
   const { escolas: allEscolas, loading: loadingEscolas } = useEscolas();
