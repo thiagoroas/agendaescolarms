@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { recursos as initialRecursos, Recurso } from "../data/mockData";
-import { getMockRecursos, saveMockRecursos } from "../data/storage";
+import { Recurso } from "../data/mockData";
+import { useRecursos } from "@/hooks/useRecursos";
 import { Button } from "@/components/ui/button";
-import { Plus, Monitor, Laptop, Projector, Settings2, School, Users, Info } from "lucide-react";
+import { Plus, Monitor, Laptop, Projector, Settings2, School, Trash2, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -13,21 +13,18 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const AdminRecursosPage = () => {
-  const { profile } = useAuth();
-  const [localRecursos, setLocalRecursos] = useState<Recurso[]>([]);
+  const { profile, selectedEscolaId } = useAuth();
+  const { recursos, loading, createRecurso, updateRecurso, toggleRecursoAtivo, deleteRecurso } = useRecursos();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingRecurso, setEditingRecurso] = useState<Recurso | null>(null);
   
   const [nome, setNome] = useState("");
   const [tipo, setTipo] = useState("outro");
   const [corPersonalizada, setCorPersonalizada] = useState<string | null>(null);
 
-  useEffect(() => {
-    setLocalRecursos(getMockRecursos());
-  }, []);
-
-  const schoolRecursos = localRecursos.filter(r => r.escola_id === profile?.escola_id);
 
   const categorias = [
     { value: "laboratorio", label: "Laboratório", cor_fundo: "#DBEAFE", cor_texto: "#1E40AF", cor_borda: "#93C5FD" },
