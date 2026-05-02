@@ -101,7 +101,7 @@ const DashboardPage = () => {
     });
     
     if (profile?.role === "professor") {
-      list = list.filter(r => r.professor_id === user?.id);
+      list = list.filter(r => r.profile_id === user?.id);
     }
     
     return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, 5);
