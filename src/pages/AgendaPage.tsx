@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { escolas as initialEscolas, recursos as initialRecursos, reservas as initialReservas, Reserva, Recurso, AvisoLaboratorio } from "../data/mockData";
+import { recursos as initialRecursos, reservas as initialReservas, Reserva, Recurso, AvisoLaboratorio } from "../data/mockData";
+import { useEscolas } from "@/hooks/useEscolas";
 import { getMockEscolas, getMockRecursos, getMockReservas, resetMockData, getMockAvisos } from "../data/storage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -47,6 +48,7 @@ const initialsOf = (name: string) =>
 
 const AgendaPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
+  const { escolas: allEscolas, loading: loadingEscolas } = useEscolas();
   const [currentDate, setCurrentDate] = useState(() => {
     const today = new Date();
     const day = today.getDay();
@@ -93,7 +95,7 @@ const AgendaPage = () => {
     );
   }, [selectedEscolaId, profile?.escola_id, reservasState]);
 
-  const schoolEscolas = isSupabaseConfigured ? initialEscolas : getMockEscolas();
+  const schoolEscolas = allEscolas;
   const escola = schoolEscolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
   const schoolRecursosList = isSupabaseConfigured ? initialRecursos : recursosState;
   const schoolRecursos = schoolRecursosList.filter(r => r.escola_id === (selectedEscolaId || profile?.escola_id));

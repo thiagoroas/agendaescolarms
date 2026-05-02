@@ -1,6 +1,6 @@
 import { useAuth } from "../../contexts/AuthContext";
-import { escolas } from "../../data/mockData";
-import { Building, ChevronRight } from "lucide-react";
+import { useEscolas } from "@/hooks/useEscolas";
+import { Building, ChevronRight, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
@@ -13,6 +13,8 @@ import { toast } from "sonner";
 
 const TopHeader = () => {
   const { profile, selectedEscolaId, setSelectedEscolaId } = useAuth();
+  const { escolas, loading } = useEscolas();
+  
   const escola = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
   const isAdminPlataforma = profile?.role === "admin_plataforma";
 
@@ -42,7 +44,7 @@ const TopHeader = () => {
                 <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all border border-blue-200 group shadow-sm">
                   <Building className="h-3.5 w-3.5 shrink-0 text-blue-600" />
                   <span className="text-xs font-bold truncate max-w-[120px] sm:max-w-[200px]">
-                    {escola?.nome || "Selecionar Escola"}
+                    {loading ? "Carregando..." : (escola?.nome || "Selecionar Escola")}
                   </span>
                   <ChevronRight className="h-3 w-3 shrink-0 group-data-[state=open]:rotate-90 transition-transform text-blue-400" />
                 </button>

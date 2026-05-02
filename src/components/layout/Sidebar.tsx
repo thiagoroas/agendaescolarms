@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { escolas } from "../../data/mockData";
+import { useEscolas } from "@/hooks/useEscolas";
 import { 
   Calendar, 
   BookOpen, 
@@ -22,6 +22,7 @@ import { toast } from "sonner";
 
 const Sidebar = () => {
   const { profile, logout, selectedEscolaId, setSelectedEscolaId } = useAuth();
+  const { escolas, loading } = useEscolas();
   const escola = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
 
   const handleEscolaChange = (id: string) => {
@@ -77,7 +78,7 @@ const Sidebar = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1">
                     <p className="text-sm font-bold text-slate-900 truncate leading-none">
-                      {escola?.nome || "Selecione..."}
+                      {loading ? "Carregando..." : (escola?.nome || "Selecione...")}
                     </p>
                     <ChevronDown className="h-3.5 w-3.5 text-blue-600 shrink-0" />
                   </div>

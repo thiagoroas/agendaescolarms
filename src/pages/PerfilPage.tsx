@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { escolas as initialEscolas } from "../data/mockData";
-import { getMockUsuarios, saveMockUsuarios, getMockEscolas } from "../data/storage";
+import { useEscolas } from "@/hooks/useEscolas";
+import { getMockUsuarios, saveMockUsuarios } from "../data/storage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -25,7 +25,7 @@ import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 const PerfilPage = () => {
   const { user, profile, logout, updateProfile } = useAuth();
-  const allEscolas = getMockEscolas();
+  const { escolas: allEscolas, loading: loadingEscolas } = useEscolas();
   const escola = allEscolas.find(e => e.id === profile?.escola_id);
   
   const [loading, setLoading] = useState(false);
