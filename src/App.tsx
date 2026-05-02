@@ -63,6 +63,14 @@ const AppContent = () => {
       <Routes>
       <Route path="/login" element={<LoginPage />} />
       
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <DashboardPage />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      
       <Route path="/agenda" element={
         <ProtectedRoute>
           <AppLayout>
@@ -119,14 +127,15 @@ const AppContent = () => {
         </ProtectedRoute>
       } />
 
-      <Route path="/" element={<Navigate to="/agenda" replace />} />
-      <Route path="*" element={<Navigate to="/agenda" replace />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </>
   );
 };
 
 import LoginPage from "./pages/LoginPage";
+import DashboardPage from "./pages/DashboardPage";
 import AgendaPage from "./pages/AgendaPage";
 import MinhasReservasPage from "./pages/MinhasReservasPage";
 import PerfilPage from "./pages/PerfilPage";

@@ -9,7 +9,8 @@ import {
   Monitor, 
   ClipboardList, 
   Building2, 
-  LogOut 
+  LogOut,
+  LayoutDashboard
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ const Sidebar = () => {
   const escola = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
 
   const menuItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
     { icon: Calendar, label: "Agenda", path: "/agenda" },
     { icon: BookOpen, label: "Minhas Reservas", path: "/minhas-reservas" },
     { icon: User, label: "Perfil", path: "/perfil" },
