@@ -91,7 +91,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("[AUTH] init start");
       setLoading(true);
 
+      // Timeout de segurança para não travar o app em loading
+      const timeoutId = setTimeout(() => {
+        console.warn("[AUTH] init timeout reached, forcing loading false");
+        setLoading(false);
+      }, 8000);
+
       if (!isSupabaseConfigured) {
+        clearTimeout(timeoutId);
         setLoading(false);
         return;
       }
@@ -110,6 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (err) {
         console.error("[AUTH] init error", err);
       } finally {
+        clearTimeout(timeoutId);
         setLoading(false);
       }
     }
