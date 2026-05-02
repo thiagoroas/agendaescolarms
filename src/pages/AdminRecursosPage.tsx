@@ -215,12 +215,18 @@ const AdminRecursosPage = () => {
       </div>
 
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog open={isModalOpen} onOpenChange={(open) => {
+        setIsModalOpen(open);
+        if (!open) resetForm();
+      }}>
         <DialogContent className="max-w-md p-0 border-none rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-black tracking-tight text-white uppercase">Novo Recurso</DialogTitle>
+              <DialogTitle className="text-2xl font-black tracking-tight text-white uppercase">
+                {editingRecurso ? "Editar Recurso" : "Novo Recurso"}
+              </DialogTitle>
             </DialogHeader>
+
             <p className="text-blue-100 text-sm font-medium mt-1 opacity-90">Cadastre laboratórios, projetores e equipamentos.</p>
           </div>
 
