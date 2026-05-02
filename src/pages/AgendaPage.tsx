@@ -38,7 +38,7 @@ const initialsOf = (name: string) =>
   name.split(" ").filter(Boolean).slice(0, 2).map(n => n[0]?.toUpperCase()).join("");
 
 const AgendaPage = () => {
-  const { user, selectedEscolaId } = useAuth();
+  const { user, profile, selectedEscolaId } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,13 +59,13 @@ const AgendaPage = () => {
   const reservasHoje = useMemo(() => {
     const todayStr = format(new Date(), "yyyy-MM-dd");
     return reservas.filter(r => 
-      r.escola_id === (selectedEscolaId || user?.escola_id) && 
+      r.escola_id === (selectedEscolaId || profile?.escola_id) && 
       r.data === todayStr
     );
-  }, [selectedEscolaId, user?.escola_id]);
+  }, [selectedEscolaId, profile?.escola_id]);
 
-  const escola = escolas.find(e => e.id === (selectedEscolaId || user?.escola_id));
-  const schoolRecursos = recursos.filter(r => r.escola_id === (selectedEscolaId || user?.escola_id));
+  const escola = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
+  const schoolRecursos = recursos.filter(r => r.escola_id === (selectedEscolaId || profile?.escola_id));
 
   const monday = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(monday, i));
@@ -79,7 +79,7 @@ const AgendaPage = () => {
     return reservas.find(r =>
       r.data === dateStr &&
       r.aula === aula &&
-      r.escola_id === (selectedEscolaId || user?.escola_id) &&
+      r.escola_id === (selectedEscolaId || profile?.escola_id) &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
       (!searchQuery ||
         r.nome_professor.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -92,7 +92,7 @@ const AgendaPage = () => {
     const mondayStr = format(monday, "yyyy-MM-dd");
     const fridayStr = format(weekDates[4], "yyyy-MM-dd");
     return reservas.filter(r =>
-      r.escola_id === (selectedEscolaId || user?.escola_id) &&
+      r.escola_id === (selectedEscolaId || profile?.escola_id) &&
       r.data >= mondayStr &&
       r.data <= fridayStr &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
@@ -101,7 +101,7 @@ const AgendaPage = () => {
         r.turma.toLowerCase().includes(searchQuery.toLowerCase())
       )
     ).length;
-  }, [monday, weekDates, selectedRecurso, searchQuery, user?.escola_id, selectedEscolaId]);
+  }, [monday, weekDates, selectedRecurso, searchQuery, profile?.escola_id, selectedEscolaId]);
 
   const handleSlotClick = (date: Date, h: typeof horarios[0]) => {
     const res = getReservaForSlot(date, h.aula);
@@ -372,7 +372,7 @@ const AgendaPage = () => {
         onClose={() => setIsModalDetalhesOpen(false)}
         reserva={activeReserva?.reserva || null}
         recurso={activeReserva?.recurso || null}
-        canEdit={activeReserva?.reserva.professor_id === user?.id || user?.papel !== 'professor'}
+        canEdit={activeReserva?.reserva.professor_id === user?.id || profile?.role !== 'professor'}
       />
     </div>
   );
