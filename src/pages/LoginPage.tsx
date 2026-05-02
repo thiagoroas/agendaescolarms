@@ -35,7 +35,8 @@ const LoginPage = () => {
     }
   }, []);
 
-  if (user) return <Navigate to="/agenda" />;
+  // Redirecionamento removido para garantir que a página renderize mesmo se houver usuário
+  // if (user) return <Navigate to="/agenda" />;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
