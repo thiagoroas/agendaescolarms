@@ -110,18 +110,28 @@ const AppContent = () => {
   }
 
   // 4. Status de Acesso (Pendente/Bloqueado)
+  const { logout } = useAuth();
+
   if (profile) {
     if (profile.status === "pendente") {
       return (
         <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
           <h1 className="mb-2 text-2xl font-bold text-amber-600">Acesso em análise</h1>
           <p className="text-muted-foreground">Seu acesso está aguardando aprovação de um administrador.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
-          >
-            Verificar novamente
-          </button>
+          <div className="flex gap-4 mt-6">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
+            >
+              Verificar novamente
+            </button>
+            <button 
+              onClick={() => logout()} 
+              className="px-4 py-2 border border-input bg-background hover:bg-accent rounded-md transition-opacity"
+            >
+              Sair
+            </button>
+          </div>
         </div>
       );
     }
@@ -131,6 +141,12 @@ const AppContent = () => {
         <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
           <h1 className="mb-2 text-2xl font-bold text-destructive">Acesso bloqueado</h1>
           <p className="text-muted-foreground">Seu acesso foi desativado. Entre em contato com a coordenação.</p>
+          <button 
+            onClick={() => logout()} 
+            className="mt-6 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
+          >
+            Sair
+          </button>
         </div>
       );
     }
@@ -151,11 +167,7 @@ const AppContent = () => {
             Tentar novamente
           </button>
           <button 
-            onClick={() => {
-              // Limpar local storage e deslogar para permitir novo login
-              localStorage.clear();
-              window.location.href = "/login";
-            }} 
+            onClick={() => logout()} 
             className="px-4 py-2 border border-input bg-background hover:bg-accent rounded-md transition-opacity"
           >
             Sair e tentar outro e-mail
