@@ -7,11 +7,18 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, profileLoading } = useAuth();
   const location = useLocation();
 
-  if (loading) {
-    return <div className="flex h-screen items-center justify-center">Carregando...</div>;
+  if (loading || (user && profileLoading && !profile)) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground font-medium">Carregando...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!user) {

@@ -20,6 +20,7 @@ interface AuthContextType {
   profile: Profile | null;
   selectedEscolaId: string | null;
   loading: boolean;
+  profileLoading: boolean; // Novo: separa loading de profile
   login: (email: string, senha: string, remember: boolean) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   setSelectedEscolaId: (id: string) => void;
@@ -33,6 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedEscolaId, setSelectedEscolaIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const setSelectedEscolaId = (id: string) => {
     setSelectedEscolaIdState(id);
@@ -70,14 +72,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
+      
       if (session?.user) {
+        // Se já temos um perfil e o evento não é de login/mudança de usuário, 
+        // talvez não precisemos buscar novamente se já temos os dados.
+        // Mas para garantir consistência, buscamos sempre que houver usuário.
         await fetchProfile(session.user.id);
       } else {
         setProfile(null);
         setSelectedEscolaIdState(null);
         setLoading(false);
+        setProfileLoading(false);
       }
     });
 
@@ -85,16 +92,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const fetchProfile = async (userId: string) => {
+    setProfileLoading(true);
     try {
       // First try real profiles table
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", userId) // Alterado de user_id para id para bater com o schema 1.6
+        .eq("id", userId)
         .single();
 
       if (error) {
-        console.warn("Real profile not found, checking mock data:", error.message);
+        // Se o erro for de RLS ou outro erro real, logamos
+        if (error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+          console.error("Erro real ao buscar perfil no Supabase:", error.message, error.code);
+        } else {
+          console.warn("Perfil não encontrado no banco (PGRST116), verificando mock...");
+        }
         
         // Fallback for transition: if not in Supabase, check if mock exists
         const savedProfile = localStorage.getItem("agenda_mock_profile");
@@ -104,17 +117,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setProfile(parsed);
             const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
             setSelectedEscolaIdState(savedEscolaId || parsed.escola_id);
+            setProfileLoading(false);
+            setLoading(false);
             return;
           }
         }
+        
+        // Se chegou aqui e é Supabase, e não achou nem no mock, limpamos o perfil
+        setProfile(null);
         throw error;
-      }
-
-      // Check status
-      if (data.status === "pendente") {
-        console.warn("User status is pending approval");
-      } else if (data.status === "bloqueado") {
-        console.warn("User status is blocked");
       }
 
       // Map real profile to App's Profile interface
@@ -135,6 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error("Error fetching profile:", error);
       setProfile(null);
     } finally {
+      setProfileLoading(false);
       setLoading(false);
     }
   };
@@ -296,7 +308,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, selectedEscolaId, loading, login, logout, setSelectedEscolaId, updateProfile }}>
+    <AuthContext.Provider value={{ user, profile, selectedEscolaId, loading, profileLoading, login, logout, setSelectedEscolaId, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

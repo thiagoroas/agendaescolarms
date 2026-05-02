@@ -28,28 +28,69 @@ const SupabaseConfigError = () => (
 );
 
 const AppContent = () => {
-  const { loading, user, profile } = useAuth();
+  const { loading, profileLoading, user, profile } = useAuth();
 
+  // 1. Loading inicial de Auth
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Carregando...</p>
+          <p className="text-sm text-muted-foreground">Iniciando...</p>
         </div>
       </div>
     );
   }
 
-  // Profile error check: If user exists but no profile found after loading
-  if (user && !profile && !loading) {
+  // 2. Loading de Perfil (Diferente do loading de Auth)
+  if (user && profileLoading && !profile) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground font-medium">Carregando perfil...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Status de Acesso (Pendente/Bloqueado)
+  if (profile) {
+    if (profile.status === "pendente") {
+      return (
+        <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
+          <h1 className="mb-2 text-2xl font-bold text-amber-600">Acesso em análise</h1>
+          <p className="text-muted-foreground">Seu acesso está aguardando aprovação de um administrador.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
+          >
+            Verificar novamente
+          </button>
+        </div>
+      );
+    }
+    
+    if (profile.status === "bloqueado") {
+      return (
+        <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
+          <h1 className="mb-2 text-2xl font-bold text-destructive">Acesso bloqueado</h1>
+          <p className="text-muted-foreground">Seu acesso foi desativado. Entre em contato com a coordenação.</p>
+        </div>
+      );
+    }
+  }
+
+  // 4. Perfil não encontrado real (após carregar e não existir)
+  if (user && !profile && !profileLoading) {
     return (
       <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
         <h1 className="mb-2 text-2xl font-bold text-destructive">Perfil não encontrado</h1>
-        <p className="text-muted-foreground">Entre em contato com o administrador para configurar seu acesso.</p>
+        <p className="text-muted-foreground">Não encontramos dados de perfil para seu usuário.</p>
+        <p className="text-sm text-muted-foreground mt-1">Entre em contato com o administrador para configurar seu acesso.</p>
         <button 
           onClick={() => window.location.reload()} 
-          className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
+          className="mt-6 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
         >
           Tentar novamente
         </button>
