@@ -47,7 +47,15 @@ const initialsOf = (name: string) =>
 
 const AgendaPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(() => {
+    const today = new Date();
+    const day = today.getDay();
+    // Se for final de semana (Sábado=6, Domingo=0), inicia na Segunda-feira da próxima semana
+    if (day === 0 || day === 6) {
+      return addDays(today, (8 - day) % 7);
+    }
+    return today;
+  });
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobile, setIsMobile] = useState(false);
@@ -87,11 +95,15 @@ const AgendaPage = () => {
   const schoolRecursosList = isSupabaseConfigured ? initialRecursos : recursosState;
   const schoolRecursos = schoolRecursosList.filter(r => r.escola_id === (selectedEscolaId || profile?.escola_id));
 
-  const monday = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekDates = Array.from({ length: 5 }, (_, i) => addDays(monday, i));
+  const monday = useMemo(() => startOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate]);
+  const weekDates = useMemo(() => Array.from({ length: 5 }, (_, i) => addDays(monday, i)), [monday]);
 
   const navigateWeek = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => addDays(prev, isMobile ? (direction === 'prev' ? -1 : 1) : (direction === 'prev' ? -7 : 7)));
+    setCurrentDate(prev => {
+      // No mobile, navega dia a dia. No desktop, navega semana a semana (7 dias).
+      const step = isMobile ? 1 : 7;
+      return addDays(prev, direction === 'prev' ? -step : step);
+    });
   };
 
   const getReservaForSlot = (date: Date, aula: number) => {
@@ -113,6 +125,7 @@ const AgendaPage = () => {
   const filteredReservationsCount = useMemo(() => {
     const mondayStr = format(monday, "yyyy-MM-dd");
     const fridayStr = format(weekDates[4], "yyyy-MM-dd");
+    
     const list = isSupabaseConfigured ? initialReservas : reservasState;
     return list.filter(r =>
       r.escola_id === (selectedEscolaId || profile?.escola_id) &&
@@ -124,7 +137,7 @@ const AgendaPage = () => {
         r.turma.toLowerCase().includes(searchQuery.toLowerCase())
       )
     ).length;
-  }, [monday, weekDates, selectedRecurso, searchQuery, profile?.escola_id, selectedEscolaId]);
+  }, [monday, weekDates, selectedRecurso, searchQuery, profile?.escola_id, selectedEscolaId, reservasState]);
 
   const handleSlotClick = (date: Date, h: typeof horarios[0]) => {
     const res = getReservaForSlot(date, h.aula);
@@ -173,7 +186,7 @@ const AgendaPage = () => {
     }
   };
 
-  const weekLabel = `${format(weekDates[0], "d 'de' MMM", { locale: ptBR })} – ${format(weekDates[4], "d 'de' MMM", { locale: ptBR })}`;
+  const weekLabel = `${format(monday, "d 'de' MMM", { locale: ptBR })} – ${format(weekDates[4], "d 'de' MMM", { locale: ptBR })}`;
 
   return (
     <div className="agenda-proto">
@@ -188,7 +201,7 @@ const AgendaPage = () => {
           </div>
         </div>
         <div className="topbar-actions">
-          {!isMobile && <button className="btn btn-ghost" onClick={() => setCurrentDate(new Date())}>Hoje</button>}
+          <button className="btn btn-ghost" onClick={() => setCurrentDate(new Date())}>Hoje</button>
           
           <Popover>
             <PopoverTrigger asChild>
