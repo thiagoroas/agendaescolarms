@@ -39,6 +39,13 @@ const TURMAS_OPCOES = [
   }
 ];
 
+const formatDateLocal = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProps) => {
   const { user, profile } = useAuth();
   const { recursos: availableRecursos } = useRecursos();
@@ -81,7 +88,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
       return true;
     }).sort((a, b) => {
       const prioridade = { urgente: 0, atencao: 1, informativo: 2 };
-      return prioridade[a.tipo] - prioridade[b.tipo];
+      return prioridade[a.tipo] - prioridade[b.tipo] as any;
     });
   }, [avisosState, currentSchoolId, formData.data, formData.recursoId]);
 
@@ -103,7 +110,8 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             .select('*')
             .eq('data', formData.data)
             .eq('recurso_id', formData.recursoId)
-            .eq('escola_id', profile?.escola_id);
+            .eq('escola_id', profile?.escola_id)
+            .neq('status', 'cancelada');
           
           if (error) throw error;
           setExistingReservations(data || []);
@@ -113,7 +121,8 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           const mockFiltered = allMockReservas.filter(r => 
             r.data === formData.data && 
             r.recurso_id === formData.recursoId && 
-            r.escola_id === profile?.escola_id
+            r.escola_id === profile?.escola_id &&
+            r.status !== 'cancelada'
           );
           setExistingReservations(mockFiltered);
         }
@@ -145,7 +154,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
       const isProfessor = profile?.role === 'professor';
       const initialProfessorId = isProfessor ? user?.id : "";
       
-      let initialProfessor = null;
+      let initialProfessor: Usuario | null = null;
       if (isProfessor) {
         initialProfessor = {
           id: user?.id || "",
@@ -162,17 +171,26 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
         ? initialProfessor.disciplinas[0] 
         : "";
       
+      // Determine initial date
+      let initialDate = initialData?.date || "";
+      if (!initialDate) {
+        // Fallback to current agenda date if available in some context, 
+        // but here we just use today's local date as default for "Nova reserva" button
+        initialDate = formatDateLocal(new Date());
+      }
+
       setFormData({
         professorId: initialProfessorId || "",
         disciplina: initialDisciplina,
         turma: "",
-        data: initialData?.date || "",
+        data: initialDate,
         recursoId: "",
         aulas: initialData?.aula ? [initialData.aula] : [],
         objetivo_pedagogico: "",
         observacao: ""
       });
       setSelectedProfessor(initialProfessor);
+      setAvisosConfirmados({});
     }
   }, [isOpen, initialData, user, profile]);
 
