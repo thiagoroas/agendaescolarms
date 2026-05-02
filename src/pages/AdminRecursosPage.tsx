@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 
 const AdminRecursosPage = () => {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   const [localRecursos, setLocalRecursos] = useState<Recurso[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
@@ -25,7 +25,7 @@ const AdminRecursosPage = () => {
     setLocalRecursos(recursos);
   }, []);
 
-  const schoolRecursos = localRecursos.filter(r => r.escola_id === user?.escola_id);
+  const schoolRecursos = localRecursos.filter(r => r.escola_id === profile?.escola_id);
 
   const categorias = [
     { value: "laboratorio", label: "Laboratório", cor_fundo: "#DBEAFE", cor_texto: "#1E40AF", cor_borda: "#93C5FD" },
@@ -68,7 +68,7 @@ const AdminRecursosPage = () => {
 
     const novoRecurso: Recurso = {
       id: "rec-" + Date.now(),
-      escola_id: user?.escola_id || "",
+      escola_id: profile?.escola_id || "",
       nome: nome.trim(),
       tipo,
       cor_fundo: corSelecionada.cor_fundo,

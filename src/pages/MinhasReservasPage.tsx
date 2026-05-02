@@ -11,10 +11,10 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 
 const MinhasReservasPage = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   
   const userReservas = reservas
-    .filter(r => r.professor_id === user?.id || (user?.papel !== 'professor' && r.escola_id === user?.escola_id))
+    .filter(r => r.professor_id === user?.id || (profile?.role !== 'professor' && r.escola_id === profile?.escola_id))
     .sort((a, b) => b.data.localeCompare(a.data));
 
   const upcoming = userReservas.filter(r => !isAfter(new Date(), parseISO(r.data)));
@@ -68,10 +68,10 @@ const MinhasReservasPage = () => {
     <div className="space-y-6 pb-20 md:pb-0">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
-          {user?.papel === 'professor' ? 'Minhas Reservas' : 'Gerenciar Reservas'}
+          {profile?.role === 'professor' ? 'Minhas Reservas' : 'Gerenciar Reservas'}
         </h1>
         <p className="text-sm text-slate-500">
-          {user?.papel === 'professor' ? 'Visualize e gerencie seus agendamentos.' : 'Todas as reservas da escola.'}
+          {profile?.role === 'professor' ? 'Visualize e gerencie seus agendamentos.' : 'Todas as reservas da escola.'}
         </p>
       </div>
 

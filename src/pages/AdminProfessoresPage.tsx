@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 
 const AdminProfessoresPage = () => {
-  const { user, selectedEscolaId } = useAuth();
+  const { user, profile, selectedEscolaId } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [localUsers, setLocalUsers] = useState<Usuario[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,7 +28,7 @@ const AdminProfessoresPage = () => {
   }, []);
 
   const schoolUsers = localUsers.filter(u => 
-    u.escola_id === (selectedEscolaId || user?.escola_id) && 
+    u.escola_id === (selectedEscolaId || profile?.escola_id) && 
     (u.papel === "professor" || u.papel === "admin_lab") &&
     (u.nome.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -45,7 +45,7 @@ const AdminProfessoresPage = () => {
       id: "user-" + Date.now(),
       nome: nome.trim(),
       email: email.trim(),
-      escola_id: (selectedEscolaId || user?.escola_id) || "",
+      escola_id: (selectedEscolaId || profile?.escola_id) || "",
       papel: papel,
       status: "ativo"
     };
@@ -215,7 +215,7 @@ const AdminProfessoresPage = () => {
                   <span className="text-sm font-medium">Professor</span>
                 </label>
                 
-                {user?.papel === "admin_plataforma" && (
+                {profile?.role === "admin_plataforma" && (
                   <label 
                     className="flex flex-1 items-center gap-2 px-4 py-3 border rounded-xl cursor-pointer transition-all hover:border-blue-300"
                     style={{

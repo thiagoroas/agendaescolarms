@@ -4,8 +4,8 @@ import { Calendar, BookOpen, User, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MobileBottomNav = () => {
-  const { user } = useAuth();
-  const isAdmin = user?.papel !== "professor";
+   const { profile } = useAuth();
+   const isAdmin = profile?.role !== "professor";
 
   return (
     <nav className="fixed bottom-0 left-0 flex w-full items-center justify-around border-t border-slate-100 bg-white/90 backdrop-blur-lg px-2 py-3 md:hidden z-40 pb-safe">

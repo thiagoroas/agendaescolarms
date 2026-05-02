@@ -11,11 +11,11 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 
 const AdminReservasPage = () => {
-  const { user, selectedEscolaId } = useAuth();
+  const { profile, selectedEscolaId } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
 
   const schoolReservas = reservas
-    .filter(r => r.escola_id === (selectedEscolaId || user?.escola_id))
+    .filter(r => r.escola_id === (selectedEscolaId || profile?.escola_id))
     .filter(r => 
       r.nome_professor.toLowerCase().includes(searchTerm.toLowerCase()) || 
       r.disciplina.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -32,7 +32,7 @@ const AdminReservasPage = () => {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => {
-            const escolaNome = escolas.find(e => e.id === (selectedEscolaId || user?.escola_id))?.nome;
+            const escolaNome = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id))?.nome;
             toast.success(`Gerando relatório PDF para ${escolaNome}...`);
             setTimeout(() => window.print(), 500);
           }}>
