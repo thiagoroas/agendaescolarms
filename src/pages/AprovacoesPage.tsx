@@ -7,7 +7,7 @@ import { ptBR } from "date-fns/locale";
 import { 
   CheckCircle, 
   XCircle, 
-  Search, 
+  Search,
   Filter, 
   User, 
   Monitor, 
