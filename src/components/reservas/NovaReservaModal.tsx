@@ -196,8 +196,8 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     }
   }, [formData.professorId, profile?.role]);
 
-  const mockRecursos = getMockRecursos();
-  const availableRecursos = mockRecursos.filter(r => r.escola_id === profile?.escola_id);
+  // Use non-interval hours
+
   // Show ALL non-interval hours in a single section as requested
   const allHorarios = horarios.filter(h => !h.isIntervalo);
 
