@@ -158,7 +158,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           <p className="text-blue-100 text-sm font-medium mt-1 opacity-90">Preencha os detalhes para reservar o recurso.</p>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 bg-white">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 bg-white overflow-y-auto max-h-[calc(90vh-180px)]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Professor Responsável</Label>
