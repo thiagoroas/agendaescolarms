@@ -310,7 +310,7 @@ const AgendaPage = () => {
         </div>
       </div>
 
-      {/* {!isSupabaseConfigured && (
+      {!isSupabaseConfigured && (
         <div className="mx-4 mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between gap-3 shadow-sm">
           <div className="flex items-start gap-3">
             <Info className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
@@ -329,7 +329,7 @@ const AgendaPage = () => {
             </Button>
           )}
         </div>
-      )} */}
+      )}
 
       {/* Banner de Avisos */}
       {avisosAtivos.length > 0 && (

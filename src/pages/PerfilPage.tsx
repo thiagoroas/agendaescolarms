@@ -195,11 +195,11 @@ const PerfilPage = () => {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Meu Perfil</h1>
           <p className="text-slate-500 mt-1">Gerencie suas informações pessoais e segurança da conta.</p>
         </div>
-        {/* {!isSupabaseConfigured && (
+        {!isSupabaseConfigured && (
           <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1 py-1">
             <AlertCircle className="h-3 w-3" /> Modo Protótipo
           </Badge>
-        )} */}
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
