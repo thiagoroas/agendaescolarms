@@ -63,7 +63,7 @@ const AgendaPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobile, setIsMobile] = useState(false);
   const [reservasState, setReservasState] = useState<Reserva[]>([]);
-  const [recursosState, setRecursosState] = useState<Recurso[]>([]);
+  const { recursos: schoolRecursos, loading: loadingRecursos } = useRecursos();
   const [avisosState, setAvisosState] = useState<AvisoLaboratorio[]>([]);
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
   const [isModalRelatorioOpen, setIsModalRelatorioOpen] = useState(false);
