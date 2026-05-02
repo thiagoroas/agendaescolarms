@@ -137,11 +137,8 @@ const LoginPage = () => {
               </div>
               <h1 className="text-2xl font-bold text-slate-900">Agenda Escolar Digital</h1>
               <p className="text-sm text-slate-500 text-center mt-1">Faça login para acessar a agenda da sua escola</p>
-              {!isSupabaseConfigured && (
-                <div className="mt-2 inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-800 border border-amber-100">
-                  Modo protótipo: dados de demonstração para teste piloto
-                </div>
-              )}
+              {/* Ocultado para evitar confusão em produção, já que o app está em Lovable Cloud */}
+
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
