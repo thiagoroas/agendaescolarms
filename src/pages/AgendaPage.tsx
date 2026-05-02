@@ -87,8 +87,8 @@ const AgendaPage = () => {
   const schoolRecursosList = isSupabaseConfigured ? initialRecursos : recursosState;
   const schoolRecursos = schoolRecursosList.filter(r => r.escola_id === (selectedEscolaId || profile?.escola_id));
 
-  const monday = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekDates = Array.from({ length: 5 }, (_, i) => addDays(monday, i));
+  const monday = useMemo(() => startOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate]);
+  const weekDates = useMemo(() => Array.from({ length: 5 }, (_, i) => addDays(monday, i)), [monday]);
 
   const navigateWeek = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => {
