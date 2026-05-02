@@ -70,11 +70,23 @@ const MinhasReservasPage = () => {
           </div>
 
           <div className="flex gap-2 mt-4 pt-4 border-t">
-            <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.info("Edição")}>
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.info("Funcionalidade de edição em breve.")}>
               <Edit className="mr-2 h-4 w-4" />
               Editar
             </Button>
-            <Button variant="outline" size="sm" className="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700" onClick={() => toast.error("Reserva cancelada")}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700" 
+              onClick={() => {
+                if (window.confirm("Deseja realmente cancelar esta reserva?")) {
+                  const novasReservas = reservas.filter(res => res.id !== r.id);
+                  setReservas(novasReservas);
+                  saveMockReservas(novasReservas);
+                  toast.success("Reserva cancelada com sucesso");
+                }
+              }}
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Cancelar
             </Button>
