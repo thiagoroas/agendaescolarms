@@ -1,13 +1,15 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { format, addDays, startOfWeek, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon, Info, FileText, CheckCircle, XCircle, LayoutDashboard, ClipboardList } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon, Info, FileText, CheckCircle, XCircle, LayoutDashboard, ClipboardList, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
 import { escolas as initialEscolas, recursos as initialRecursos, reservas as initialReservas, Reserva, Recurso } from "../data/mockData";
 import { getMockEscolas, getMockRecursos, getMockReservas, resetMockData } from "../data/storage";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { horarios, diasSemana } from "../data/horarios";
 import { toast } from "sonner";
 import { saveMockReservas } from "../data/storage";
@@ -187,6 +189,25 @@ const AgendaPage = () => {
         </div>
         <div className="topbar-actions">
           {!isMobile && <button className="btn btn-ghost" onClick={() => setCurrentDate(new Date())}>Hoje</button>}
+          
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="btn btn-ghost gap-2 px-3">
+                <CalendarDays size={16} className="text-blue-600" />
+                <span className="hidden sm:inline">Data</span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={currentDate}
+                onSelect={(date) => date && setCurrentDate(date)}
+                initialFocus
+                locale={ptBR}
+              />
+            </PopoverContent>
+          </Popover>
+
           <div className="flex items-center gap-1">
             <button className="btn-icon" onClick={() => navigateWeek('prev')} aria-label={isMobile ? "Dia anterior" : "Semana anterior"}>
               <ChevronLeft size={16} />

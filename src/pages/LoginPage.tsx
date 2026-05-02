@@ -258,6 +258,12 @@ const LoginPage = () => {
           </div>
         </div>
       )}
+
+      <div className="mt-8 mb-4 text-center">
+        <p className="text-sm text-slate-500">
+          Desenvolvido pelo <strong>Prof. Tiago Roas</strong>
+        </p>
+      </div>
     </div>
   );
 };
