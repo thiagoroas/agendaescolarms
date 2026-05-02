@@ -50,7 +50,13 @@ export const escolas: Escola[] = [
 
 // Mock users removed as we are migrating to Supabase Auth.
 // Using an empty array to avoid breaking UI components that still reference it during transition.
-export const usuarios: (Usuario & { senha: string })[] = [];
+export const usuarios: (Usuario & { senha: string })[] = [
+  { id: "user-1", nome: "Admin Plataforma", email: "admin@plataforma.com", senha: "123", escola_id: "escola-1", papel: "admin_plataforma", status: "ativo" },
+  { id: "user-2", nome: "Admin Escola 1", email: "admin@escola1.com", senha: "123", escola_id: "escola-1", papel: "admin_lab", status: "ativo" },
+  { id: "user-3", nome: "Carlos Souza", email: "carlos@escola1.com", senha: "123", escola_id: "escola-1", papel: "professor", status: "ativo", disciplinas: ["Informática", "Robótica"] },
+  { id: "user-4", nome: "Ana Oliveira", email: "ana@escola1.com", senha: "123", escola_id: "escola-1", papel: "professor", status: "ativo", disciplinas: ["Matemática", "Física"] },
+  { id: "user-7", nome: "João Pedro", email: "joao@escola2.com", senha: "123", escola_id: "escola-2", papel: "professor", status: "ativo", disciplinas: ["Robótica"] },
+];
 
 export const recursos: Recurso[] = [
   { id: "rec-1", escola_id: "escola-1", nome: "Laboratório de Informática", tipo: "laboratorio", cor_fundo: "#DBEAFE", cor_texto: "#1E40AF", cor_borda: "#93C5FD", ativo: true },

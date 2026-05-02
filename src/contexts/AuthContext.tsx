@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
+import { usuarios } from "@/data/mockData";
 
 export type UserRole = "admin_plataforma" | "admin_lab" | "professor";
 
@@ -38,6 +39,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
+      const savedUser = localStorage.getItem("agenda_mock_user");
+      const savedProfile = localStorage.getItem("agenda_mock_profile");
+      
+      if (savedUser && savedProfile) {
+        setUser(JSON.parse(savedUser));
+        setProfile(JSON.parse(savedProfile));
+        
+        const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
+        if (savedEscolaId) setSelectedEscolaIdState(savedEscolaId);
+      }
+      
       setLoading(false);
       return;
     }
@@ -91,7 +103,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (email: string, senha: string, _remember: boolean): Promise<{ success: boolean; error?: string }> => {
+  const login = async (email: string, senha: string, remember: boolean): Promise<{ success: boolean; error?: string }> => {
+    if (!isSupabaseConfigured) {
+      const foundUser = usuarios.find(u => u.email === email && u.senha === senha);
+      
+      if (foundUser) {
+        const mockUser: User = {
+          id: foundUser.id,
+          email: foundUser.email,
+          aud: "authenticated",
+          role: "authenticated",
+          app_metadata: {},
+          user_metadata: { full_name: foundUser.nome },
+          created_at: new Date().toISOString()
+        } as User;
+
+        const mockProfile: Profile = {
+          id: foundUser.id,
+          full_name: foundUser.nome,
+          escola_id: foundUser.escola_id,
+          role: foundUser.papel as UserRole,
+          status: foundUser.status as "ativo" | "pendente" | "bloqueado",
+          disciplinas: foundUser.disciplinas
+        };
+
+        setUser(mockUser);
+        setProfile(mockProfile);
+        setSelectedEscolaIdState(foundUser.escola_id);
+        
+        if (remember) {
+          localStorage.setItem("agenda_mock_user", JSON.stringify(mockUser));
+          localStorage.setItem("agenda_mock_profile", JSON.stringify(mockProfile));
+          localStorage.setItem("agenda_selected_escola_id", foundUser.escola_id);
+        }
+        
+        return { success: true };
+      }
+      
+      return { success: false, error: "E-mail ou senha incorretos (Modo Protótipo)" };
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password: senha,
@@ -106,7 +157,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    if (isSupabaseConfigured) {
+      await supabase.auth.signOut();
+    }
+    
+    setUser(null);
+    setProfile(null);
+    setSelectedEscolaIdState(null);
+    
+    localStorage.removeItem("agenda_mock_user");
+    localStorage.removeItem("agenda_mock_profile");
     localStorage.removeItem("agenda_selected_escola_id");
   };
 
