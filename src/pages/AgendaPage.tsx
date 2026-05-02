@@ -23,7 +23,8 @@ import "./agenda.css";
 const tipoColor = (tipo: string) => {
   switch (tipo) {
     case "laboratorio": return "c-blue";
-    case "projetor": return "c-green";
+    case "projetor":
+    case "equipamento": return "c-green";
     case "biblioteca": return "c-amber";
     case "auditorio": return "c-purple";
     case "quadra": return "c-pink";
@@ -35,7 +36,8 @@ const tipoColor = (tipo: string) => {
 const tipoSwatch = (tipo: string) => {
   switch (tipo) {
     case "laboratorio": return "var(--accent-blue)";
-    case "projetor": return "var(--accent-green)";
+    case "projetor":
+    case "equipamento": return "var(--accent-green)";
     case "biblioteca": return "var(--accent-amber)";
     case "auditorio": return "var(--accent-purple)";
     case "quadra": return "var(--accent-pink)";
@@ -43,6 +45,7 @@ const tipoSwatch = (tipo: string) => {
     default: return "var(--accent-blue)";
   }
 };
+
 
 const initialsOf = (name: string) =>
   name.split(" ").filter(Boolean).slice(0, 2).map(n => n[0]?.toUpperCase()).join("");
