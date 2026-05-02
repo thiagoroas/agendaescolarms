@@ -64,8 +64,8 @@ const AppContent = () => {
   console.log("[AppContent] render state:", { loading, profileLoading, hasUser: !!user, hasProfile: !!profile });
 
 
-  // 1. Loading inicial de Auth
-  if (loading) {
+  // 1. Loading inicial de Auth (Apenas se ainda estiver decidindo se há usuário ou não)
+  if (loading && !user) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2">
