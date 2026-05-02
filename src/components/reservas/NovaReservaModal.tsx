@@ -52,20 +52,29 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
   useEffect(() => {
     if (isOpen) {
-      const initialProfessorId = profile?.role === 'professor' ? user?.id : "";
-      const initialProfessor = profile?.role === 'professor' ? {
-        id: user?.id || "",
-        nome: profile?.full_name || "",
-        email: user?.email || "",
-        escola_id: profile?.escola_id || "",
-        papel: profile?.role || "professor",
-        status: profile?.status || "ativo",
-        disciplinas: profile?.disciplinas || []
-      } as Usuario : null;
+      const isProfessor = profile?.role === 'professor';
+      const initialProfessorId = isProfessor ? user?.id : "";
+      
+      let initialProfessor = null;
+      if (isProfessor) {
+        initialProfessor = {
+          id: user?.id || "",
+          nome: profile?.full_name || "",
+          email: user?.email || "",
+          escola_id: profile?.escola_id || "",
+          papel: profile?.role || "professor",
+          status: profile?.status || "ativo",
+          disciplinas: profile?.disciplinas || []
+        } as Usuario;
+      }
+
+      const initialDisciplina = (initialProfessor?.disciplinas && initialProfessor.disciplinas.length === 1) 
+        ? initialProfessor.disciplinas[0] 
+        : "";
       
       setFormData({
-        professorId: initialProfessorId,
-        disciplina: (initialProfessor?.disciplinas && initialProfessor.disciplinas.length === 1) ? initialProfessor.disciplinas[0] : "",
+        professorId: initialProfessorId || "",
+        disciplina: initialDisciplina,
         turma: "",
         data: initialData?.date || "",
         recursoId: "",
@@ -74,23 +83,29 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
       });
       setSelectedProfessor(initialProfessor);
     }
-  }, [isOpen, initialData, user]);
+  }, [isOpen, initialData, user, profile]);
 
   useEffect(() => {
-    if (formData.professorId) {
+    if (formData.professorId && profile?.role !== 'professor') {
       const prof = usuarios.find(u => u.id === formData.professorId);
       if (prof) {
         setSelectedProfessor(prof);
-        if (prof.disciplinas && prof.disciplinas.length === 1) {
-          setFormData(prev => ({ ...prev, disciplina: prof.disciplinas![0] }));
-        } else if (!prof.disciplinas || !prof.disciplinas.includes(formData.disciplina)) {
+        const disciplines = prof.disciplinas || [];
+        if (disciplines.length === 1) {
+          setFormData(prev => ({ ...prev, disciplina: disciplines[0] }));
+        } else if (disciplines.length > 1) {
+          if (!disciplines.includes(formData.disciplina)) {
+            setFormData(prev => ({ ...prev, disciplina: "" }));
+          }
+        } else {
           setFormData(prev => ({ ...prev, disciplina: "" }));
         }
       }
-    } else {
+    } else if (!formData.professorId && profile?.role !== 'professor') {
       setSelectedProfessor(null);
+      setFormData(prev => ({ ...prev, disciplina: "" }));
     }
-  }, [formData.professorId]);
+  }, [formData.professorId, profile?.role]);
 
   const availableRecursos = recursos.filter(r => r.escola_id === profile?.escola_id);
   // Show ALL non-interval hours in a single section as requested
