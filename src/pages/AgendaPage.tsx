@@ -111,8 +111,13 @@ const AgendaPage = () => {
   };
 
   const filteredReservationsCount = useMemo(() => {
-    const mondayStr = format(monday, "yyyy-MM-dd");
-    const fridayStr = format(weekDates[4], "yyyy-MM-dd");
+    const today = new Date();
+    const mondayOfCurrentDate = startOfWeek(currentDate, { weekStartsOn: 1 });
+    const fridayOfCurrentDate = addDays(mondayOfCurrentDate, 4);
+    
+    const mondayStr = format(mondayOfCurrentDate, "yyyy-MM-dd");
+    const fridayStr = format(fridayOfCurrentDate, "yyyy-MM-dd");
+    
     const list = isSupabaseConfigured ? initialReservas : reservasState;
     return list.filter(r =>
       r.escola_id === (selectedEscolaId || profile?.escola_id) &&
@@ -124,7 +129,7 @@ const AgendaPage = () => {
         r.turma.toLowerCase().includes(searchQuery.toLowerCase())
       )
     ).length;
-  }, [monday, weekDates, selectedRecurso, searchQuery, profile?.escola_id, selectedEscolaId]);
+  }, [currentDate, selectedRecurso, searchQuery, profile?.escola_id, selectedEscolaId, reservasState]);
 
   const handleSlotClick = (date: Date, h: typeof horarios[0]) => {
     const res = getReservaForSlot(date, h.aula);
