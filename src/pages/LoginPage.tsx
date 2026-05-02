@@ -205,7 +205,9 @@ const LoginPage = () => {
               </Button>
             </form>
 
-            <p className="mt-6 text-center text-xs text-slate-400">O cadastro de professores é feito pela coordenação.</p>
+            {!isSupabaseConfigured && (
+              <p className="mt-6 text-center text-xs text-slate-400">O cadastro de professores é feito pela coordenação.</p>
+            )}
           </>
         )}
       </div>

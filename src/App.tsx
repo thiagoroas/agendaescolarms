@@ -56,8 +56,8 @@ const AppContent = () => {
   return (
     <>
       {!isSupabaseConfigured && (
-        <div className="fixed top-0 left-0 right-0 z-[9999] bg-amber-500 text-white text-[10px] font-bold py-1 px-4 text-center pointer-events-none opacity-80 uppercase tracking-wider">
-          Modo Protótipo: Supabase não configurado
+        <div className="fixed top-0 left-0 right-0 z-[9999] bg-slate-800/40 text-white text-[9px] font-medium py-0.5 px-4 text-center pointer-events-none uppercase tracking-[0.2em] backdrop-blur-[2px]">
+          Ambiente de Demonstração (Modo Protótipo)
         </div>
       )}
       <Routes>
