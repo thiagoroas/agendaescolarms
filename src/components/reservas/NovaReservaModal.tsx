@@ -323,7 +323,8 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
                   key={h.aula} 
                   className={cn(
                     "flex items-center space-x-3 p-3 rounded-xl border-2 transition-all",
-                    formData.aulas.includes(h.aula) ? "bg-blue-50 border-blue-200 shadow-sm" : "bg-white border-slate-50 hover:bg-slate-50"
+                    formData.aulas.includes(h.aula) ? "bg-blue-50 border-blue-200 shadow-sm" : "bg-white border-slate-50 hover:bg-slate-50",
+                    conflictingAulas.includes(h.aula) && "bg-red-50 border-red-200"
                   )}
                 >
                   <Checkbox 
@@ -337,8 +338,10 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
                     }}
                   />
                   <div className="flex flex-col min-w-0">
-                    <Label htmlFor={`aula-${h.aula}`} className="text-[11px] font-black text-slate-900 cursor-pointer truncate">{h.label}</Label>
-                    <span className="text-[9px] font-bold text-slate-400 whitespace-nowrap">{h.inicio} - {h.fim}</span>
+                    <Label htmlFor={`aula-${h.aula}`} className={cn("text-[11px] font-black cursor-pointer truncate", conflictingAulas.includes(h.aula) ? "text-red-600" : "text-slate-900")}>{h.label}</Label>
+                    <span className={cn("text-[9px] font-bold whitespace-nowrap", conflictingAulas.includes(h.aula) ? "text-red-400" : "text-slate-400")}>
+                      {conflictingAulas.includes(h.aula) ? "Indisponível" : `${h.inicio} - ${h.fim}`}
+                    </span>
                   </div>
                 </div>
               ))}
