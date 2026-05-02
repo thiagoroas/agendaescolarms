@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { reservas, recursos, Usuario, Recurso, escolas } from "../data/mockData";
+import { getMockReservas, getMockRecursos, getMockEscolas, saveMockReservas } from "../data/storage";
+import { Reserva, Recurso, Escola } from "../data/mockData";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, Trash2, Edit, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,15 @@ import { cn } from "@/lib/utils";
 const AdminReservasPage = () => {
   const { profile, selectedEscolaId } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const [reservas, setReservas] = useState<Reserva[]>([]);
+  const [recursos, setRecursos] = useState<Recurso[]>([]);
+  const [escolas, setEscolas] = useState<Escola[]>([]);
+
+  useEffect(() => {
+    setReservas(getMockReservas());
+    setRecursos(getMockRecursos());
+    setEscolas(getMockEscolas());
+  }, []);
 
   const schoolReservas = reservas
     .filter(r => r.escola_id === (selectedEscolaId || profile?.escola_id))
@@ -113,10 +123,22 @@ const AdminReservasPage = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600" onClick={() => toast.info("Funcionalidade de edição em breve.")}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => toast.error("Reserva excluída")}>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50" 
+                        onClick={() => {
+                          if (window.confirm("Deseja realmente excluir esta reserva?")) {
+                            const novasReservas = reservas.filter(res => res.id !== r.id);
+                            setReservas(novasReservas);
+                            saveMockReservas(novasReservas);
+                            toast.success("Reserva excluída");
+                          }
+                        }}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -153,10 +175,22 @@ const AdminReservasPage = () => {
                 </Badge>
               </div>
               <div className="flex gap-2 pt-2 border-t">
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.info("Edição")}>
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.info("Funcionalidade de edição em breve.")}>
                   Editar
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1 text-red-600 border-red-100" onClick={() => toast.error("Reserva excluída")}>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1 text-red-600 border-red-100" 
+                  onClick={() => {
+                    if (window.confirm("Deseja realmente excluir esta reserva?")) {
+                      const novasReservas = reservas.filter(res => res.id !== r.id);
+                      setReservas(novasReservas);
+                      saveMockReservas(novasReservas);
+                      toast.success("Reserva excluída");
+                    }
+                  }}
+                >
                   Excluir
                 </Button>
               </div>
