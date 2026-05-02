@@ -6,50 +6,20 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { reservas as initialReservas, Reserva, Recurso, AvisoLaboratorio } from "../data/mockData";
+import { Reserva, Recurso, AvisoLaboratorio } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
 import { useRecursos } from "@/hooks/useRecursos";
-import { getMockEscolas, getMockReservas, resetMockData, getMockAvisos, getMockRecursos } from "../data/storage";
+import { useReservas } from "@/hooks/useReservas";
+import { getMockEscolas, resetMockData, getMockAvisos, getMockRecursos } from "../data/storage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { horarios, diasSemana } from "../data/horarios";
 import { toast } from "sonner";
-import { saveMockReservas } from "../data/storage";
 import NovaReservaModal from "../components/reservas/NovaReservaModal";
 import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
 import RelatorioReservasModal from "../components/reservas/RelatorioReservasModal";
 import "./agenda.css";
-
-const tipoColor = (tipo: string) => {
-  switch (tipo) {
-    case "laboratorio": return "c-blue";
-    case "projetor":
-    case "equipamento": return "c-green";
-    case "biblioteca": return "c-amber";
-    case "auditorio": return "c-purple";
-    case "quadra": return "c-pink";
-    case "sala": return "c-amber";
-    default: return "c-blue";
-  }
-};
-
-const tipoSwatch = (tipo: string) => {
-  switch (tipo) {
-    case "laboratorio": return "var(--accent-blue)";
-    case "projetor":
-    case "equipamento": return "var(--accent-green)";
-    case "biblioteca": return "var(--accent-amber)";
-    case "auditorio": return "var(--accent-purple)";
-    case "quadra": return "var(--accent-pink)";
-    case "sala": return "var(--accent-amber)";
-    default: return "var(--accent-blue)";
-  }
-};
-
-
-const initialsOf = (name: string) =>
-  name.split(" ").filter(Boolean).slice(0, 2).map(n => n[0]?.toUpperCase()).join("");
-
+// ... (keep helper functions)
 const AgendaPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
   const { escolas: allEscolas, loading: loadingEscolas } = useEscolas();
@@ -65,7 +35,7 @@ const AgendaPage = () => {
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobile, setIsMobile] = useState(false);
-  const [reservasState, setReservasState] = useState<Reserva[]>([]);
+  const { reservas: reservasState, cancelReserva, refresh: refreshReservas } = useReservas();
   const { recursos: schoolRecursos, loading: loadingRecursos } = useRecursos();
   const [avisosState, setAvisosState] = useState<AvisoLaboratorio[]>([]);
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
@@ -74,11 +44,9 @@ const AgendaPage = () => {
   
   useEffect(() => {
     if (!isSupabaseConfigured) {
-      setReservasState(getMockReservas());
       setAvisosState(getMockAvisos());
     }
-  }, [isModalNovaOpen]); // Refresh when modal closes (might have added something)
-
+  }, [isModalNovaOpen]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -90,17 +58,18 @@ const AgendaPage = () => {
   const [selectedSlot, setSelectedSlot] = useState<{date: string, aula: number, turno: "manha" | "tarde"} | null>(null);
   const [activeReserva, setActiveReserva] = useState<{reserva: Reserva, recurso: Recurso} | null>(null);
 
+  const currentSchoolId = selectedEscolaId || profile?.escola_id;
+
   const reservasHoje = useMemo(() => {
     const todayStr = format(new Date(), "yyyy-MM-dd");
-    const list = isSupabaseConfigured ? initialReservas : reservasState;
-    return list.filter(r => 
-      r.escola_id === (selectedEscolaId || profile?.escola_id) && 
+    return reservasState.filter(r => 
+      r.escola_id === currentSchoolId && 
       r.data === todayStr
     );
-  }, [selectedEscolaId, profile?.escola_id, reservasState]);
+  }, [currentSchoolId, reservasState]);
 
   const schoolEscolas = allEscolas;
-  const escola = schoolEscolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
+  const escola = schoolEscolas.find(e => e.id === currentSchoolId);
   const schoolRecursosList = schoolRecursos;
 
 
@@ -118,11 +87,10 @@ const AgendaPage = () => {
   const getReservaForSlot = (date: Date, aula: number) => {
     if (!date) return null;
     const dateStr = format(date, "yyyy-MM-dd");
-    const list = isSupabaseConfigured ? initialReservas : reservasState;
-    return list.find(r =>
+    return reservasState.find(r =>
       r.data === dateStr &&
       r.aula === aula &&
-      r.escola_id === (selectedEscolaId || profile?.escola_id) &&
+      r.escola_id === currentSchoolId &&
       (r.status === "confirmada" || r.status === "aprovada" || r.status === "pendente" || r.status === "manutencao" || r.status === "bloqueada") &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
       (!searchQuery ||
