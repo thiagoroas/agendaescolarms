@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { DiagnosticPanel } from "@/components/admin/DiagnosticPanel";
+
 
 const AdminProfessoresPage = () => {
   const { user, profile, selectedEscolaId, setSelectedEscolaId } = useAuth();
@@ -239,6 +241,8 @@ const AdminProfessoresPage = () => {
 
   return (
     <div className="space-y-6">
+      <DiagnosticPanel />
+      
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Usuários do Sistema</h1>
@@ -249,6 +253,7 @@ const AdminProfessoresPage = () => {
           Novo Usuário
         </Button>
       </header>
+
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-slate-100 p-1 mb-2">
