@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { isSupabaseConfigured } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -204,6 +205,25 @@ const LoginPage = () => {
         )}
       </div>
 
+      {!isSupabaseConfigured && (
+        <div className="fixed bottom-4 right-4 max-w-xs rounded-xl bg-white p-4 shadow-xl border border-blue-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <h3 className="text-sm font-semibold text-slate-900 mb-2">Credenciais de teste</h3>
+          <div className="space-y-1.5 text-xs text-slate-600">
+            <div className="p-1.5 bg-blue-50 rounded border border-blue-100">
+              <span className="font-medium text-blue-700">thiagomroas@gmail.com</span> / admin123
+            </div>
+            <div className="p-1.5 bg-slate-50 rounded border border-slate-100">
+              <span className="font-medium">lab@escola.com</span> / lab123
+            </div>
+            <div className="p-1.5 bg-slate-50 rounded border border-slate-100">
+              <span className="font-medium">carlos@escola.com</span> / prof123
+            </div>
+            <div className="p-1.5 bg-slate-50 rounded border border-slate-100">
+              <span className="font-medium">fernanda@escola.com</span> / lab123
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
