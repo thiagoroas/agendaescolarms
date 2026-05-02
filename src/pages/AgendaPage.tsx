@@ -182,7 +182,9 @@ const AgendaPage = () => {
     }
   };
 
-  const weekLabel = `${format(weekDates[0], "d 'de' MMM", { locale: ptBR })} – ${format(weekDates[4], "d 'de' MMM", { locale: ptBR })}`;
+  const mondayOfCurrentDate = startOfWeek(currentDate, { weekStartsOn: 1 });
+  const fridayOfCurrentDate = addDays(mondayOfCurrentDate, 4);
+  const weekLabel = `${format(mondayOfCurrentDate, "d 'de' MMM", { locale: ptBR })} – ${format(fridayOfCurrentDate, "d 'de' MMM", { locale: ptBR })}`;
 
   return (
     <div className="agenda-proto">
