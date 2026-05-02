@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { format, isAfter, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const MinhasReservasPage = () => {
   const { user, profile } = useAuth();
