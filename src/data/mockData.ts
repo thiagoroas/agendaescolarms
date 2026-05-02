@@ -55,7 +55,7 @@ export interface Reserva {
   id: string;
   escola_id: string;
   recurso_id: string;
-  professor_id: string;
+  profile_id: string;
   nome_professor: string;
   disciplina: string;
   turma: string;
