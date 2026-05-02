@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { escolas as initialEscolas, Escola } from "../data/mockData";
-import { getMockEscolas, saveMockEscolas } from "../data/storage";
-import { isSupabaseConfigured } from "../lib/supabase";
+import { Escola } from "../data/mockData";
+import { useEscolas } from "@/hooks/useEscolas";
 import { Button } from "@/components/ui/button";
-import { Plus, Building2, MapPin, Search, ExternalLink } from "lucide-react";
+import { Plus, Building2, MapPin, Search, ExternalLink, Edit2, Power, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,9 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const AdminEscolasPage = () => {
   const { user } = useAuth();
+  const { escolas, loading, createEscola, updateEscola, toggleEscolaStatus } = useEscolas();
   const [searchTerm, setSearchTerm] = useState("");
-  const [localEscolas, setLocalEscolas] = useState<Escola[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
 
   // Form state
   const [nome, setNome] = useState("");
@@ -26,45 +26,49 @@ const AdminEscolasPage = () => {
   const [endereco, setEndereco] = useState("");
   const [telefone, setTelefone] = useState("");
 
-  useEffect(() => {
-    setLocalEscolas(getMockEscolas());
-  }, []);
-
-  const filteredEscolas = localEscolas.filter(e => 
+  const filteredEscolas = escolas.filter(e => 
     e.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
     e.cidade.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSalvarEscola = (e: React.FormEvent) => {
+  const handleOpenModal = (escola?: Escola) => {
+    if (escola) {
+      setEditingEscola(escola);
+      setNome(escola.nome);
+      setCidade(escola.cidade);
+      setEstado(escola.estado);
+    } else {
+      setEditingEscola(null);
+      setNome("");
+      setCidade("");
+      setEstado("");
+    }
+    setEndereco("");
+    setTelefone("");
+    setIsModalOpen(true);
+  };
+
+  const handleSalvarEscola = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome.trim()) { toast.error("Nome é obrigatório"); return; }
     if (!cidade.trim()) { toast.error("Cidade é obrigatória"); return; }
     if (!estado) { toast.error("Estado é obrigatório"); return; }
 
-    const novaEscola: Escola = {
-      id: "escola-" + Date.now(),
-      nome: nome.trim(),
-      cidade: cidade.trim(),
-      estado,
-      status: "ativa" as const,
-    };
-
-    setLocalEscolas(prev => {
-      const updated = [novaEscola, ...prev];
-      if (!isSupabaseConfigured) {
-        saveMockEscolas(updated);
-      }
-      return updated;
-    });
-    
-    // Reset
-    setNome("");
-    setCidade("");
-    setEstado("");
-    setEndereco("");
-    setTelefone("");
-    setIsModalOpen(false);
-    toast.success("Escola cadastrada com sucesso!");
+    if (editingEscola) {
+      const success = await updateEscola(editingEscola.id, {
+        nome: nome.trim(),
+        cidade: cidade.trim(),
+        estado
+      });
+      if (success) setIsModalOpen(false);
+    } else {
+      const result = await createEscola({
+        nome: nome.trim(),
+        cidade: cidade.trim(),
+        estado
+      });
+      if (result) setIsModalOpen(false);
+    }
   };
 
   const ufs = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
