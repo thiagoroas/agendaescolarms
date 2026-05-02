@@ -1,61 +1,28 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { getMockReservas, getMockEscolas, getMockAvisos, getMockRecursos } from "../data/storage";
+import { getMockEscolas, getMockAvisos, getMockRecursos, getMockReservas } from "../data/storage";
 import { useRecursos } from "@/hooks/useRecursos";
+import { useReservas } from "@/hooks/useReservas";
 import { Reserva, Recurso, Escola, AvisoLaboratorio } from "../data/mockData";
 import { format, parseISO, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { 
-  Calendar, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle, 
-  Plus, 
-  FileText,
-  User,
-  Monitor,
-  LayoutDashboard,
-  Bell,
-  Info,
-  AlertTriangle,
-  ChevronRight,
-  Trash2
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
-import { resetMockData } from "../data/storage";
-import { useToast } from "@/hooks/use-toast";
-
+// ... (imports)
 const DashboardPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const { recursos: todosRecursos, loading: loadingRecursos } = useRecursos();
-  const [todasReservas, setTodasReservas] = useState<Reserva[]>([]);
+  const { reservas: todasReservas, loading: loadingReservas } = useReservas();
 
   const [todasEscolas, setTodasEscolas] = useState<Escola[]>([]);
   const [avisos, setAvisos] = useState<AvisoLaboratorio[]>([]);
 
   useEffect(() => {
-    setTodasReservas(getMockReservas());
     setTodasEscolas(getMockEscolas());
     setAvisos(getMockAvisos());
   }, []);
+
 
   
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
