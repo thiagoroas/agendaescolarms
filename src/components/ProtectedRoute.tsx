@@ -10,12 +10,21 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
   const { user, profile, loading, profileLoading } = useAuth();
   const location = useLocation();
 
+  console.log("[ProtectedRoute] state:", { 
+    loading, 
+    profileLoading, 
+    hasUser: !!user, 
+    hasProfile: !!profile,
+    profileStatus: profile?.status,
+    path: location.pathname 
+  });
+
   if (loading || (user && profileLoading && !profile)) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground font-medium">Carregando...</p>
+          <p className="text-sm text-muted-foreground font-medium">Carregando permissões...</p>
         </div>
       </div>
     );
