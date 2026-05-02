@@ -395,25 +395,31 @@ const AdminProfessoresPage = () => {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label>Escola Vinculada</Label>
+            <div className="space-y-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <div className="flex items-center justify-between mb-1">
+                <Label htmlFor="escola" className="text-blue-900 font-bold">Escola vinculada</Label>
+                <Badge variant="outline" className="bg-white text-[10px] h-5">Obrigatório</Badge>
+              </div>
               {isAdminPlataforma ? (
                 <Select value={escolaId} onValueChange={setEscolaId}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecione a escola" />
+                  <SelectTrigger id="escola" className="bg-white border-blue-200 focus:ring-blue-500">
+                    <SelectValue placeholder="Selecione a escola do usuário" />
                   </SelectTrigger>
                   <SelectContent>
-                    {escolas.filter(e => e.status === "ativa").map(e => (
+                    {escolas.map(e => (
                       <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               ) : (
-                <div className="p-3 bg-slate-50 border rounded-lg text-sm text-slate-600 font-medium flex items-center gap-2">
+                <div className="p-3 bg-white border rounded-lg text-sm text-slate-600 font-medium flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-slate-400" />
-                  {escolas.find(e => e.id === escolaId)?.nome || "Sua Escola"}
+                  {escolas.find(e => e.id === (profile?.escola_id || escolaId))?.nome || "Sua Escola"}
                 </div>
               )}
+              <p className="text-[10px] text-blue-600 mt-1 leading-tight">
+                <span className="font-bold">Nota:</span> "Escola vinculada" é a escola onde este usuário terá acesso. "Escola ativa" no topo do painel é apenas o seu filtro atual de visualização.
+              </p>
             </div>
 
             <div className="space-y-2">
