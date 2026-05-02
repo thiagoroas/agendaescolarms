@@ -78,14 +78,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Listen for changes on auth state (logged in, signed out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null);
+      console.log("[AUTH] onAuthStateChange event:", event, session ? "Session found" : "No session");
       
       if (session?.user) {
-        // Se já temos um perfil e o evento não é de login/mudança de usuário, 
-        // talvez não precisemos buscar novamente se já temos os dados.
-        // Mas para garantir consistência, buscamos sempre que houver usuário.
+        setUser(session.user);
         await fetchProfile(session.user.id);
       } else {
+        setUser(null);
         setProfile(null);
         setSelectedEscolaIdState(null);
         setLoading(false);
