@@ -259,11 +259,11 @@ const LoginPage = () => {
         </div>
       )}
 
-      <div className="mt-8 mb-4 text-center">
+      <footer className="w-full py-6 mt-auto text-center">
         <p className="text-sm text-slate-500">
-          Desenvolvido pelo <strong>Prof. Tiago Roas</strong>
+          Desenvolvido pelo <strong className="font-bold text-slate-700">Prof. Tiago Roas</strong>
         </p>
-      </div>
+      </footer>
     </div>
   );
 };
