@@ -110,6 +110,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const normalizedEmail = email.trim().toLowerCase();
       const normalizedPassword = senha.trim();
       
+      console.log("LOGIN_DEBUG: Intentando login", normalizedEmail, normalizedPassword);
+      
       const mockUsuarios = getMockUsuarios();
       console.log("AuthContext: Tentando login com", normalizedEmail, "Total usuários no storage:", mockUsuarios.length);
       const foundUser = mockUsuarios.find(
