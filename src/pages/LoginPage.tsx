@@ -137,6 +137,9 @@ const LoginPage = () => {
               </div>
               <h1 className="text-2xl font-bold text-slate-900">Agenda Escolar Digital</h1>
               <p className="text-sm text-slate-500 text-center mt-1">Faça login para acessar a agenda da sua escola</p>
+              <div className="mt-2 inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-800 border border-amber-100">
+                Modo protótipo: dados de demonstração para teste piloto
+              </div>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
@@ -206,23 +209,51 @@ const LoginPage = () => {
       </div>
 
       {!isSupabaseConfigured && (
-        <div className="fixed bottom-4 right-4 max-w-xs rounded-xl bg-white p-4 shadow-xl border border-blue-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <h3 className="text-sm font-semibold text-slate-900 mb-2">Credenciais de teste</h3>
-          <div className="space-y-1.5 text-xs text-slate-600">
-            <div className="p-1.5 bg-blue-50 rounded border border-blue-100">
-              <span className="font-medium text-blue-700">thiagomroas@gmail.com</span> / admin123
+        <div className="fixed bottom-4 right-4 max-w-sm rounded-xl bg-white p-4 shadow-xl border border-blue-100 animate-in fade-in slide-in-from-bottom-4 duration-500 max-h-[80vh] overflow-y-auto">
+          <div className="mb-3">
+            <h3 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] text-white">?</span>
+              Como testar
+            </h3>
+            <ul className="space-y-1.5 text-xs text-slate-600 ml-1">
+              <li className="flex gap-2">
+                <span className="font-bold text-blue-600 min-w-[70px]">Professor:</span>
+                <span>Criar reserva e consultar "Minhas Reservas"</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="font-bold text-blue-600 min-w-[70px]">Laboratório:</span>
+                <span>Acompanhar reservas e gerar relatório</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="font-bold text-blue-600 min-w-[70px]">Admin:</span>
+                <span>Trocar escola ativa e validar dados isolados</span>
+              </li>
+            </ul>
+          </div>
+
+          <Separator className="my-3 bg-slate-100" />
+
+          <h3 className="text-sm font-bold text-slate-900 mb-2">Credenciais de acesso</h3>
+          <div className="space-y-1.5 text-[11px] text-slate-600">
+            <div className="p-2 bg-blue-50 rounded border border-blue-100">
+              <div className="flex justify-between items-center mb-0.5">
+                <span className="font-bold text-blue-700">Admin Geral (Plataforma)</span>
+              </div>
+              <p className="text-slate-500">admin@escola.com / admin123</p>
             </div>
-            <div className="p-1.5 bg-slate-50 rounded border border-slate-100">
-              <span className="font-medium">admin@escola.com</span> / admin123
+            
+            <div className="p-2 bg-slate-50 rounded border border-slate-100">
+              <div className="flex justify-between items-center mb-0.5">
+                <span className="font-bold text-slate-700">Admin Escolar (Laboratório)</span>
+              </div>
+              <p className="text-slate-500">lab@escola.com / lab123</p>
             </div>
-            <div className="p-1.5 bg-slate-50 rounded border border-slate-100">
-              <span className="font-medium">lab@escola.com</span> / lab123
-            </div>
-            <div className="p-1.5 bg-slate-50 rounded border border-slate-100">
-              <span className="font-medium">carlos@escola.com</span> / prof123
-            </div>
-            <div className="p-1.5 bg-slate-50 rounded border border-slate-100">
-              <span className="font-medium">fernanda@escola.com</span> / lab123
+            
+            <div className="p-2 bg-slate-50 rounded border border-slate-100">
+              <div className="flex justify-between items-center mb-0.5">
+                <span className="font-bold text-slate-700">Professor</span>
+              </div>
+              <p className="text-slate-500">carlos@escola.com / prof123</p>
             </div>
           </div>
         </div>
@@ -230,5 +261,9 @@ const LoginPage = () => {
     </div>
   );
 };
+
+const Separator = ({ className }: { className?: string }) => (
+  <div className={cn("h-[1px] w-full", className)} />
+);
 
 export default LoginPage;

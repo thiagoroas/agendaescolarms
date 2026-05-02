@@ -203,11 +203,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(null);
     setSelectedEscolaIdState(null);
     
+    // Clear all session storage
     localStorage.removeItem("agenda_mock_user");
     localStorage.removeItem("agenda_mock_profile");
     localStorage.removeItem("agenda_selected_escola_id");
     localStorage.removeItem("agenda_remembered_email");
     localStorage.removeItem("agenda_remembered_password");
+    
+    // Also clear any other related items
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith("agenda_") || key === "sb-")) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
   };
 
   return (
