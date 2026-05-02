@@ -70,15 +70,12 @@ const DashboardPage = () => {
     return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, 5);
   }, [reservasEscola, profile?.role, user?.id]);
 
-  const pendencias = useMemo(() => {
-    if (profile?.role === "professor") {
-      return reservasEscola.filter(r => r.professor_id === user?.id && r.status === "pendente");
-    }
-    return reservasEscola.filter(r => r.status === "pendente");
-  }, [reservasEscola, profile?.role, user?.id]);
+  const alertas = useMemo(() => {
+    return reservasEscola.filter(r => r.status === "manutencao" || r.status === "bloqueada");
+  }, [reservasEscola]);
 
   const recursosEmUsoHoje = useMemo(() => {
-    const ids = new Set(reservasHoje.filter(r => r.status === "aprovada").map(r => r.recurso_id));
+    const ids = new Set(reservasHoje.filter(r => r.status === "confirmada" || r.status === "aprovada").map(r => r.recurso_id));
     return recursosEscola.filter(r => ids.has(r.id));
   }, [reservasHoje, recursosEscola]);
 
