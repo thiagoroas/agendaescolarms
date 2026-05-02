@@ -391,12 +391,16 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
               ) : (
                 <Select value={formData.professorId} onValueChange={(v) => setFormData({...formData, professorId: v})}>
                   <SelectTrigger className="rounded-xl border-slate-200 h-10 font-medium">
-                    <SelectValue placeholder="Selecione o professor" />
+                    <SelectValue placeholder={isLoadingProfessores ? "Carregando..." : "Selecione o professor"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {professoresDaEscola.map(p => (
-                      <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
-                    ))}
+                    {professoresDaEscola.length > 0 ? (
+                      professoresDaEscola.map(p => (
+                        <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="none" disabled>Nenhum professor ativo cadastrado nesta escola.</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               )}
