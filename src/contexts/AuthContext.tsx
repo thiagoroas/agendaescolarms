@@ -60,15 +60,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Check active sessions and sets the user
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      console.log("[AUTH] getSession result:", session ? "Session found" : "No session");
       if (session?.user) {
+        setUser(session.user);
         fetchProfile(session.user.id);
       } else {
+        setUser(null);
+        setProfile(null);
         setLoading(false);
+        setProfileLoading(false);
       }
     }).catch(err => {
-      console.error("Supabase session error:", err);
+      console.error("[AUTH] Supabase session error:", err);
       setLoading(false);
+      setProfileLoading(false);
     });
 
     // Listen for changes on auth state (logged in, signed out, etc.)
