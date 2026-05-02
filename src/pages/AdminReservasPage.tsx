@@ -88,13 +88,24 @@ const AdminReservasPage = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge 
-                      style={{ backgroundColor: rec?.cor_fundo, color: rec?.cor_texto, borderColor: rec?.cor_borda }}
-                      variant="outline"
-                      className="text-[10px]"
-                    >
-                      {rec?.nome}
-                    </Badge>
+                    <div className="flex flex-col gap-1">
+                      <Badge 
+                        style={{ backgroundColor: rec?.cor_fundo, color: rec?.cor_texto, borderColor: rec?.cor_borda }}
+                        variant="outline"
+                        className="text-[10px] w-fit"
+                      >
+                        {rec?.nome}
+                      </Badge>
+                      <Badge variant="outline" className={cn(
+                        "text-[9px] font-black uppercase tracking-widest w-fit",
+                        r.status === "aprovada" ? "bg-green-50 text-green-700 border-green-200" :
+                        r.status === "pendente" ? "bg-amber-50 text-amber-700 border-amber-200" :
+                        r.status === "recusada" ? "bg-red-50 text-red-700 border-red-200" :
+                        "bg-slate-50 text-slate-700 border-slate-200"
+                      )}>
+                        {r.status}
+                      </Badge>
+                    </div>
                   </TableCell>
                   <TableCell className="text-slate-600 text-xs">
                     {r.horario} (Aula {r.aula})
