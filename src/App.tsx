@@ -63,8 +63,7 @@ const AppContent = () => {
   
   console.log("[AppContent] render state:", { loading, profileLoading, hasUser: !!user, hasProfile: !!profile });
 
-  // 1. Rota de login deve estar disponível IMEDIATAMENTE se não houver usuário decidido
-  // ou se for a rota de login explicitamente
+  // 1. Rota de login deve estar disponível IMEDIATAMENTE se for a rota de login
   const isLoginPage = window.location.pathname === "/login";
 
   if (isLoginPage) {
@@ -82,35 +81,34 @@ const AppContent = () => {
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Iniciando...</p>
+          <p className="text-sm text-muted-foreground font-medium">Iniciando sessão...</p>
         </div>
       </div>
     );
   }
 
-  // Se não houver usuário, redirecionar para login (fora da condição de loading para garantir renderização)
-  if (!user && !loading) {
-    return (
-      <Routes>
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    );
-  }
+  const { logout } = useAuth();
 
   // 3. Loading de Perfil (Diferente do loading de Auth)
+  // Se estiver carregando por mais de 8s, o AuthContext já terá setado profileLoading como false via timeout
   if (user && profileLoading && !profile) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           <p className="text-sm text-muted-foreground font-medium">Carregando perfil...</p>
+          <button 
+            onClick={() => logout()} 
+            className="mt-4 text-xs text-muted-foreground hover:underline"
+          >
+            Sair e voltar ao login
+          </button>
         </div>
       </div>
     );
   }
 
   // 4. Status de Acesso (Pendente/Bloqueado)
-  const { logout } = useAuth();
 
   if (profile) {
     if (profile.status === "pendente") {

@@ -30,12 +30,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+import { useRef } from "react";
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedEscolaId, setSelectedEscolaIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
+  const lastFetchedUserIdRef = useRef<string | null>(null);
 
   const setSelectedEscolaId = (id: string) => {
     setSelectedEscolaIdState(id);
@@ -66,6 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session.user);
         fetchProfile(session.user.id);
       } else {
+        console.log("[AUTH] no session, showing login");
         setUser(null);
         setProfile(null);
         setLoading(false);
@@ -82,9 +86,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("[AUTH] onAuthStateChange event:", event, session ? "Session found" : "No session");
       
       if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
+        // Evitar loop: só buscar se o usuário mudou ou se é um evento explícito de login
+        if (lastFetchedUserIdRef.current !== session.user.id || event === 'SIGNED_IN') {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        }
       } else {
+        lastFetchedUserIdRef.current = null;
         setUser(null);
         setProfile(null);
         setSelectedEscolaIdState(null);
@@ -97,11 +105,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const fetchProfile = async (userId: string) => {
-    setProfileLoading(true);
-    try {
-      console.log("[AUTH] Iniciando fetchProfile para ID:", userId);
+    if (!userId) {
+      setLoading(false);
+      setProfileLoading(false);
+      return;
+    }
 
-      // First try real profiles table
+    lastFetchedUserIdRef.current = userId;
+    setProfileLoading(true);
+    
+    // Timeout de segurança: se demorar mais de 8s, libera o loading
+    const safetyTimeout = setTimeout(() => {
+      if (profileLoading) {
+        console.warn("[AUTH] fetchProfile timeout atingido (8s)");
+        setProfileLoading(false);
+        setLoading(false);
+      }
+    }, 8000);
+
+    try {
+      console.log("[AUTH] fetchProfile start", userId);
+
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -109,16 +133,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (error) {
-        console.error("[AUTH] Erro ao buscar perfil no Supabase:", error.message, "Código:", error.code);
+        console.error("[AUTH] fetchProfile error", error.message, "Código:", error.code);
         
-        // APENAS se o Supabase real NÃO estiver configurado, verificamos mock
         if (!isSupabaseConfigured) {
-          console.log("[AUTH] Supabase não configurado, tentando fallback mock...");
           const savedProfile = localStorage.getItem("agenda_mock_profile");
           if (savedProfile) {
             const parsed = JSON.parse(savedProfile);
             if (parsed.id === userId) {
-              console.log("[AUTH] Perfil mock encontrado:", parsed.full_name);
               setProfile(parsed);
               const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
               setSelectedEscolaIdState(savedEscolaId || parsed.escola_id);
@@ -126,16 +147,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           }
         }
-        
-        console.warn("[AUTH] Perfil não encontrado no banco ou mock.");
         setProfile(null);
-        // Não lançamos erro aqui para não quebrar o fluxo do finally
       }
 
       if (data) {
-        console.log("[AUTH] Perfil encontrado no banco:", data.nome, "Status:", data.status, "Papel:", data.papel);
-        
-        // Map real profile to App's Profile interface
+        console.log("[AUTH] fetchProfile success", data.nome);
         const mappedProfile: Profile = {
           id: data.id,
           full_name: data.nome,
@@ -144,22 +160,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           status: data.status as "ativo" | "pendente" | "bloqueado",
           disciplinas: data.disciplinas
         };
-
         setProfile(mappedProfile);
-        
         const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
         setSelectedEscolaIdState(savedEscolaId || data.escola_id);
-      } else if (!isSupabaseConfigured) {
-        // Já tratado no erro, mas por segurança
       } else {
-        console.warn("[AUTH] Perfil retornado como null/undefined");
         setProfile(null);
       }
     } catch (error) {
-      console.error("[AUTH] Exceção crítica no fetchProfile:", error);
+      console.error("[AUTH] fetchProfile catch", error);
       setProfile(null);
     } finally {
-      console.log("[AUTH] Finalizando loadings...");
+      clearTimeout(safetyTimeout);
+      console.log("[AUTH] fetchProfile finally");
       setProfileLoading(false);
       setLoading(false);
     }
