@@ -161,16 +161,12 @@ const PerfilPage = () => {
 
         // Update session storage for user and profile
         const savedUser = localStorage.getItem("agenda_mock_user");
-        const savedProfile = localStorage.getItem("agenda_mock_profile");
-        
         if (savedUser) {
           const userObj = JSON.parse(savedUser);
-          localStorage.setItem("agenda_mock_user", JSON.stringify({ ...userObj, password: trimmedNewPassword }));
-        }
-        
-        if (savedProfile) {
-          const profileObj = JSON.parse(savedProfile);
-          localStorage.setItem("agenda_mock_profile", JSON.stringify({ ...profileObj }));
+          // O objeto User do Supabase mockado não tem campo 'password',
+          // mas o AuthContext não o usa para validação no login (ele usa getMockUsuarios).
+          // Manteremos a sessão atual.
+          localStorage.setItem("agenda_mock_user", JSON.stringify(userObj));
         }
 
         toast.success("Senha alterada com sucesso.");
