@@ -1,40 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { isSupabaseConfigured } from "../lib/supabase";
 import { getMockReservas, getMockRecursos, getMockEscolas, getMockAvisos } from "../data/storage";
-import { Reserva, Recurso, Escola, AvisoLaboratorio } from "../data/mockData";
-import { format, parseISO, isSameDay } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { 
-  Calendar, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle, 
-  Plus, 
-  FileText,
-  User,
-  Monitor,
-  LayoutDashboard,
-  Bell,
-  Info,
-  AlertTriangle,
-  ChevronRight,
-  Trash2
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { cn } from "@/lib/utils";
+// ... keep existing code
 import { useNavigate } from "react-router-dom";
 import { resetMockData } from "../data/storage";
 import { useToast } from "@/hooks/use-toast";
@@ -377,7 +345,7 @@ const DashboardPage = () => {
       </div>
 
       {/* Seção Admin Plataforma: Modo Protótipo */}
-      {profile?.role === "admin_plataforma" && (
+      {profile?.role === "admin_plataforma" && !isSupabaseConfigured && (
         <div className="mt-12 pt-8 border-t border-slate-100 animate-in slide-in-from-bottom duration-700">
           <div className="bg-slate-50 rounded-[2.5rem] p-8 md:p-10 border border-slate-200 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
