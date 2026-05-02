@@ -1,5 +1,8 @@
 import { Escola, Usuario, Recurso, Reserva, escolas as initialEscolas, usuarios as initialUsuarios, recursos as initialRecursos, reservas as initialReservas } from "./mockData";
 
+// Flag to prevent clearing localStorage unless explicitly asked
+const INITIALIZED_KEY = "agenda_app_initialized";
+
 const STORAGE_KEYS = {
   ESCOLAS: "agenda_mock_escolas",
   USUARIOS: "agenda_mock_usuarios",
