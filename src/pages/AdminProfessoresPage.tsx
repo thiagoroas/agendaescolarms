@@ -116,16 +116,22 @@ const AdminProfessoresPage = () => {
       setLocalUsers(prev => {
         const updated = prev.map(u => {
           if (u.id === editingUserId) {
-            return {
+            const updatedUser = {
               ...u,
               nome: nome.trim(),
               email: email.trim(),
-              escola_id: escolaId,
+              escola_id: isAdminPlataforma ? escolaId : u.escola_id, // Proteção escola_id para admin_lab
               papel: papel,
               status: status,
               disciplinas: papel === "professor" ? disciplinasArray : undefined,
-              ...(senha ? { senha } : {})
             };
+            
+            // Alteração de senha se preenchida
+            if (senha) {
+              (updatedUser as any).senha = senha;
+            }
+            
+            return updatedUser;
           }
           return u;
         });
@@ -138,7 +144,7 @@ const AdminProfessoresPage = () => {
         id: "user-" + Date.now(),
         nome: nome.trim(),
         email: email.trim(),
-        escola_id: escolaId,
+        escola_id: isAdminPlataforma ? escolaId : (profile?.escola_id || ""),
         papel: papel,
         status: "ativo",
         disciplinas: papel === "professor" ? disciplinasArray : undefined
