@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from "react";
-import { format, addDays, startOfWeek, isSameDay } from "date-fns";
+import React, { useState, useMemo, useEffect } from "react";
+import { format, addDays, startOfWeek, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { escolas, recursos, reservas, Reserva, Recurso } from "../data/mockData";
 import { horarios, diasSemana } from "../data/horarios";
@@ -42,6 +42,14 @@ const AgendaPage = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
   const [isModalDetalhesOpen, setIsModalDetalhesOpen] = useState(false);
@@ -63,7 +71,7 @@ const AgendaPage = () => {
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(monday, i));
 
   const navigateWeek = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => addDays(prev, direction === 'prev' ? -7 : 7));
+    setCurrentDate(prev => addDays(prev, isMobile ? (direction === 'prev' ? -1 : 1) : (direction === 'prev' ? -7 : 7)));
   };
 
   const getReservaForSlot = (date: Date, aula: number) => {
