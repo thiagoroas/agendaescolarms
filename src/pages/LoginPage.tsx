@@ -263,7 +263,7 @@ const LoginPage = () => {
 };
 
 const Separator = ({ className }: { className?: string }) => (
-  <div className={cn("h-[1px] w-full", className)} />
+  <div className={`h-[1px] w-full ${className || ""}`} />
 );
 
 export default LoginPage;
