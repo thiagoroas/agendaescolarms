@@ -289,7 +289,16 @@ const AdminProfessoresPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.length === 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={isAdminPlataforma ? 6 : 5} className="h-24 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                        <span className="text-slate-500">Carregando usuários...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredUsers.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={isAdminPlataforma ? 6 : 5} className="h-24 text-center text-slate-500">
                       Nenhum usuário encontrado.
@@ -326,40 +335,65 @@ const AdminProfessoresPage = () => {
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              onClick={() => {
-                                setLocalUsers(prev => {
-                                  const updated = prev.map(usr => usr.id === u.id ? { ...usr, status: "ativo" as const } : usr);
-                                  if (!isSupabaseConfigured) {
-                                    saveMockUsuarios(updated as any);
-                                    console.log("AdminProfessoresPage: Status aprovado e salvo");
+                              disabled={loading}
+                              onClick={async () => {
+                                if (isSupabaseConfigured) {
+                                  setLoading(true);
+                                  try {
+                                    const { error } = await supabase.functions.invoke('manage-user', {
+                                      body: { action: 'update', userData: { id: u.id, status: 'ativo' } }
+                                    });
+                                    if (error) throw error;
+                                    toast.success("Acesso aprovado!");
+                                    fetchUsers();
+                                  } catch (err: any) {
+                                    toast.error("Erro ao aprovar usuário");
+                                  } finally {
+                                    setLoading(false);
                                   }
-                                  return updated;
-                                });
-                                toast.success("Acesso aprovado!");
+                                } else {
+                                  const updated = localUsers.map(usr => usr.id === u.id ? { ...usr, status: "ativo" as const } : usr);
+                                  saveMockUsuarios(updated as any);
+                                  setLocalUsers(updated);
+                                  toast.success("Acesso aprovado!");
+                                }
                               }} 
                               className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 h-8 w-8 p-0"
                             >
                               <UserCheck className="h-4 w-4" />
                             </Button>
                           )}
-                          <Button variant="outline" size="sm" onClick={() => openModal(u)} className="h-8 w-8 p-0">
+                          <Button variant="outline" size="sm" onClick={() => openModal(u)} className="h-8 w-8 p-0" disabled={loading}>
                             <Edit2 className="h-4 w-4" />
                           </Button>
                           <Button 
                             variant="outline" 
                             size="sm" 
+                            disabled={loading}
                             className="text-red-600 hover:bg-red-50 border-red-100 h-8 w-8 p-0"
-                            onClick={() => {
-                              if (confirm(`Deseja excluir ${u.nome}?`)) {
-                                setLocalUsers(prev => {
-                                  const updated = prev.filter(user => user.id !== u.id);
-                                  if (!isSupabaseConfigured) {
-                                    saveMockUsuarios(updated as any);
-                                    console.log("AdminProfessoresPage: Usuário excluído e salvo");
+                            onClick={async () => {
+                              const actionName = u.status === 'bloqueado' ? 'Excluir' : 'Bloquear';
+                              if (confirm(`Deseja ${actionName} ${u.nome}?`)) {
+                                if (isSupabaseConfigured) {
+                                  setLoading(true);
+                                  try {
+                                    const { error } = await supabase.functions.invoke('manage-user', {
+                                      body: { action: 'delete_or_disable', userData: { id: u.id } }
+                                    });
+                                    if (error) throw error;
+                                    toast.success("Usuário bloqueado com sucesso.");
+                                    fetchUsers();
+                                  } catch (err: any) {
+                                    toast.error("Erro ao bloquear usuário");
+                                  } finally {
+                                    setLoading(false);
                                   }
-                                  return updated;
-                                });
-                                toast.success("Usuário excluído.");
+                                } else {
+                                  const updated = localUsers.filter(user => user.id !== u.id);
+                                  saveMockUsuarios(updated as any);
+                                  setLocalUsers(updated);
+                                  toast.success("Usuário excluído.");
+                                }
                               }
                             }}
                           >
