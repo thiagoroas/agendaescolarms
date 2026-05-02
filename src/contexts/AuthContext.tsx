@@ -34,6 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedEscolaId, setSelectedEscolaIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const setSelectedEscolaId = (id: string) => {
     setSelectedEscolaIdState(id);
@@ -71,14 +72,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
+      
       if (session?.user) {
+        // Se já temos um perfil e o evento não é de login/mudança de usuário, 
+        // talvez não precisemos buscar novamente se já temos os dados.
+        // Mas para garantir consistência, buscamos sempre que houver usuário.
         await fetchProfile(session.user.id);
       } else {
         setProfile(null);
         setSelectedEscolaIdState(null);
         setLoading(false);
+        setProfileLoading(false);
       }
     });
 
