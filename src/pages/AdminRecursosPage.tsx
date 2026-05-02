@@ -83,7 +83,7 @@ const AdminRecursosPage = () => {
     if (editingRecurso) {
       const success = await updateRecurso(editingRecurso.id, {
         nome: nome.trim(),
-        tipo,
+        tipo: isSupabaseConfigured ? mapToDbTipo(tipo) : tipo,
         cor_fundo: corSelecionada.cor_fundo,
         cor_texto: corSelecionada.cor_texto,
         cor_borda: corSelecionada.cor_borda,
@@ -96,12 +96,13 @@ const AdminRecursosPage = () => {
       const result = await createRecurso({
         escola_id: targetEscolaId,
         nome: nome.trim(),
-        tipo,
+        tipo: isSupabaseConfigured ? mapToDbTipo(tipo) : tipo,
         cor_fundo: corSelecionada.cor_fundo,
         cor_texto: corSelecionada.cor_texto,
         cor_borda: corSelecionada.cor_borda,
         ativo: true,
       });
+
       if (result) {
         setIsModalOpen(false);
         resetForm();
