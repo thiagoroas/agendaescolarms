@@ -8,14 +8,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { useAuth } from "../../contexts/AuthContext";
-import { usuarios as initialUsuarios, Usuario, reservas as initialReservas, AvisoLaboratorio } from "../../data/mockData";
+import { usuarios as initialUsuarios, Usuario, Reserva, AvisoLaboratorio } from "../../data/mockData";
 import { getMockUsuarios, getMockReservas, saveMockReservas, getMockAvisos, getMockRecursos } from "../../data/storage";
 import { useRecursos } from "@/hooks/useRecursos";
+import { useReservas } from "@/hooks/useReservas";
 import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 import { horarios } from "../../data/horarios";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Info } from "lucide-react";
 
