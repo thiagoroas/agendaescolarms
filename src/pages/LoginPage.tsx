@@ -204,15 +204,17 @@ const LoginPage = () => {
         )}
       </div>
 
-      <div className="fixed bottom-4 left-4 max-w-xs rounded-lg border bg-white p-4 text-xs shadow-sm hidden sm:block">
-        <h4 className="mb-2 font-bold uppercase">Credenciais de Teste</h4>
-        {usuarios.map(u => (
-          <div key={u.id} className="mb-1 flex justify-between gap-4">
-            <span className="truncate font-medium">{u.papel.replace('_', ' ')}</span>
-            <code className="bg-slate-100 px-1 rounded">{u.email}</code>
-          </div>
-        ))}
-      </div>
+      {import.meta.env.DEV && (
+        <div className="fixed bottom-4 left-4 max-w-xs rounded-lg border bg-white p-4 text-xs shadow-sm hidden sm:block">
+          <h4 className="mb-2 font-bold uppercase">Credenciais de Teste (DEV)</h4>
+          {usuarios.map(u => (
+            <div key={u.id} className="mb-1 flex justify-between gap-4">
+              <span className="truncate font-medium">{u.papel.replace('_', ' ')}</span>
+              <code className="bg-slate-100 px-1 rounded">{u.email}</code>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
