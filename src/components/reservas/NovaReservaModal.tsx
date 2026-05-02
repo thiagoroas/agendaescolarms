@@ -42,6 +42,7 @@ const TURMAS_OPCOES = [
 const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProps) => {
   const { user, profile } = useAuth();
   const { recursos: availableRecursos } = useRecursos();
+  const { createReserva } = useReservas();
 
   const [formData, setFormData] = useState({
     professorId: "",
