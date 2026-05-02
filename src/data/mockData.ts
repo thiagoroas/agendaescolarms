@@ -55,7 +55,6 @@ export const escolas: Escola[] = [
   { id: "escola-2", nome: "E.E. Maria Eliza Bocayuva Corrêa", cidade: "Campo Grande", estado: "MS", status: "ativa" },
 ];
 
-// Initial mock data used only as fallback in storage.ts
 export const usuarios: (Usuario & { senha: string })[] = [
   {
     id: "user-admin-thiago",
@@ -115,10 +114,7 @@ export const recursos: Recurso[] = [
 function getWeekDates(): string[] {
   const today = new Date();
   const day = today.getDay();
-  // Se for sábado (6) ou domingo (0), mostra a próxima semana
-  // Caso contrário, mostra a semana atual (seg-sex)
   const baseDate = (day === 0 || day === 6) ? addDays(today, (8 - day) % 7) : today;
-  
   const monday = startOfWeek(baseDate, { weekStartsOn: 1 });
   return Array.from({ length: 5 }, (_, i) => {
     const d = addDays(monday, i);
@@ -129,6 +125,6 @@ function getWeekDates(): string[] {
 const week = getWeekDates();
 
 export const reservas: Reserva[] = [
-  { id: "res-1", escola_id: "escola-1", recurso_id: "rec-1", professor_id: "user-prof-carlos", nome_professor: "Carlos Souza", disciplina: "Programação Web", turma: "3º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Aula prática de HTML/CSS", status: "aprovada", criado_em: new Date().toISOString() },
-  { id: "res-7", escola_id: "escola-2", recurso_id: "rec-3", professor_id: "user-joao", nome_professor: "João Pedro", disciplina: "Robótica", turma: "2º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Montagem de Arduino", status: "aprovada", criado_em: new Date().toISOString() },
+  { id: "res-1", escola_id: "escola-1", recurso_id: "rec-1", professor_id: "user-prof-carlos", nome_professor: "Carlos Souza", disciplina: "Programação Web", turma: "3º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Aula prática de HTML/CSS", status: "confirmada", criado_em: new Date().toISOString() },
+  { id: "res-7", escola_id: "escola-2", recurso_id: "rec-3", professor_id: "user-joao", nome_professor: "João Pedro", disciplina: "Robótica", turma: "2º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Montagem de Arduino", status: "confirmada", criado_em: new Date().toISOString() },
 ];
