@@ -53,10 +53,10 @@ const DashboardPage = () => {
 
   useEffect(() => {
     setTodasReservas(getMockReservas());
-    setTodosRecursos(getMockRecursos());
     setTodasEscolas(getMockEscolas());
     setAvisos(getMockAvisos());
   }, []);
+
   
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
   
