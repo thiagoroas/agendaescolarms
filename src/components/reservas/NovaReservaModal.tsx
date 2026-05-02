@@ -23,12 +23,9 @@ interface NovaReservaModalProps {
 
 const TURMAS_OPCOES = [
   {
-    label: "Ensino Fundamental",
-    options: ["5º Ano", "6º Ano", "7º Ano", "8º Ano", "9º Ano"]
-  },
-  {
-    label: "Ensino Médio",
+    label: "Turmas",
     options: [
+      "5º Ano", "6º Ano", "7º Ano", "8º Ano", "9º Ano",
       "1º Ano A", "1º Ano B", "1º Ano C",
       "2º Ano A", "2º Ano B", "2º Ano C",
       "3º Ano A", "3º Ano B", "3º Ano C"
@@ -52,20 +49,29 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
   useEffect(() => {
     if (isOpen) {
-      const initialProfessorId = profile?.role === 'professor' ? user?.id : "";
-      const initialProfessor = profile?.role === 'professor' ? {
-        id: user?.id || "",
-        nome: profile?.full_name || "",
-        email: user?.email || "",
-        escola_id: profile?.escola_id || "",
-        papel: profile?.role || "professor",
-        status: profile?.status || "ativo",
-        disciplinas: profile?.disciplinas || []
-      } as Usuario : null;
+      const isProfessor = profile?.role === 'professor';
+      const initialProfessorId = isProfessor ? user?.id : "";
+      
+      let initialProfessor = null;
+      if (isProfessor) {
+        initialProfessor = {
+          id: user?.id || "",
+          nome: profile?.full_name || "",
+          email: user?.email || "",
+          escola_id: profile?.escola_id || "",
+          papel: profile?.role || "professor",
+          status: profile?.status || "ativo",
+          disciplinas: profile?.disciplinas || []
+        } as Usuario;
+      }
+
+      const initialDisciplina = (initialProfessor?.disciplinas && initialProfessor.disciplinas.length === 1) 
+        ? initialProfessor.disciplinas[0] 
+        : "";
       
       setFormData({
-        professorId: initialProfessorId,
-        disciplina: (initialProfessor?.disciplinas && initialProfessor.disciplinas.length === 1) ? initialProfessor.disciplinas[0] : "",
+        professorId: initialProfessorId || "",
+        disciplina: initialDisciplina,
         turma: "",
         data: initialData?.date || "",
         recursoId: "",
@@ -74,23 +80,29 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
       });
       setSelectedProfessor(initialProfessor);
     }
-  }, [isOpen, initialData, user]);
+  }, [isOpen, initialData, user, profile]);
 
   useEffect(() => {
-    if (formData.professorId) {
+    if (formData.professorId && profile?.role !== 'professor') {
       const prof = usuarios.find(u => u.id === formData.professorId);
       if (prof) {
         setSelectedProfessor(prof);
-        if (prof.disciplinas && prof.disciplinas.length === 1) {
-          setFormData(prev => ({ ...prev, disciplina: prof.disciplinas![0] }));
-        } else if (!prof.disciplinas || !prof.disciplinas.includes(formData.disciplina)) {
+        const disciplines = prof.disciplinas || [];
+        if (disciplines.length === 1) {
+          setFormData(prev => ({ ...prev, disciplina: disciplines[0] }));
+        } else if (disciplines.length > 1) {
+          if (!disciplines.includes(formData.disciplina)) {
+            setFormData(prev => ({ ...prev, disciplina: "" }));
+          }
+        } else {
           setFormData(prev => ({ ...prev, disciplina: "" }));
         }
       }
-    } else {
+    } else if (!formData.professorId && profile?.role !== 'professor') {
       setSelectedProfessor(null);
+      setFormData(prev => ({ ...prev, disciplina: "" }));
     }
-  }, [formData.professorId]);
+  }, [formData.professorId, profile?.role]);
 
   const availableRecursos = recursos.filter(r => r.escola_id === profile?.escola_id);
   // Show ALL non-interval hours in a single section as requested
@@ -109,14 +121,26 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     if (!formData.recursoId) { toast.error("Selecione um recurso"); return; }
     if (formData.aulas.length === 0) { toast.error("Selecione pelo menos uma aula"); return; }
     
-    // Check for conflicts (Simplified mock logic - usually handled by backend)
-    // Here we'd need to check if any of selected slots are already taken
+    // Check for conflicts
+    const conflict = false; // Mock conflict check
     
-    console.log("Reserva enviada:", { 
+    if (conflict) {
+      toast.error("Este recurso já está reservado para este horário.");
+      return;
+    }
+
+    const payload = { 
       ...formData, 
-      nome_professor: selectedProfessor?.nome, 
-      escola_id: profile?.escola_id 
-    });
+      professor_id: formData.professorId,
+      nome_professor: selectedProfessor?.nome || profile?.full_name, 
+      escola_id: profile?.escola_id,
+      data: formData.data,
+      recurso_id: formData.recursoId,
+      disciplina: formData.disciplina,
+      turma: formData.turma
+    };
+    
+    console.log("Reserva enviada:", payload);
     
     toast.success("Reserva realizada com sucesso!");
     onClose();
@@ -126,7 +150,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[95%] mx-auto overflow-y-auto max-h-[90vh] p-0 border-none rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <DialogContent className="max-w-2xl w-[95%] mx-auto p-0 border-none rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white relative">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tight text-white">Novo Agendamento</DialogTitle>
@@ -134,7 +158,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           <p className="text-blue-100 text-sm font-medium mt-1 opacity-90">Preencha os detalhes para reservar o recurso.</p>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 bg-white">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 bg-white overflow-y-auto max-h-[calc(90vh-180px)]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Professor Responsável</Label>
@@ -169,16 +193,24 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Disciplina</Label>
               {selectedProfessor?.disciplinas && selectedProfessor.disciplinas.length > 0 ? (
-                <Select value={formData.disciplina} onValueChange={(v) => setFormData({...formData, disciplina: v})}>
-                  <SelectTrigger className="rounded-xl border-slate-200 h-10 font-medium">
-                    <SelectValue placeholder="Escolha a disciplina" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectedProfessor.disciplinas.map(d => (
-                      <SelectItem key={d} value={d}>{d}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                selectedProfessor.disciplinas.length === 1 ? (
+                  <Input 
+                    value={selectedProfessor.disciplinas[0]} 
+                    disabled 
+                    className="bg-slate-50 border-slate-100 font-bold text-slate-600 rounded-xl" 
+                  />
+                ) : (
+                  <Select value={formData.disciplina} onValueChange={(v) => setFormData({...formData, disciplina: v})}>
+                    <SelectTrigger className="rounded-xl border-slate-200 h-10 font-medium">
+                      <SelectValue placeholder="Escolha a disciplina" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectedProfessor.disciplinas.map(d => (
+                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )
               ) : (
                 <Input 
                   required 
@@ -270,7 +302,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             <Textarea value={formData.observacao} onChange={e => setFormData({...formData, observacao: e.target.value})} placeholder="Ex: Preciso de adaptador HDMI..." className="min-h-[80px] rounded-2xl bg-slate-50 border-slate-100 focus:bg-white transition-all font-medium" />
           </div>
 
-          <DialogFooter className="sticky bottom-0 bg-white pt-4 pb-2 flex flex-col sm:flex-row gap-3 border-t border-slate-100">
+          <DialogFooter className="bg-white p-6 flex flex-col sm:flex-row gap-3 border-t border-slate-100">
             <Button type="button" variant="ghost" onClick={onClose} className="flex-1 h-12 rounded-xl font-bold text-slate-400 hover:text-slate-600 transition-colors">Cancelar</Button>
             <Button type="submit" className="flex-[2] h-12 bg-blue-600 hover:bg-blue-700 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-blue-100 active:scale-95 transition-all">Salvar Agendamento</Button>
           </DialogFooter>
