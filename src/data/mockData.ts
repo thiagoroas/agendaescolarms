@@ -13,7 +13,7 @@ export interface Usuario {
   escola_id: string;
   papel: "admin_plataforma" | "admin_lab" | "professor";
   status: "ativo" | "pendente" | "bloqueado";
-  disciplinas?: string[]; // Added
+  disciplinas?: string[];
 }
 
 export interface Recurso {
@@ -48,14 +48,72 @@ export const escolas: Escola[] = [
   { id: "escola-2", nome: "E.E. Maria Eliza Bocayuva Corrêa", cidade: "Campo Grande", estado: "MS", status: "ativa" },
 ];
 
-// Mock users removed as we are migrating to Supabase Auth.
-// Using an empty array to avoid breaking UI components that still reference it during transition.
 export const usuarios: (Usuario & { senha: string })[] = [
-  { id: "user-1", nome: "Admin Plataforma", email: "admin@plataforma.com", senha: "123", escola_id: "escola-1", papel: "admin_plataforma", status: "ativo" },
-  { id: "user-2", nome: "Admin Escola 1", email: "admin@escola1.com", senha: "123", escola_id: "escola-1", papel: "admin_lab", status: "ativo" },
-  { id: "user-3", nome: "Carlos Souza", email: "carlos@escola1.com", senha: "123", escola_id: "escola-1", papel: "professor", status: "ativo", disciplinas: ["Informática", "Robótica"] },
-  { id: "user-4", nome: "Ana Oliveira", email: "ana@escola1.com", senha: "123", escola_id: "escola-1", papel: "professor", status: "ativo", disciplinas: ["Matemática", "Física"] },
-  { id: "user-7", nome: "João Pedro", email: "joao@escola2.com", senha: "123", escola_id: "escola-2", papel: "professor", status: "ativo", disciplinas: ["Robótica"] },
+  { 
+    id: "user-thiago", 
+    nome: "Thiago Rocha", 
+    email: "thiagomroas@gmail.com", 
+    senha: "admin123", 
+    escola_id: "escola-1", 
+    papel: "admin_plataforma", 
+    status: "ativo" 
+  },
+  { 
+    id: "user-admin-teste", 
+    nome: "Admin Plataforma Teste", 
+    email: "admin@escola.com", 
+    senha: "admin123", 
+    escola_id: "escola-1", 
+    papel: "admin_plataforma", 
+    status: "ativo" 
+  },
+  { 
+    id: "user-lab-26", 
+    nome: "Admin Lab - 26 de Agosto", 
+    email: "lab@escola.com", 
+    senha: "lab123", 
+    escola_id: "escola-1", 
+    papel: "admin_lab", 
+    status: "ativo" 
+  },
+  { 
+    id: "user-carlos", 
+    nome: "Carlos - Professor", 
+    email: "carlos@escola.com", 
+    senha: "prof123", 
+    escola_id: "escola-1", 
+    papel: "professor", 
+    status: "ativo", 
+    disciplinas: ["Programação Web", "Redes"] 
+  },
+  { 
+    id: "user-roberto", 
+    nome: "Roberto - Pendente", 
+    email: "roberto@escola.com", 
+    senha: "prof123", 
+    escola_id: "escola-1", 
+    papel: "professor", 
+    status: "pendente" 
+  },
+  { 
+    id: "user-fernanda", 
+    nome: "Fernanda - Maria Eliza", 
+    email: "fernanda@escola.com", 
+    senha: "lab123", 
+    escola_id: "escola-2", 
+    papel: "admin_lab", 
+    status: "ativo" 
+  },
+  { 
+    id: "user-joao", 
+    nome: "João - Maria Eliza", 
+    email: "joao@escola.com", 
+    senha: "prof123", 
+    escola_id: "escola-2", 
+    papel: "professor", 
+    status: "ativo", 
+    disciplinas: ["Robótica", "Tecnologia"] 
+  },
 ];
 
 export const recursos: Recurso[] = [
@@ -79,11 +137,6 @@ function getWeekDates(): string[] {
 const week = getWeekDates();
 
 export const reservas: Reserva[] = [
-  { id: "res-1", escola_id: "escola-1", recurso_id: "rec-1", professor_id: "user-3", nome_professor: "Carlos Souza", disciplina: "Programação Web", turma: "3º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Aula prática de HTML/CSS", criado_em: new Date().toISOString() },
-  { id: "res-2", escola_id: "escola-1", recurso_id: "rec-1", professor_id: "user-3", nome_professor: "Carlos Souza", disciplina: "Programação Web", turma: "3º A", data: week[0], turno: "manha", aula: 2, horario: "08:20 – 09:10", observacao: "Continuação da aula prática", criado_em: new Date().toISOString() },
-  { id: "res-3", escola_id: "escola-1", recurso_id: "rec-2", professor_id: "user-4", nome_professor: "Ana Oliveira", disciplina: "Matemática", turma: "2º A", data: week[1], turno: "manha", aula: 3, horario: "09:30 – 10:20", observacao: "Apresentação sobre geometria", criado_em: new Date().toISOString() },
-  { id: "res-4", escola_id: "escola-1", recurso_id: "rec-1", professor_id: "user-4", nome_professor: "Ana Oliveira", disciplina: "Ciências", turma: "1º B", data: week[2], turno: "tarde", aula: 5, horario: "13:00 – 13:50", observacao: "Pesquisa sobre ecossistemas", criado_em: new Date().toISOString() },
-  { id: "res-5", escola_id: "escola-1", recurso_id: "rec-2", professor_id: "user-3", nome_professor: "Carlos Souza", disciplina: "Redes", turma: "3º A", data: week[3], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "", criado_em: new Date().toISOString() },
-  { id: "res-6", escola_id: "escola-1", recurso_id: "rec-1", professor_id: "user-4", nome_professor: "Ana Oliveira", disciplina: "Física", turma: "2º B", data: week[4], turno: "tarde", aula: 7, horario: "15:00 – 15:50", observacao: "Simulação de circuitos", criado_em: new Date().toISOString() },
-  { id: "res-7", escola_id: "escola-2", recurso_id: "rec-3", professor_id: "user-7", nome_professor: "João Pedro", disciplina: "Robótica", turma: "2º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Montagem de Arduino", criado_em: new Date().toISOString() },
+  { id: "res-1", escola_id: "escola-1", recurso_id: "rec-1", professor_id: "user-carlos", nome_professor: "Carlos Souza", disciplina: "Programação Web", turma: "3º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Aula prática de HTML/CSS", criado_em: new Date().toISOString() },
+  { id: "res-7", escola_id: "escola-2", recurso_id: "rec-3", professor_id: "user-joao", nome_professor: "João Pedro", disciplina: "Robótica", turma: "2º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Montagem de Arduino", criado_em: new Date().toISOString() },
 ];

@@ -105,9 +105,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, senha: string, remember: boolean): Promise<{ success: boolean; error?: string }> => {
     if (!isSupabaseConfigured) {
-      const foundUser = usuarios.find(u => u.email === email && u.senha === senha);
+      const trimmedEmail = email.trim().toLowerCase();
+      const trimmedPassword = senha.trim();
+      
+      const foundUser = usuarios.find(u => u.email.toLowerCase() === trimmedEmail && u.senha === trimmedPassword);
       
       if (foundUser) {
+        if (foundUser.status === "pendente") {
+          return { success: false, error: "Seu acesso ainda está aguardando aprovação." };
+        }
+        if (foundUser.status === "bloqueado") {
+          return { success: false, error: "Seu acesso está bloqueado." };
+        }
+
         const mockUser: User = {
           id: foundUser.id,
           email: foundUser.email,
@@ -131,16 +141,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfile(mockProfile);
         setSelectedEscolaIdState(foundUser.escola_id);
         
-        if (remember) {
-          localStorage.setItem("agenda_mock_user", JSON.stringify(mockUser));
-          localStorage.setItem("agenda_mock_profile", JSON.stringify(mockProfile));
-          localStorage.setItem("agenda_selected_escola_id", foundUser.escola_id);
-        }
+        localStorage.setItem("agenda_mock_user", JSON.stringify(mockUser));
+        localStorage.setItem("agenda_mock_profile", JSON.stringify(mockProfile));
+        localStorage.setItem("agenda_selected_escola_id", foundUser.escola_id);
         
         return { success: true };
       }
       
-      return { success: false, error: "E-mail ou senha incorretos (Modo Protótipo)" };
+      return { success: false, error: "E-mail ou senha incorretos." };
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
