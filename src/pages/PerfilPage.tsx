@@ -159,7 +159,7 @@ const PerfilPage = () => {
         setNewPassword("");
         setConfirmPassword("");
       } else {
-        // ... (keep Supabase code)
+        // Supabase mode
         const { error } = await supabase.auth.updateUser({ password: newPassword });
         if (error) throw error;
         toast.success("Senha alterada com sucesso!");
