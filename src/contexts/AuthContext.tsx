@@ -116,7 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         (u) => u.email.trim().toLowerCase() === normalizedEmail
       );
       
-      if (!foundUser || foundUser.senha !== normalizedPassword) {
+      if (!foundUser || foundUser.senha.trim() !== normalizedPassword) {
         return { success: false, error: "E-mail ou senha incorretos." };
       }
 
