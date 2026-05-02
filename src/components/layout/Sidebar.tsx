@@ -66,23 +66,23 @@ const Sidebar = () => {
 
         {profile?.role === "admin_plataforma" ? (
           <div className="mb-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block px-1">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-1.5 block px-1">
               Escola ativa
             </label>
             <div className="relative group">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50/50 border border-blue-100 hover:bg-blue-50 transition-colors cursor-pointer group-focus-within:ring-2 group-focus-within:ring-blue-100 group-focus-within:border-blue-200">
-                <div className="bg-blue-600 rounded-lg p-1.5 text-white shrink-0">
-                  <Building className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 border border-blue-200 hover:bg-blue-100/50 transition-all duration-200 cursor-pointer shadow-sm group-hover:shadow group-focus-within:ring-2 group-focus-within:ring-blue-100">
+                <div className="bg-blue-600 rounded-lg p-2 text-white shrink-0 shadow-sm">
+                  <Building className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1">
-                    <p className="text-xs font-bold text-slate-900 truncate leading-none">
+                    <p className="text-sm font-bold text-slate-900 truncate leading-none">
                       {escola?.nome || "Selecione..."}
                     </p>
-                    <ChevronDown className="h-3 w-3 text-slate-400 shrink-0" />
+                    <ChevronDown className="h-3.5 w-3.5 text-blue-600 shrink-0" />
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-0.5 truncate leading-none">
-                    Troque para gerenciar outra
+                  <p className="text-[10px] text-blue-600/80 mt-1 font-medium truncate leading-none">
+                    Troque para gerenciar outra escola
                   </p>
                 </div>
               </div>
@@ -90,6 +90,7 @@ const Sidebar = () => {
                 value={selectedEscolaId || ""} 
                 onChange={(e) => handleEscolaChange(e.target.value)}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                title="Trocar escola"
               >
                 {escolas.map(e => (
                   <option key={e.id} value={e.id}>{e.nome}</option>
@@ -102,16 +103,27 @@ const Sidebar = () => {
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block px-1">
               Minha escola
             </label>
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-              <div className="bg-slate-400 rounded-lg p-1.5 text-white shrink-0">
-                <Building className="h-3.5 w-3.5" />
+            <div className={cn(
+              "flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 shadow-sm",
+              profile?.role === "admin_lab" 
+                ? "bg-emerald-50 border-emerald-100" 
+                : "bg-blue-50 border-blue-100"
+            )}>
+              <div className={cn(
+                "rounded-lg p-2 text-white shrink-0 shadow-sm",
+                profile?.role === "admin_lab" ? "bg-emerald-600" : "bg-blue-600"
+              )}>
+                <Building className="h-4 w-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-slate-900 truncate leading-none">
+                <p className="text-sm font-bold text-slate-900 truncate leading-none">
                   {escola?.nome || "Sem Escola"}
                 </p>
-                <p className="text-[10px] text-slate-500 mt-0.5 truncate leading-none capitalize">
-                  {profile?.role.replace("_", " ")}
+                <p className={cn(
+                  "text-[10px] mt-1 font-medium truncate leading-none capitalize",
+                  profile?.role === "admin_lab" ? "text-emerald-600" : "text-blue-600"
+                )}>
+                  {profile?.role === "admin_lab" ? "Usuário Laboratório" : "Professor"}
                 </p>
               </div>
             </div>
