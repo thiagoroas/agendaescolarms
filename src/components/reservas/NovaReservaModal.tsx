@@ -302,7 +302,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             <Textarea value={formData.observacao} onChange={e => setFormData({...formData, observacao: e.target.value})} placeholder="Ex: Preciso de adaptador HDMI..." className="min-h-[80px] rounded-2xl bg-slate-50 border-slate-100 focus:bg-white transition-all font-medium" />
           </div>
 
-          <DialogFooter className="sticky bottom-0 bg-white pt-4 pb-2 flex flex-col sm:flex-row gap-3 border-t border-slate-100">
+          <DialogFooter className="bg-white p-6 flex flex-col sm:flex-row gap-3 border-t border-slate-100">
             <Button type="button" variant="ghost" onClick={onClose} className="flex-1 h-12 rounded-xl font-bold text-slate-400 hover:text-slate-600 transition-colors">Cancelar</Button>
             <Button type="submit" className="flex-[2] h-12 bg-blue-600 hover:bg-blue-700 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-blue-100 active:scale-95 transition-all">Salvar Agendamento</Button>
           </DialogFooter>
