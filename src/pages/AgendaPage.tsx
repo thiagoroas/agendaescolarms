@@ -133,9 +133,8 @@ const AgendaPage = () => {
     const mondayStr = format(monday, "yyyy-MM-dd");
     const fridayStr = format(weekDates[4], "yyyy-MM-dd");
     
-    const list = isSupabaseConfigured ? initialReservas : reservasState;
-    return list.filter(r =>
-      r.escola_id === (selectedEscolaId || profile?.escola_id) &&
+    return reservasState.filter(r =>
+      r.escola_id === currentSchoolId &&
       r.data >= mondayStr &&
       r.data <= fridayStr &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
@@ -144,9 +143,7 @@ const AgendaPage = () => {
         r.turma.toLowerCase().includes(searchQuery.toLowerCase())
       )
     ).length;
-  }, [monday, weekDates, selectedRecurso, searchQuery, profile?.escola_id, selectedEscolaId, reservasState]);
-
-  const currentSchoolId = selectedEscolaId || profile?.escola_id;
+  }, [monday, weekDates, selectedRecurso, searchQuery, currentSchoolId, reservasState]);
 
   const avisosAtivos = useMemo(() => {
     const agora = new Date();
@@ -186,8 +183,8 @@ const AgendaPage = () => {
     }
   };
 
-  const handleExcluirReserva = (reservaId: string) => {
-    const reservaParaExcluir = (isSupabaseConfigured ? initialReservas : reservasState).find(r => r.id === reservaId);
+  const handleExcluirReserva = async (reservaId: string) => {
+    const reservaParaExcluir = reservasState.find(r => r.id === reservaId);
     if (!reservaParaExcluir) return;
 
     // Verificar permissões
@@ -202,18 +199,8 @@ const AgendaPage = () => {
     }
 
     if (window.confirm("Tem certeza que deseja cancelar esta reserva?")) {
-      const novasReservas = (isSupabaseConfigured ? initialReservas : reservasState).filter(r => r.id !== reservaId);
-      
-      if (!isSupabaseConfigured) {
-        setReservasState(novasReservas);
-        saveMockReservas(novasReservas);
-      } else {
-        // No modo Supabase real, isso seria uma chamada de API e depois um refresh
-        toast.info("Em modo Supabase real, a reserva seria removida do banco.");
-      }
-      
+      await cancelReserva(reservaId);
       setIsModalDetalhesOpen(false);
-      toast.success("Reserva cancelada com sucesso.");
     }
   };
 
