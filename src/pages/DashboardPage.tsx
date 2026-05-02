@@ -178,7 +178,7 @@ const DashboardPage = () => {
               <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
                 <Bell size={20} />
               </div>
-              <Badge className="bg-amber-600 text-white border-none font-black">{pendencias.length}</Badge>
+              <Badge className="bg-slate-600 text-white border-none font-black">{alertas.length}</Badge>
             </div>
             <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">Solicitações</p>
             <h3 className="text-xl font-black text-slate-900 mt-1">Pendentes</h3>
