@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { format, addDays, startOfWeek, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon, Info, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon, Info, FileText, CheckCircle, XCircle, LayoutDashboard, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
 import { escolas as initialEscolas, recursos as initialRecursos, reservas as initialReservas, Reserva, Recurso } from "../data/mockData";
@@ -98,6 +99,7 @@ const AgendaPage = () => {
       r.data === dateStr &&
       r.aula === aula &&
       r.escola_id === (selectedEscolaId || profile?.escola_id) &&
+      (r.status === "aprovada" || r.status === "pendente") &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
       (!searchQuery ||
         r.nome_professor.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -324,17 +326,24 @@ const AgendaPage = () => {
                     >
                       {reserva && recurso ? (
                         <button
-                          className={`event ${tipoColor(recurso.tipo)}`}
+                          className={cn(
+                            "event", 
+                            tipoColor(recurso.tipo),
+                            reserva.status === "pendente" && "border-amber-400 border-2 shadow-amber-100"
+                          )}
                           onClick={(e) => { e.stopPropagation(); handleSlotClick(date, h); }}
-                          title={`${reserva.nome_professor} • ${reserva.turma} • ${recurso.nome}`}
+                          title={`${reserva.nome_professor} • ${reserva.turma} • ${recurso.nome} (${reserva.status})`}
                         >
                           <div className="event-title">
                             <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo) }}>
                               {initialsOf(reserva.nome_professor)}
                             </span>
-                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {reserva.nome_professor}
-                            </span>
+                            <div className="flex flex-col min-w-0">
+                              <span className="truncate leading-tight">{reserva.nome_professor}</span>
+                              {reserva.status === "pendente" && (
+                                <span className="text-[8px] font-black uppercase text-amber-600 tracking-tighter">Pendente</span>
+                              )}
+                            </div>
                           </div>
                           <div className="event-meta">
                             <span>{reserva.turma}</span>

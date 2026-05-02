@@ -2,9 +2,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Reserva, Recurso } from "../../data/mockData";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Clock, User, Users, Info, Trash2, Edit } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, User, Users, Info, Trash2, Edit, BookOpen, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface DetalhesReservaModalProps {
   isOpen: boolean;
@@ -31,7 +32,21 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
             {recurso?.tipo}
           </Badge>
           <div className="flex flex-col gap-1 mt-4">
-            <h2 className="text-3xl font-black leading-tight tracking-tight uppercase">{reserva.disciplina}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-3xl font-black leading-tight tracking-tight uppercase">{reserva.disciplina}</h2>
+              {reserva.status && (
+                <Badge className={cn(
+                  "px-2 py-0.5 text-[9px] font-black uppercase tracking-widest border-none",
+                  reserva.status === "aprovada" ? "bg-green-500 text-white" :
+                  reserva.status === "pendente" ? "bg-amber-500 text-white" :
+                  reserva.status === "recusada" ? "bg-red-500 text-white" :
+                  reserva.status === "cancelada" ? "bg-slate-500 text-white" :
+                  "bg-blue-500 text-white"
+                )}>
+                  {reserva.status}
+                </Badge>
+              )}
+            </div>
             <div className="flex items-center gap-2 opacity-80 font-bold text-sm tracking-tight">
               <span>{recurso?.nome}</span>
             </div>
@@ -72,6 +87,24 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
               </p>
             </div>
           </div>
+
+          {reserva.objetivo_pedagogico && (
+            <div className="space-y-3 bg-blue-50/50 p-5 rounded-2xl border border-blue-100">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">
+                <BookOpen className="h-3 w-3" /> Objetivo Pedagógico
+              </div>
+              <p className="text-sm text-slate-700 font-medium leading-relaxed italic">"{reserva.objetivo_pedagogico}"</p>
+            </div>
+          )}
+
+          {reserva.status === 'recusada' && reserva.motivo_recusa && (
+            <div className="space-y-3 bg-red-50 p-5 rounded-2xl border border-red-100">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-red-400">
+                <AlertCircle className="h-3 w-3" /> Motivo da Recusa
+              </div>
+              <p className="text-sm text-red-700 font-bold leading-relaxed italic">"{reserva.motivo_recusa}"</p>
+            </div>
+          )}
 
           {reserva.observacao && (
             <div className="space-y-3 bg-slate-50 p-5 rounded-2xl border border-slate-100">

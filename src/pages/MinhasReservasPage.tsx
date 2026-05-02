@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { format, isAfter, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const MinhasReservasPage = () => {
   const { user, profile } = useAuth();
@@ -30,12 +31,22 @@ const MinhasReservasPage = () => {
               <h3 className="font-bold text-slate-900">{r.disciplina}</h3>
               <p className="text-sm text-slate-500">{r.turma}</p>
             </div>
-            <Badge 
-              style={{ backgroundColor: rec?.cor_fundo, color: rec?.cor_texto, borderColor: rec?.cor_borda }}
-              variant="outline"
-            >
-              {rec?.nome}
-            </Badge>
+            <div className="flex flex-col items-end gap-2">
+              <Badge 
+                style={{ backgroundColor: rec?.cor_fundo, color: rec?.cor_texto, borderColor: rec?.cor_borda }}
+                variant="outline"
+              >
+                {rec?.nome}
+              </Badge>
+              {r.status && (
+                <Badge variant={r.status === "aprovada" ? "default" : r.status === "pendente" ? "outline" : "destructive"} className={cn(
+                  "text-[9px] font-black uppercase tracking-widest",
+                  r.status === "pendente" && "bg-amber-50 text-amber-700 border-amber-200"
+                )}>
+                  {r.status}
+                </Badge>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2 text-sm text-slate-600">
