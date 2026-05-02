@@ -129,7 +129,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data) {
-        console.log("AuthContext: Perfil encontrado:", data.nome, "Papel:", data.papel, "Status:", data.status);
+        if (import.meta.env.DEV || true) {
+          console.log("AuthContext: Perfil encontrado no banco:", data.nome, "Status:", data.status);
+        }
+      } else {
+        console.warn("AuthContext: Perfil retornado como null, limpando estado...");
+        setProfile(null);
+        return;
       }
 
       // Map real profile to App's Profile interface
@@ -147,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
       setSelectedEscolaIdState(savedEscolaId || data.escola_id);
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("AuthContext: Exceção no fetchProfile:", error);
       setProfile(null);
     } finally {
       setProfileLoading(false);
