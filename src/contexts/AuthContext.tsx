@@ -69,6 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session.user);
         fetchProfile(session.user.id);
       } else {
+        console.log("[AUTH] no session, showing login");
         setUser(null);
         setProfile(null);
         setLoading(false);
@@ -85,9 +86,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("[AUTH] onAuthStateChange event:", event, session ? "Session found" : "No session");
       
       if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
+        // Evitar loop: só buscar se o usuário mudou ou se é um evento explícito de login
+        if (lastFetchedUserIdRef.current !== session.user.id || event === 'SIGNED_IN') {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        }
       } else {
+        lastFetchedUserIdRef.current = null;
         setUser(null);
         setProfile(null);
         setSelectedEscolaIdState(null);
