@@ -63,8 +63,20 @@ const AppContent = () => {
   
   console.log("[AppContent] render state:", { loading, profileLoading, hasUser: !!user, hasProfile: !!profile });
 
+  // 1. Rota de login deve estar disponível IMEDIATAMENTE se não houver usuário decidido
+  // ou se for a rota de login explicitamente
+  const isLoginPage = window.location.pathname === "/login";
 
-  // 1. Loading inicial de Auth (Apenas se ainda estiver decidindo se há usuário ou não)
+  if (isLoginPage) {
+    return (
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
+
+  // 2. Loading inicial de Auth (Apenas se ainda estiver decidindo se há usuário ou não)
   if (loading && !user) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -76,7 +88,16 @@ const AppContent = () => {
     );
   }
 
-  // 2. Loading de Perfil (Diferente do loading de Auth)
+  // Se não houver usuário, redirecionar para login (fora da condição de loading para garantir renderização)
+  if (!user && !loading) {
+    return (
+      <Routes>
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
+
+  // 3. Loading de Perfil (Diferente do loading de Auth)
   if (user && profileLoading && !profile) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -88,7 +109,7 @@ const AppContent = () => {
     );
   }
 
-  // 3. Status de Acesso (Pendente/Bloqueado)
+  // 4. Status de Acesso (Pendente/Bloqueado)
   if (profile) {
     if (profile.status === "pendente") {
       return (
@@ -115,19 +136,31 @@ const AppContent = () => {
     }
   }
 
-  // 4. Perfil não encontrado real (após carregar e não existir)
+  // 5. Perfil não encontrado real (após carregar e não existir)
   if (user && !profile && !profileLoading) {
     return (
       <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
         <h1 className="mb-2 text-2xl font-bold text-destructive">Perfil não encontrado</h1>
         <p className="text-muted-foreground">Não encontramos dados de perfil para seu usuário.</p>
         <p className="text-sm text-muted-foreground mt-1">Entre em contato com o administrador para configurar seu acesso.</p>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="mt-6 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
-        >
-          Tentar novamente
-        </button>
+        <div className="flex gap-4 mt-6">
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
+          >
+            Tentar novamente
+          </button>
+          <button 
+            onClick={() => {
+              // Limpar local storage e deslogar para permitir novo login
+              localStorage.clear();
+              window.location.href = "/login";
+            }} 
+            className="px-4 py-2 border border-input bg-background hover:bg-accent rounded-md transition-opacity"
+          >
+            Sair e tentar outro e-mail
+          </button>
+        </div>
       </div>
     );
   }
