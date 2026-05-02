@@ -581,10 +581,10 @@ const AgendaPage = () => {
       <RelatorioReservasModal
         isOpen={isModalRelatorioOpen}
         onClose={() => setIsModalRelatorioOpen(false)}
-        reservas={isSupabaseConfigured ? initialReservas : reservasState}
+        reservas={reservasState}
         recursos={schoolRecursosList}
         escolas={schoolEscolas}
-        selectedEscolaId={selectedEscolaId || profile?.escola_id}
+        selectedEscolaId={currentSchoolId}
       />
     </div>
   );
