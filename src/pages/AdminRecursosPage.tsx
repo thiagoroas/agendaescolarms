@@ -139,53 +139,81 @@ const AdminRecursosPage = () => {
       )}
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {schoolRecursos.map((r) => (
-          <Card key={r.id} className="group overflow-hidden border-slate-100 bg-white rounded-3xl transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 border-2">
-            <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
-              <div 
-                className="h-14 w-14 rounded-2xl flex items-center justify-center border-2 shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3"
-                style={{ backgroundColor: r.cor_fundo, color: r.cor_texto, borderColor: r.cor_borda }}
-              >
-                {getIcon(r.tipo)}
-              </div>
-              <Badge 
-                variant={r.ativo ? "default" : "secondary"} 
-                className={cn(
-                  "px-3 py-1 text-[10px] font-black uppercase tracking-widest",
-                  r.ativo ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-slate-200 text-slate-500"
-                )}
-              >
-                {r.ativo ? "Ativo" : "Inativo"}
-              </Badge>
-            </CardHeader>
-            <CardContent className="p-6 pt-4">
-              <CardTitle className="text-xl font-black text-slate-900 tracking-tight leading-tight mb-1">{r.nome}</CardTitle>
-              <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">
-                <div className="h-1.5 w-1.5 rounded-full bg-slate-200"></div>
-                {r.tipo}
-              </div>
-              
-              <div className="flex gap-3">
-                <Button variant="ghost" size="sm" className="flex-1 h-11 rounded-xl font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all" onClick={() => toast.info("Edição em breve")}>
-                  <Settings2 className="mr-2 h-4 w-4" />
-                  Editar
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className={cn(
-                    "flex-[1.5] h-11 rounded-xl font-black uppercase tracking-widest transition-all", 
-                    r.ativo ? "text-red-500 hover:bg-red-50 border-red-100 hover:border-red-200" : "text-emerald-500 hover:bg-emerald-50 border-emerald-100 hover:border-emerald-200"
-                  )} 
-                  onClick={() => toast.success("Status alterado")}
+        {loading ? (
+          <div className="col-span-full py-20 text-center font-bold text-slate-400">Carregando recursos...</div>
+        ) : recursos.length === 0 ? (
+          <div className="col-span-full py-20 text-center font-bold text-slate-400">Nenhum recurso cadastrado para esta escola.</div>
+        ) : (
+          recursos.map((r) => (
+            <Card key={r.id} className="group overflow-hidden border-slate-100 bg-white rounded-3xl transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 border-2">
+              <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
+                <div 
+                  className="h-14 w-14 rounded-2xl flex items-center justify-center border-2 shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3"
+                  style={{ backgroundColor: r.cor_fundo, color: r.cor_texto, borderColor: r.cor_borda }}
                 >
-                  {r.ativo ? "Desativar" : "Ativar"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  {getIcon(r.tipo)}
+                </div>
+                <div className="flex gap-2">
+                  <Badge 
+                    variant={r.ativo ? "default" : "secondary"} 
+                    className={cn(
+                      "px-3 py-1 text-[10px] font-black uppercase tracking-widest",
+                      r.ativo ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-slate-200 text-slate-500"
+                    )}
+                  >
+                    {r.ativo ? "Ativo" : "Inativo"}
+                  </Badge>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-300 hover:text-red-500 transition-colors">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="rounded-3xl border-none">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-xl font-black uppercase tracking-tight">Excluir Recurso?</AlertDialogTitle>
+                        <AlertDialogDescription className="font-medium text-slate-500">
+                          Esta ação não pode ser desfeita. O recurso será removido permanentemente.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="rounded-xl font-bold uppercase tracking-widest text-[10px]">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteRecurso(r.id)} className="bg-red-500 hover:bg-red-600 rounded-xl font-bold uppercase tracking-widest text-[10px]">Excluir</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6 pt-4">
+                <CardTitle className="text-xl font-black text-slate-900 tracking-tight leading-tight mb-1">{r.nome}</CardTitle>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">
+                  <div className="h-1.5 w-1.5 rounded-full bg-slate-200"></div>
+                  {r.tipo}
+                </div>
+                
+                <div className="flex gap-3">
+                  <Button variant="ghost" size="sm" className="flex-1 h-11 rounded-xl font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all" onClick={() => handleEdit(r)}>
+                    <Settings2 className="mr-2 h-4 w-4" />
+                    Editar
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className={cn(
+                      "flex-[1.5] h-11 rounded-xl font-black uppercase tracking-widest transition-all", 
+                      r.ativo ? "text-red-500 hover:bg-red-50 border-red-100 hover:border-red-200" : "text-emerald-500 hover:bg-emerald-50 border-emerald-100 hover:border-emerald-200"
+                    )} 
+                    onClick={() => handleToggle(r.id, r.ativo)}
+                  >
+                    {r.ativo ? "Desativar" : "Ativar"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
+
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-md p-0 border-none rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
