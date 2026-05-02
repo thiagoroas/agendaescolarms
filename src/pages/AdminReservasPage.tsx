@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { reservas, recursos, Usuario, Recurso } from "../data/mockData";
+import { reservas, recursos, Usuario, Recurso, escolas } from "../data/mockData";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, Trash2, Edit, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
