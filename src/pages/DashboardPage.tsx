@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { getMockReservas, getMockRecursos, getMockEscolas } from "../data/storage";
-import { Reserva, Recurso, Escola } from "../data/mockData";
+import { getMockReservas, getMockRecursos, getMockEscolas, getMockAvisos } from "../data/storage";
+import { Reserva, Recurso, Escola, AvisoLaboratorio } from "../data/mockData";
 import { format, parseISO, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { 
@@ -15,7 +15,9 @@ import {
   Monitor,
   LayoutDashboard,
   Bell,
-  Info
+  Info,
+  AlertTriangle,
+  ChevronRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,11 +31,13 @@ const DashboardPage = () => {
   const [todasReservas, setTodasReservas] = useState<Reserva[]>([]);
   const [todosRecursos, setTodosRecursos] = useState<Recurso[]>([]);
   const [todasEscolas, setTodasEscolas] = useState<Escola[]>([]);
+  const [avisos, setAvisos] = useState<AvisoLaboratorio[]>([]);
 
   useEffect(() => {
     setTodasReservas(getMockReservas());
     setTodosRecursos(getMockRecursos());
     setTodasEscolas(getMockEscolas());
+    setAvisos(getMockAvisos());
   }, []);
   
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
@@ -46,6 +50,20 @@ const DashboardPage = () => {
   const reservasEscola = useMemo(() => {
     return todasReservas.filter(r => r.escola_id === currentEscolaId);
   }, [todasReservas, currentEscolaId]);
+
+  const avisosAtivos = useMemo(() => {
+    const hojeStr = format(new Date(), "yyyy-MM-dd");
+    return avisos.filter(a => 
+      a.ativo && 
+      a.escola_id === currentEscolaId && 
+      a.exibir_no_dashboard &&
+      hojeStr >= a.data_inicio && 
+      hojeStr <= a.data_fim
+    ).sort((a, b) => {
+      const prioridade = { urgente: 0, atencao: 1, informativo: 2 };
+      return prioridade[a.tipo] - prioridade[b.tipo];
+    });
+  }, [avisos, currentEscolaId]);
 
   const reservasHoje = useMemo(() => {
     let list = reservasEscola.filter(r => r.data === hojeStr);
@@ -303,24 +321,43 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          {/* Dicas e Alertas */}
-          <div className="space-y-4">
-            <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] px-2">Alertas</h2>
-            <Card className="rounded-3xl border-none bg-indigo-900 text-white overflow-hidden relative shadow-xl shadow-indigo-100">
-              <CardContent className="p-6 relative z-10">
-                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center mb-4">
-                  <Info size={20} className="text-indigo-200" />
-                </div>
-                <h4 className="text-sm font-black uppercase tracking-widest mb-2">Modo Protótipo</h4>
-                <p className="text-xs text-indigo-100 font-medium leading-relaxed opacity-80">
-                  Os dados estão sendo salvos localmente. Suas alterações não serão perdidas ao recarregar a página.
-                </p>
-              </CardContent>
-              {/* Elementos visuais de fundo */}
-              <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-white/5" />
-              <div className="absolute top-10 right-10 h-12 w-12 rounded-full bg-white/5" />
-            </Card>
-          </div>
+          {/* Avisos Importantes */}
+          {avisosAtivos.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] px-2 flex items-center gap-2">
+                <Bell size={14} className="text-blue-500" /> Avisos Importantes
+              </h2>
+              <div className="space-y-3">
+                {avisosAtivos.map(aviso => (
+                  <Card 
+                    key={aviso.id} 
+                    className={cn(
+                      "rounded-3xl border-none text-white overflow-hidden relative shadow-lg transition-all hover:scale-[1.02]",
+                      aviso.tipo === "urgente" ? "bg-red-600" :
+                      aviso.tipo === "atencao" ? "bg-amber-500" :
+                      "bg-blue-600"
+                    )}
+                  >
+                    <CardContent className="p-5 relative z-10">
+                      <div className="flex items-start gap-3">
+                        <div className="h-8 w-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                          {aviso.tipo === "urgente" ? <AlertTriangle size={16} /> : <Info size={16} />}
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-black uppercase tracking-tight leading-tight">{aviso.titulo}</h4>
+                          <p className="text-[11px] font-medium leading-relaxed opacity-90 mt-1">
+                            {aviso.mensagem}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Status dos Recursos */}
         </div>
       </div>
     </div>
