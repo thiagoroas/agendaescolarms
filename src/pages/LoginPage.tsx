@@ -202,9 +202,8 @@ const LoginPage = () => {
               </Button>
             </form>
 
-            {!isSupabaseConfigured && (
-              <p className="mt-6 text-center text-xs text-slate-400">O cadastro de professores é feito pela coordenação.</p>
-            )}
+              {/* Ocultado para produção */}
+
           </>
         )}
       </div>
