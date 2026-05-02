@@ -67,6 +67,7 @@ export interface Reserva {
   objetivo_pedagogico?: string;
   status: ReservaStatus;
   motivo_recusa?: string;
+  criado_por?: string;
   criado_em: string;
   aviso_confirmado_id?: string;
   aviso_confirmado_em?: string;
