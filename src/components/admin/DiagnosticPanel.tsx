@@ -13,7 +13,6 @@ export const DiagnosticPanel = () => {
   const [lastResponse, setLastResponse] = useState<any>(null);
   const [tokenSent, setTokenSent] = useState<boolean>(false);
 
-  useEffect(() => {
   const checkEdgeFunction = async () => {
     if (!isSupabaseConfigured || !user) {
       setEdgeFunctionStatus("unauthorized");
@@ -25,7 +24,6 @@ export const DiagnosticPanel = () => {
     setLastResponse(null);
     
     try {
-      // Check if session has access token
       const { data: sessionData } = await supabase.auth.getSession();
       setTokenSent(!!sessionData.session?.access_token);
 
@@ -40,7 +38,6 @@ export const DiagnosticPanel = () => {
           setEdgeFunctionStatus("error");
           setEdgeError("Não foi possível alcançar a Edge Function (Network Error/Not Deployed)");
         } else {
-          // If we got a response from the function (even an error message like "Invalid action")
           setEdgeFunctionStatus("ok");
         }
       } else if (data?.error) {
