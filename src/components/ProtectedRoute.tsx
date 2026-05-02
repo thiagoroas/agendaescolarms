@@ -7,24 +7,17 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { user, profile, loading, profileLoading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const location = useLocation();
 
-  console.log("[ProtectedRoute] state:", { 
-    loading, 
-    profileLoading, 
-    hasUser: !!user, 
-    hasProfile: !!profile,
-    profileStatus: profile?.status,
-    path: location.pathname 
-  });
+  console.log("[ProtectedRoute] check:", { loading, hasUser: !!user, hasProfile: !!profile, path: location.pathname });
 
-  if (loading || (user && profileLoading && !profile)) {
+  if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground font-medium">Carregando permissões...</p>
+          <p className="text-sm text-muted-foreground font-medium">Carregando...</p>
         </div>
       </div>
     );
@@ -34,7 +27,13 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
+  if (!profile) {
+    // Redirecionamento ou tela de erro de perfil. 
+    // Como o AppContent já trata !profile, isso é um fallback de segurança.
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(profile.role)) {
     return (
       <div className="flex h-screen flex-col items-center justify-center p-4 text-center">
         <h1 className="mb-2 text-2xl font-bold text-destructive">Acesso negado</h1>
