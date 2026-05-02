@@ -61,13 +61,16 @@ const AgendaPage = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [reservasState, setReservasState] = useState<Reserva[]>([]);
   const [recursosState, setRecursosState] = useState<Recurso[]>([]);
+  const [avisosState, setAvisosState] = useState<AvisoLaboratorio[]>([]);
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
   const [isModalRelatorioOpen, setIsModalRelatorioOpen] = useState(false);
+  const [showAllAvisos, setShowAllAvisos] = useState(false);
   
   useEffect(() => {
     if (!isSupabaseConfigured) {
       setReservasState(getMockReservas());
       setRecursosState(getMockRecursos());
+      setAvisosState(getMockAvisos());
     }
   }, [isModalNovaOpen]); // Refresh when modal closes (might have added something)
 
