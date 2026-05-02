@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { isSupabaseConfigured } from "../lib/supabase";
+import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import { Usuario } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
 import { getMockUsuarios, saveMockUsuarios } from "../data/storage";
 import { Button } from "@/components/ui/button";
-import { Plus, UserPlus, UserCheck, Search, Info, Building2, Trash2, Edit2, Loader2 } from "lucide-react";
+import { Plus, UserPlus, UserCheck, Search, Info, Building2, Trash2, Edit2, Loader2, Key } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,6 +20,7 @@ const AdminProfessoresPage = () => {
   const { escolas, loading: loadingEscolas } = useEscolas();
   const [searchTerm, setSearchTerm] = useState("");
   const [localUsers, setLocalUsers] = useState<Usuario[]>([]);
+  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("professores");
@@ -34,35 +35,62 @@ const AdminProfessoresPage = () => {
   const [disciplinas, setDisciplinas] = useState("");
   const [status, setStatus] = useState<"ativo" | "pendente" | "bloqueado">("ativo");
 
-  useEffect(() => {
-    // Carregar usuários sempre do storage no modo protótipo
-    const storedUsers = getMockUsuarios();
-    console.log("AdminProfessoresPage: Carregando usuários do storage", storedUsers.length);
-    setLocalUsers(storedUsers);
-  }, []);
+  const fetchUsers = async () => {
+    if (isSupabaseConfigured) {
+      setLoading(true);
+      try {
+        let query = supabase.from("profiles").select("*");
+        
+        // Filter by role: professor or admin_lab
+        query = query.in("papel", ["professor", "admin_lab"]);
 
-  // Filter users based on profile role and selected school
+        // Permission filtering
+        if (profile?.role === "admin_lab") {
+          query = query.eq("escola_id", profile.escola_id);
+        } else if (profile?.role === "admin_plataforma" && selectedEscolaId) {
+          // If admin plataforma has a school selected, we filter, otherwise we show all
+          // But usually we want to see users of the active school
+          query = query.eq("escola_id", selectedEscolaId);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        const mapped: Usuario[] = (data || []).map(p => ({
+          id: p.id,
+          nome: p.nome,
+          email: p.email || "",
+          escola_id: p.escola_id || "",
+          papel: p.papel,
+          status: p.status,
+          disciplinas: p.disciplinas || [],
+          senha: "" // Never expose
+        }));
+        setLocalUsers(mapped);
+      } catch (err: any) {
+        console.error("Error fetching users:", err.message);
+        toast.error("Erro ao carregar usuários");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      const storedUsers = getMockUsuarios();
+      setLocalUsers(storedUsers);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [profile, selectedEscolaId, activeTab]);
+
   const isAdminPlataforma = profile?.role === "admin_plataforma";
   const isAdminLab = profile?.role === "admin_lab";
   
   const filteredUsers = localUsers.filter(u => {
-    // Basic role filter: only show professor and admin_lab in this page
-    if (u.papel !== "professor" && u.papel !== "admin_lab") return false;
-    
     // Tab filter
     if (activeTab === "professores" && u.papel !== "professor") return false;
     if (activeTab === "usuarios_lab" && u.papel !== "admin_lab") return false;
-
-    // Multi-school filtering
-    if (!isAdminPlataforma) {
-      // admin_lab can only see users from their own school
-      if (u.escola_id !== profile?.escola_id) return false;
-    } else if (selectedEscolaId) {
-      // admin_plataforma can filter by selected school if they want
-      // But typically for the "Users" list we might want to see all if no specific school is selected in the sidebar
-      // However, usually selectedEscolaId is always set for admin_plataforma in this app's context
-      if (u.escola_id !== selectedEscolaId) return false;
-    }
 
     // Search filter
     const matchesSearch = u.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -76,7 +104,7 @@ const AdminProfessoresPage = () => {
       setEditingUserId(u.id);
       setNome(u.nome);
       setEmail(u.email);
-      setSenha(""); // Don't show password for editing
+      setSenha("");
       setConfirmarSenha("");
       setPapel(u.papel as any);
       setEscolaId(u.escola_id);
@@ -96,13 +124,12 @@ const AdminProfessoresPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleSalvarUsuario = (e: React.FormEvent) => {
+  const handleSalvarUsuario = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!nome.trim() || nome.trim().length < 3) { toast.error("Nome inválido (mínimo 3 caracteres)"); return; }
     if (!email.trim() || !email.includes("@")) { toast.error("E-mail inválido"); return; }
     
-    // Only require password on creation
     if (!editingUserId) {
       if (senha.length < 6) { toast.error("A senha deve ter no mínimo 6 caracteres"); return; }
       if (senha !== confirmarSenha) { toast.error("As senhas não coincidem"); return; }
@@ -116,67 +143,90 @@ const AdminProfessoresPage = () => {
     }
 
     const disciplinasArray = disciplinas.split(",").map(d => d.trim()).filter(d => d !== "");
+    setLoading(true);
 
-    if (editingUserId) {
-      setLocalUsers(prev => {
-        const updated = prev.map(u => {
+    if (isSupabaseConfigured) {
+      try {
+        const action = editingUserId ? 'update' : 'create';
+        const userData: any = {
+          nome: nome.trim(),
+          email: email.trim(),
+          papel,
+          escola_id: escolaId,
+          status,
+          disciplinas: papel === "professor" ? disciplinasArray : []
+        };
+
+        if (editingUserId) {
+          userData.id = editingUserId;
+          // Se preencheu senha na edição, é um reset
+          if (senha) {
+            const { error: resetError } = await supabase.functions.invoke('manage-user', {
+              body: { action: 'reset_password', userData: { id: editingUserId, password: senha } }
+            });
+            if (resetError) throw resetError;
+            toast.success("Senha atualizada!");
+          }
+        } else {
+          userData.password = senha;
+        }
+
+        const { data, error } = await supabase.functions.invoke('manage-user', {
+          body: { action, userData }
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+
+        toast.success(editingUserId ? "Usuário atualizado!" : "Usuário cadastrado!");
+        setIsModalOpen(false);
+        fetchUsers();
+      } catch (err: any) {
+        console.error("Error managing user:", err.message);
+        toast.error(`Erro: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Mock logic... (existing logic moved below)
+      if (editingUserId) {
+        const updated = localUsers.map(u => {
           if (u.id === editingUserId) {
             const updatedUser = {
               ...u,
               nome: nome.trim(),
               email: email.trim(),
-              escola_id: isAdminPlataforma ? escolaId : u.escola_id, // Proteção escola_id para admin_lab
+              escola_id: isAdminPlataforma ? escolaId : u.escola_id,
               papel: papel,
               status: status,
               disciplinas: papel === "professor" ? disciplinasArray : undefined,
             };
-            
-            // Alteração de senha se preenchida
-            if (senha) {
-              (updatedUser as any).senha = senha;
-            }
-            
+            if (senha) (updatedUser as any).senha = senha;
             return updatedUser;
           }
           return u;
         });
-        if (!isSupabaseConfigured) {
-          saveMockUsuarios(updated as any);
-          console.log("AdminProfessoresPage: Usuário editado e salvo no storage");
-        }
-        return updated;
-      });
-      toast.success("Usuário atualizado com sucesso!");
-    } else {
-      const novoUsuario: Usuario = {
-        id: "user-" + Date.now(),
-        nome: nome.trim(),
-        email: email.trim(),
-        escola_id: isAdminPlataforma ? (escolaId || selectedEscolaId || "") : (profile?.escola_id || ""),
-        papel: papel,
-        status: "ativo",
-        disciplinas: papel === "professor" ? disciplinasArray : undefined
-      };
-
-      setLocalUsers(prev => {
-        const updated = [{ ...novoUsuario, senha }, ...prev];
-        if (!isSupabaseConfigured) {
-          saveMockUsuarios(updated as any);
-          console.log("AdminProfessoresPage: Novo usuário cadastrado e salvo no storage");
-        }
-        return updated;
-      });
-
-      // Se admin_plataforma cadastrou em outra escola, mudar automaticamente a escola ativa
-      if (isAdminPlataforma && escolaId && escolaId !== selectedEscolaId) {
-        setSelectedEscolaId(escolaId);
-        toast.success(`${papel === "professor" ? "Professor" : "Admin do Laboratório"} cadastrado e escola ativa alterada!`);
+        saveMockUsuarios(updated as any);
+        setLocalUsers(updated);
+        toast.success("Usuário atualizado com sucesso!");
       } else {
-        toast.success(`${papel === "professor" ? "Professor" : "Admin do Laboratório"} cadastrado com sucesso!`);
+        const novoUsuario: Usuario = {
+          id: "user-" + Date.now(),
+          nome: nome.trim(),
+          email: email.trim(),
+          escola_id: isAdminPlataforma ? (escolaId || selectedEscolaId || "") : (profile?.escola_id || ""),
+          papel: papel,
+          status: "ativo",
+          disciplinas: papel === "professor" ? disciplinasArray : undefined
+        };
+        const updated = [{ ...novoUsuario, senha }, ...localUsers];
+        saveMockUsuarios(updated as any);
+        setLocalUsers(updated);
+        toast.success("Cadastrado com sucesso!");
       }
+      setIsModalOpen(false);
+      setLoading(false);
     }
-    
-    setIsModalOpen(false);
   };
 
   const getStatusBadge = (status: Usuario["status"]) => {
@@ -239,7 +289,16 @@ const AdminProfessoresPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.length === 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={isAdminPlataforma ? 6 : 5} className="h-24 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                        <span className="text-slate-500">Carregando usuários...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredUsers.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={isAdminPlataforma ? 6 : 5} className="h-24 text-center text-slate-500">
                       Nenhum usuário encontrado.
@@ -276,40 +335,65 @@ const AdminProfessoresPage = () => {
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              onClick={() => {
-                                setLocalUsers(prev => {
-                                  const updated = prev.map(usr => usr.id === u.id ? { ...usr, status: "ativo" as const } : usr);
-                                  if (!isSupabaseConfigured) {
-                                    saveMockUsuarios(updated as any);
-                                    console.log("AdminProfessoresPage: Status aprovado e salvo");
+                              disabled={loading}
+                              onClick={async () => {
+                                if (isSupabaseConfigured) {
+                                  setLoading(true);
+                                  try {
+                                    const { error } = await supabase.functions.invoke('manage-user', {
+                                      body: { action: 'update', userData: { id: u.id, status: 'ativo' } }
+                                    });
+                                    if (error) throw error;
+                                    toast.success("Acesso aprovado!");
+                                    fetchUsers();
+                                  } catch (err: any) {
+                                    toast.error("Erro ao aprovar usuário");
+                                  } finally {
+                                    setLoading(false);
                                   }
-                                  return updated;
-                                });
-                                toast.success("Acesso aprovado!");
+                                } else {
+                                  const updated = localUsers.map(usr => usr.id === u.id ? { ...usr, status: "ativo" as const } : usr);
+                                  saveMockUsuarios(updated as any);
+                                  setLocalUsers(updated);
+                                  toast.success("Acesso aprovado!");
+                                }
                               }} 
                               className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 h-8 w-8 p-0"
                             >
                               <UserCheck className="h-4 w-4" />
                             </Button>
                           )}
-                          <Button variant="outline" size="sm" onClick={() => openModal(u)} className="h-8 w-8 p-0">
+                          <Button variant="outline" size="sm" onClick={() => openModal(u)} className="h-8 w-8 p-0" disabled={loading}>
                             <Edit2 className="h-4 w-4" />
                           </Button>
                           <Button 
                             variant="outline" 
                             size="sm" 
+                            disabled={loading}
                             className="text-red-600 hover:bg-red-50 border-red-100 h-8 w-8 p-0"
-                            onClick={() => {
-                              if (confirm(`Deseja excluir ${u.nome}?`)) {
-                                setLocalUsers(prev => {
-                                  const updated = prev.filter(user => user.id !== u.id);
-                                  if (!isSupabaseConfigured) {
-                                    saveMockUsuarios(updated as any);
-                                    console.log("AdminProfessoresPage: Usuário excluído e salvo");
+                            onClick={async () => {
+                              const actionName = u.status === 'bloqueado' ? 'Excluir' : 'Bloquear';
+                              if (confirm(`Deseja ${actionName} ${u.nome}?`)) {
+                                if (isSupabaseConfigured) {
+                                  setLoading(true);
+                                  try {
+                                    const { error } = await supabase.functions.invoke('manage-user', {
+                                      body: { action: 'delete_or_disable', userData: { id: u.id } }
+                                    });
+                                    if (error) throw error;
+                                    toast.success("Usuário bloqueado com sucesso.");
+                                    fetchUsers();
+                                  } catch (err: any) {
+                                    toast.error("Erro ao bloquear usuário");
+                                  } finally {
+                                    setLoading(false);
                                   }
-                                  return updated;
-                                });
-                                toast.success("Usuário excluído.");
+                                } else {
+                                  const updated = localUsers.filter(user => user.id !== u.id);
+                                  saveMockUsuarios(updated as any);
+                                  setLocalUsers(updated);
+                                  toast.success("Usuário excluído.");
+                                }
                               }
                             }}
                           >
@@ -372,9 +456,20 @@ const AdminProfessoresPage = () => {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingUserId ? "Editar Usuário" : "Novo Usuário"}</DialogTitle>
+            <DialogTitle>{editingUserId ? (senha ? "Alterar Senha e Dados" : "Editar Usuário") : "Novo Usuário"}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSalvarUsuario} className="space-y-4 py-4">
+          {loading && (
+            <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+          )}
+          <form onSubmit={handleSalvarUsuario} className="space-y-4 py-4 relative">
+            {editingUserId && isSupabaseConfigured && (
+              <div className="bg-amber-50 p-2 rounded text-[10px] text-amber-700 border border-amber-100 flex gap-2">
+                <Key className="h-3 w-3 shrink-0" />
+                <span>Preencha o campo "Nova Senha" apenas se desejar alterar a senha deste usuário.</span>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="nome">Nome Completo</Label>
               <Input id="nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: João Silva" required />
@@ -469,9 +564,14 @@ const AdminProfessoresPage = () => {
             )}
 
             <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                {editingUserId ? "Salvar Alterações" : "Cadastrar Usuário"}
+              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} disabled={loading}>Cancelar</Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : editingUserId ? "Salvar Alterações" : "Cadastrar Usuário"}
               </Button>
             </DialogFooter>
           </form>
