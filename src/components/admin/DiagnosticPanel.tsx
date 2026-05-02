@@ -94,6 +94,10 @@ export const DiagnosticPanel = () => {
             <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
               <CheckCircle2 className="h-3 w-3" /> Sim
             </Badge>
+          ) : user && profile && !localStorage.getItem("agenda_mock_user") ? (
+            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
+              <CheckCircle2 className="h-3 w-3" /> Detectado via Sessão
+            </Badge>
           ) : (
             <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1">
               <AlertCircle className="h-3 w-3" /> Não (Fallback Local)
