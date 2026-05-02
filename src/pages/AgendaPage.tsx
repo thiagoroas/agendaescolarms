@@ -72,10 +72,10 @@ const AgendaPage = () => {
   useEffect(() => {
     if (!isSupabaseConfigured) {
       setReservasState(getMockReservas());
-      setRecursosState(getMockRecursos());
       setAvisosState(getMockAvisos());
     }
   }, [isModalNovaOpen]); // Refresh when modal closes (might have added something)
+
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
