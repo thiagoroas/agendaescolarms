@@ -45,8 +45,9 @@ const DashboardPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { recursos: todosRecursos, loading: loadingRecursos } = useRecursos();
   const [todasReservas, setTodasReservas] = useState<Reserva[]>([]);
-  const [todosRecursos, setTodosRecursos] = useState<Recurso[]>([]);
+
   const [todasEscolas, setTodasEscolas] = useState<Escola[]>([]);
   const [avisos, setAvisos] = useState<AvisoLaboratorio[]>([]);
 
