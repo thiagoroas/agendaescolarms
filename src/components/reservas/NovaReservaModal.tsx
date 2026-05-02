@@ -150,7 +150,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[95%] mx-auto overflow-y-auto max-h-[90vh] p-0 border-none rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <DialogContent className="max-w-2xl w-[95%] mx-auto p-0 border-none rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white relative">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tight text-white">Novo Agendamento</DialogTitle>
