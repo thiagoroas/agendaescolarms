@@ -138,6 +138,37 @@ const AgendaPage = () => {
     }
   };
 
+  const handleExcluirReserva = (reservaId: string) => {
+    const reservaParaExcluir = (isSupabaseConfigured ? initialReservas : reservasState).find(r => r.id === reservaId);
+    if (!reservaParaExcluir) return;
+
+    // Verificar permissões
+    const canDelete = 
+      profile?.role === 'admin_plataforma' || 
+      (profile?.role === 'admin_lab' && reservaParaExcluir.escola_id === profile.escola_id) ||
+      (profile?.role === 'professor' && reservaParaExcluir.professor_id === user?.id);
+
+    if (!canDelete) {
+      toast.error("Você não tem permissão para excluir esta reserva.");
+      return;
+    }
+
+    if (window.confirm("Tem certeza que deseja cancelar esta reserva?")) {
+      const novasReservas = (isSupabaseConfigured ? initialReservas : reservasState).filter(r => r.id !== reservaId);
+      
+      if (!isSupabaseConfigured) {
+        setReservasState(novasReservas);
+        saveMockReservas(novasReservas);
+      } else {
+        // No modo Supabase real, isso seria uma chamada de API e depois um refresh
+        toast.info("Em modo Supabase real, a reserva seria removida do banco.");
+      }
+      
+      setIsModalDetalhesOpen(false);
+      toast.success("Reserva cancelada com sucesso.");
+    }
+  };
+
   const weekLabel = `${format(weekDates[0], "d 'de' MMM", { locale: ptBR })} – ${format(weekDates[4], "d 'de' MMM", { locale: ptBR })}`;
 
   return (
@@ -432,6 +463,7 @@ const AgendaPage = () => {
       <DetalhesReservaModal
         isOpen={isModalDetalhesOpen}
         onClose={() => setIsModalDetalhesOpen(false)}
+        onDelete={handleExcluirReserva}
         reserva={activeReserva?.reserva || null}
         recurso={activeReserva?.recurso || null}
         canEdit={activeReserva?.reserva.professor_id === user?.id || profile?.role !== 'professor'}
