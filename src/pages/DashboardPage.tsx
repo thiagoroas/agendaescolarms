@@ -119,7 +119,17 @@ const DashboardPage = () => {
 
       {/* Grid de Cards Principais */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="rounded-3xl border-none shadow-sm bg-blue-50/50 hover:shadow-md transition-all group">
+        <Card 
+          className="rounded-3xl border-none shadow-sm bg-blue-50/50 hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-blue-100 transition-all group cursor-pointer"
+          onClick={() => {
+            if (profile?.role === "professor") {
+              navigate("/minhas-reservas");
+            } else {
+              navigate("/agenda");
+            }
+          }}
+          aria-label="Ver agendamentos de hoje"
+        >
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
@@ -132,7 +142,17 @@ const DashboardPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border-none shadow-sm bg-emerald-50/50 hover:shadow-md transition-all group">
+        <Card 
+          className="rounded-3xl border-none shadow-sm bg-emerald-50/50 hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-emerald-100 transition-all group cursor-pointer"
+          onClick={() => {
+            if (profile?.role === "professor") {
+              navigate("/agenda");
+            } else {
+              navigate("/admin/recursos");
+            }
+          }}
+          aria-label="Ver recursos e equipamentos"
+        >
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
@@ -145,7 +165,17 @@ const DashboardPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border-none shadow-sm bg-amber-50/50 hover:shadow-md transition-all group">
+        <Card 
+          className="rounded-3xl border-none shadow-sm bg-amber-50/50 hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-amber-100 transition-all group cursor-pointer"
+          onClick={() => {
+            if (profile?.role === "professor") {
+              navigate("/minhas-reservas");
+            } else {
+              navigate("/admin/aprovacoes");
+            }
+          }}
+          aria-label="Ver solicitações pendentes"
+        >
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
@@ -158,7 +188,17 @@ const DashboardPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border-none shadow-sm bg-indigo-50/50 hover:shadow-md transition-all group">
+        <Card 
+          className="rounded-3xl border-none shadow-sm bg-indigo-50/50 hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-indigo-100 transition-all group cursor-pointer"
+          onClick={() => {
+            if (profile?.role === "professor") {
+              navigate("/minhas-reservas");
+            } else {
+              navigate("/admin/reservas");
+            }
+          }}
+          aria-label="Ver relatórios de reservas"
+        >
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
@@ -179,7 +219,20 @@ const DashboardPage = () => {
               <Clock className="text-blue-600" size={20} />
               Próximos Agendamentos
             </h2>
-            <Button variant="ghost" size="sm" className="text-xs font-bold text-blue-600" onClick={() => navigate("/agenda")}>Ver todos</Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-xs font-bold text-blue-600" 
+              onClick={() => {
+                if (profile?.role === "professor") {
+                  navigate("/minhas-reservas");
+                } else {
+                  navigate("/admin/reservas");
+                }
+              }}
+            >
+              Ver todos
+            </Button>
           </div>
           
           <div className="space-y-3">
