@@ -493,7 +493,6 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
               Objetivo Pedagógico {profile?.role === 'professor' && <span className="text-red-500">*</span>}
             </Label>
             <Input 
-              required={profile?.role === 'professor'}
               value={formData.objetivo_pedagogico} 
               onChange={e => setFormData({...formData, objetivo_pedagogico: e.target.value})} 
               placeholder="Ex: Aula prática de pesquisa, desenvolvimento de atividade em grupo..." 
