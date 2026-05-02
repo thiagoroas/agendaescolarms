@@ -111,12 +111,16 @@ const PerfilPage = () => {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (newPassword !== confirmPassword) {
+    const trimmedCurrentPassword = currentPassword.trim();
+    const trimmedNewPassword = newPassword.trim();
+    const trimmedConfirmPassword = confirmPassword.trim();
+
+    if (trimmedNewPassword !== trimmedConfirmPassword) {
       toast.error("A nova senha e a confirmação não coincidem.");
       return;
     }
 
-    if (newPassword.length < 6) {
+    if (trimmedNewPassword.length < 6) {
       toast.error("A nova senha deve ter pelo menos 6 caracteres.");
       return;
     }
@@ -129,7 +133,7 @@ const PerfilPage = () => {
         const mockUsuarios = getMockUsuarios();
         const userInStorage = mockUsuarios.find(u => u.id === profile?.id);
 
-        if (!userInStorage || userInStorage.senha !== currentPassword) {
+        if (!userInStorage || userInStorage.senha.trim() !== trimmedCurrentPassword) {
           toast.error("Senha atual incorreta.");
           setLoading(false);
           return;
@@ -137,13 +141,19 @@ const PerfilPage = () => {
 
         const updatedUsuarios = mockUsuarios.map(u => {
           if (u.id === profile?.id) {
-            return { ...u, senha: newPassword };
+            return { ...u, senha: trimmedNewPassword };
           }
           return u;
         });
 
         saveMockUsuarios(updatedUsuarios);
-        toast.success("Senha alterada com sucesso!");
+        
+        // Update remembered password if it exists
+        if (localStorage.getItem("agenda_remembered_password")) {
+          localStorage.setItem("agenda_remembered_password", trimmedNewPassword);
+        }
+
+        toast.success("Senha alterada com sucesso.");
         setShowPasswordForm(false);
         setCurrentPassword("");
         setNewPassword("");

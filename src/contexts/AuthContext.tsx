@@ -116,7 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         (u) => u.email.trim().toLowerCase() === normalizedEmail
       );
       
-      if (!foundUser || foundUser.senha !== normalizedPassword) {
+      if (!foundUser || foundUser.senha.trim() !== normalizedPassword) {
         return { success: false, error: "E-mail ou senha incorretos." };
       }
 
@@ -212,15 +212,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem("agenda_remembered_email");
     localStorage.removeItem("agenda_remembered_password");
     
-    // Also clear any other related items
-    const keysToRemove = [];
+    // Also clear any other related session items but NOT the mock database
+    const sessionKeys = [
+      "agenda_mock_user",
+      "agenda_mock_profile",
+      "agenda_selected_escola_id",
+      "agenda_remembered_email",
+      "agenda_remembered_password"
+    ];
+    
+    sessionKeys.forEach(key => localStorage.removeItem(key));
+    
+    // Clear Supabase keys
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && (key.startsWith("agenda_") || key === "sb-")) {
-        keysToRemove.push(key);
+      if (key && key.startsWith("sb-")) {
+        localStorage.removeItem(key);
       }
     }
-    keysToRemove.forEach(key => localStorage.removeItem(key));
   };
 
   const updateProfile = (updatedProfile: Partial<Profile>) => {
