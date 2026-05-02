@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { usuarios } from "@/data/mockData";
+import { getMockUsuarios } from "@/data/storage";
 
 export type UserRole = "admin_plataforma" | "admin_lab" | "professor";
 
@@ -108,7 +109,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const normalizedEmail = email.trim().toLowerCase();
       const normalizedPassword = senha.trim();
       
-      const foundUser = usuarios.find(
+      const mockUsuarios = getMockUsuarios();
+      const foundUser = mockUsuarios.find(
         (u) => u.email.trim().toLowerCase() === normalizedEmail
       );
       

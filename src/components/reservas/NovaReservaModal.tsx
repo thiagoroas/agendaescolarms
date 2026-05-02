@@ -8,7 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { useAuth } from "../../contexts/AuthContext";
-import { recursos, usuarios, Usuario, reservas } from "../../data/mockData";
+import { recursos as initialRecursos, usuarios as initialUsuarios, Usuario, reservas as initialReservas } from "../../data/mockData";
+import { getMockRecursos, getMockUsuarios, getMockReservas, saveMockReservas } from "../../data/storage";
 import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 import { horarios } from "../../data/horarios";
 import { format, parseISO } from "date-fns";
@@ -68,7 +69,8 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           setExistingReservations(data || []);
         } else {
           // Fallback to mock data
-          const mockFiltered = reservas.filter(r => 
+          const allMockReservas = getMockReservas();
+          const mockFiltered = allMockReservas.filter(r => 
             r.data === formData.data && 
             r.recurso_id === formData.recursoId && 
             r.escola_id === profile?.escola_id
@@ -135,7 +137,8 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
   useEffect(() => {
     if (formData.professorId && profile?.role !== 'professor') {
-      const prof = usuarios.find(u => u.id === formData.professorId);
+      const mockUsuarios = getMockUsuarios();
+      const prof = mockUsuarios.find(u => u.id === formData.professorId);
       if (prof) {
         setSelectedProfessor(prof);
         const disciplines = prof.disciplinas || [];
@@ -155,11 +158,13 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     }
   }, [formData.professorId, profile?.role]);
 
-  const availableRecursos = recursos.filter(r => r.escola_id === profile?.escola_id);
+  const mockRecursos = getMockRecursos();
+  const availableRecursos = mockRecursos.filter(r => r.escola_id === profile?.escola_id);
   // Show ALL non-interval hours in a single section as requested
   const allHorarios = horarios.filter(h => !h.isIntervalo);
 
-  const professoresDaEscola = usuarios.filter(u => 
+  const mockUsuariosList = getMockUsuarios();
+  const professoresDaEscola = mockUsuariosList.filter(u => 
     u.escola_id === profile?.escola_id && u.papel === 'professor' && u.status === 'ativo'
   );
 
@@ -188,7 +193,36 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
       turma: formData.turma
     };
     
-    console.log("Reserva enviada:", payload);
+    if (!isSupabaseConfigured) {
+      const currentReservas = getMockReservas();
+      const newReservas = [...currentReservas];
+      
+      formData.aulas.forEach(aula => {
+        const h = allHorarios.find(hour => hour.aula === aula);
+        const newReserva = {
+          id: `res-${Date.now()}-${aula}`,
+          escola_id: profile?.escola_id || "",
+          recurso_id: formData.recursoId,
+          professor_id: formData.professorId,
+          nome_professor: selectedProfessor?.nome || profile?.full_name || "",
+          disciplina: formData.disciplina,
+          turma: formData.turma,
+          data: formData.data,
+          turno: (aula <= 4 ? "manha" : "tarde") as "manha" | "tarde",
+          aula: aula,
+          horario: h ? `${h.inicio} – ${h.fim}` : "",
+          observacao: formData.observacao,
+          criado_em: new Date().toISOString()
+        };
+        newReservas.push(newReserva);
+      });
+      
+      saveMockReservas(newReservas);
+      console.log("Mock reservas salvas no localStorage");
+    } else {
+      console.log("Reserva enviada para Supabase:", payload);
+      // Aqui entraria a lógica de insert no Supabase se estivesse 100% real
+    }
     
     toast.success("Reserva realizada com sucesso!");
     onClose();
