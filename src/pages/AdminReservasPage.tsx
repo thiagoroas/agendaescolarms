@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { getMockReservas, getMockRecursos, getMockEscolas, saveMockReservas } from "../data/storage";
+import { useEscolas } from "@/hooks/useEscolas";
+import { getMockReservas, getMockRecursos, saveMockReservas } from "../data/storage";
 import { Reserva, Recurso, Escola } from "../data/mockData";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, Trash2, Edit, Calendar } from "lucide-react";
