@@ -213,6 +213,9 @@ const LoginPage = () => {
               <span className="font-medium text-blue-700">thiagomroas@gmail.com</span> / admin123
             </div>
             <div className="p-1.5 bg-slate-50 rounded border border-slate-100">
+              <span className="font-medium">admin@escola.com</span> / admin123
+            </div>
+            <div className="p-1.5 bg-slate-50 rounded border border-slate-100">
               <span className="font-medium">lab@escola.com</span> / lab123
             </div>
             <div className="p-1.5 bg-slate-50 rounded border border-slate-100">
