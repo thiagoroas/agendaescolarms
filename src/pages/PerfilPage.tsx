@@ -25,7 +25,7 @@ import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 const PerfilPage = () => {
   const { user, profile, logout, updateProfile } = useAuth();
-  const allEscolas = getMockEscolas();
+  const { escolas: allEscolas, loading: loadingEscolas } = useEscolas();
   const escola = allEscolas.find(e => e.id === profile?.escola_id);
   
   const [loading, setLoading] = useState(false);
