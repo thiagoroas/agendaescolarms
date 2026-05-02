@@ -26,6 +26,17 @@ const AdminRecursosPage = () => {
   const [corPersonalizada, setCorPersonalizada] = useState<string | null>(null);
 
 
+  const mapToDbTipo = (uiTipo: string) => {
+    switch (uiTipo) {
+      case "laboratorio": return "laboratorio";
+      case "projetor": return "equipamento";
+      case "sala": return "sala";
+      case "equipamento": return "equipamento";
+      case "informatica": return "equipamento";
+      default: return "equipamento";
+    }
+  };
+
   const categorias = [
     { value: "laboratorio", label: "Laboratório", cor_fundo: "#DBEAFE", cor_texto: "#1E40AF", cor_borda: "#93C5FD" },
     { value: "projetor", label: "Projetor / Audiovisual", cor_fundo: "#D1FAE5", cor_texto: "#065F46", cor_borda: "#6EE7B7" },
@@ -52,9 +63,11 @@ const AdminRecursosPage = () => {
       case "projetor": return <Projector className="h-5 w-5" />;
       case "sala": return <School className="h-5 w-5" />;
       case "informatica": return <Laptop className="h-5 w-5" />;
+      case "equipamento": return <Monitor className="h-5 w-5" />;
       default: return <Monitor className="h-5 w-5" />;
     }
   };
+
 
   const handleSalvarRecurso = async (e: React.FormEvent) => {
     e.preventDefault();
