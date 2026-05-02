@@ -37,7 +37,7 @@ const TURMAS_OPCOES = [
 ];
 
 const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProps) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [formData, setFormData] = useState({
     professorId: "",
     disciplina: "",
@@ -52,8 +52,16 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
   useEffect(() => {
     if (isOpen) {
-      const initialProfessorId = user?.papel === 'professor' ? user.id : "";
-      const initialProfessor = user?.papel === 'professor' ? user : null;
+      const initialProfessorId = profile?.role === 'professor' ? user?.id : "";
+      const initialProfessor = profile?.role === 'professor' ? {
+        id: user?.id || "",
+        nome: profile?.full_name || "",
+        email: user?.email || "",
+        escola_id: profile?.escola_id || "",
+        papel: profile?.role || "professor",
+        status: profile?.status || "ativo",
+        disciplinas: profile?.disciplinas || []
+      } as Usuario : null;
       
       setFormData({
         professorId: initialProfessorId,
@@ -84,12 +92,12 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     }
   }, [formData.professorId]);
 
-  const availableRecursos = recursos.filter(r => r.escola_id === user?.escola_id);
+  const availableRecursos = recursos.filter(r => r.escola_id === profile?.escola_id);
   // Show ALL non-interval hours in a single section as requested
   const allHorarios = horarios.filter(h => !h.isIntervalo);
 
   const professoresDaEscola = usuarios.filter(u => 
-    u.escola_id === user?.escola_id && u.papel === 'professor' && u.status === 'ativo'
+    u.escola_id === profile?.escola_id && u.papel === 'professor' && u.status === 'ativo'
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -107,7 +115,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     console.log("Reserva enviada:", { 
       ...formData, 
       nome_professor: selectedProfessor?.nome, 
-      escola_id: user?.escola_id 
+      escola_id: profile?.escola_id 
     });
     
     toast.success("Reserva realizada com sucesso!");
@@ -130,8 +138,8 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Professor Responsável</Label>
-              {user?.papel === 'professor' ? (
-                <Input value={user?.nome} disabled className="bg-slate-50 border-slate-100 font-bold text-slate-600 rounded-xl" />
+              {profile?.role === 'professor' ? (
+                <Input value={profile?.full_name} disabled className="bg-slate-50 border-slate-100 font-bold text-slate-600 rounded-xl" />
               ) : (
                 <Select value={formData.professorId} onValueChange={(v) => setFormData({...formData, professorId: v})}>
                   <SelectTrigger className="rounded-xl border-slate-200 h-10 font-medium">
