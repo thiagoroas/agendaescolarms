@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Component, ErrorInfo, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,6 +8,37 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import AppLayout from "./components/layout/AppLayout";
 import { isSupabaseConfigured } from "@/lib/supabase";
+
+// Error Boundary para evitar tela branca
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(_: Error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("[CRITICAL ERROR]", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
+          <h1 className="text-2xl font-bold text-destructive">Erro ao carregar o aplicativo</h1>
+          <p className="text-muted-foreground mt-2">Tente recarregar a página ou entre em contato com o suporte.</p>
+          <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-primary text-white rounded-md">
+            Recarregar
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 if (import.meta.env.DEV) {
   console.log("isSupabaseConfigured", isSupabaseConfigured);
@@ -31,6 +62,7 @@ const AppContent = () => {
   const { loading, profileLoading, user, profile } = useAuth();
   
   console.log("[AppContent] render state:", { loading, profileLoading, hasUser: !!user, hasProfile: !!profile });
+
 
   // 1. Loading inicial de Auth
   if (loading) {
