@@ -8,7 +8,11 @@ export const supabase = createClient(
   supabaseAnonKey || 'placeholder-key'
 );
 
-export const isSupabaseConfigured = Boolean(import.meta.env.VITE_SUPABASE_URL) && Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY);
+// Verifica se o Supabase está configurado corretamente
+// Considera configurado se as variáveis existirem E não forem os valores de placeholder
+export const isSupabaseConfigured = Boolean(supabaseUrl) && 
+  Boolean(supabaseAnonKey) && 
+  supabaseUrl !== 'https://placeholder-url.supabase.co';
 
 if (import.meta.env.DEV) {
   console.log("Supabase configurado?", isSupabaseConfigured);

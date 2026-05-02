@@ -14,7 +14,9 @@ export const DiagnosticPanel = () => {
   const [tokenSent, setTokenSent] = useState<boolean>(false);
 
   const checkEdgeFunction = async () => {
-    if (!isSupabaseConfigured || !user) {
+    // Mesmo que isSupabaseConfigured seja falso, se tivermos um user e um token, tentamos
+    // Isso resolve casos onde a detecção automática falha mas o cliente está funcionando
+    if (!user) {
       setEdgeFunctionStatus("unauthorized");
       return;
     }
@@ -22,32 +24,46 @@ export const DiagnosticPanel = () => {
     setEdgeFunctionStatus("checking");
     setEdgeError(null);
     setLastResponse(null);
+    setTokenSent(false);
     
     try {
       const { data: sessionData } = await supabase.auth.getSession();
-      setTokenSent(!!sessionData.session?.access_token);
+      const session = sessionData.session;
+      
+      if (!session?.access_token) {
+        setEdgeFunctionStatus("unauthorized");
+        setEdgeError("Sessão ativa não encontrada ou token expirado.");
+        return;
+      }
 
+      setTokenSent(true);
+
+      // Chamada explícita com o token para garantir o envio
       const { data, error } = await supabase.functions.invoke('manage-user', {
-        body: { action: 'ping' } 
+        body: { action: 'ping' },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
       });
 
       setLastResponse(data || error);
 
       if (error) {
-        if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")) {
+        // Se for erro de rede (função não deployada ou URL errada)
+        if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError") || error.name === "FunctionsFetchError") {
           setEdgeFunctionStatus("error");
-          setEdgeError("Não foi possível alcançar a Edge Function (Network Error/Not Deployed)");
+          setEdgeError(`Não foi possível alcançar a Edge Function: ${error.message || "Erro de rede"}`);
         } else {
+          // Outros erros da função (ex: 401, 403, 500) são considerados "comunicação ok" mas com erro lógico
           setEdgeFunctionStatus("ok");
         }
-      } else if (data?.error) {
-        setEdgeFunctionStatus("ok");
       } else {
         setEdgeFunctionStatus("ok");
       }
     } catch (err: any) {
+      console.error("Erro ao testar Edge Function:", err);
       setEdgeFunctionStatus("error");
-      setEdgeError(err.message || "Erro desconhecido");
+      setEdgeError(err.message || "Erro desconhecido ao chamar a função");
       setLastResponse(err);
     }
   };
@@ -78,6 +94,10 @@ export const DiagnosticPanel = () => {
             <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
               <CheckCircle2 className="h-3 w-3" /> Sim
             </Badge>
+          ) : user && profile && !localStorage.getItem("agenda_mock_user") ? (
+            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
+              <CheckCircle2 className="h-3 w-3" /> Detectado via Sessão
+            </Badge>
           ) : (
             <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1">
               <AlertCircle className="h-3 w-3" /> Não (Fallback Local)
@@ -98,15 +118,15 @@ export const DiagnosticPanel = () => {
         <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-slate-400" />
-            <span className="text-xs font-medium">Autenticação Real</span>
+            <span className="text-xs font-medium">Sessão Ativa</span>
           </div>
           {user ? (
             <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
-              <CheckCircle2 className="h-3 w-3" /> Logado
+              <CheckCircle2 className="h-3 w-3" /> Sim
             </Badge>
           ) : (
             <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 gap-1">
-              Offline
+              Não
             </Badge>
           )}
         </div>
@@ -127,7 +147,17 @@ export const DiagnosticPanel = () => {
           )}
         </div>
 
-        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100 md:col-span-2">
+        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
+          <div className="flex items-center gap-2">
+            <Lock className="h-4 w-4 text-slate-400" />
+            <span className="text-xs font-medium">Auth Token Sent</span>
+          </div>
+          <Badge variant="outline" className={tokenSent ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
+            {tokenSent ? "Sim" : "Não"}
+          </Badge>
+        </div>
+
+        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
           <div className="flex items-center gap-2">
             <Server className="h-4 w-4 text-slate-400" />
             <span className="text-xs font-medium">Edge Function (manage-user)</span>
@@ -161,15 +191,18 @@ export const DiagnosticPanel = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
-          <div className="flex items-center gap-2">
-            <Lock className="h-4 w-4 text-slate-400" />
-            <span className="text-xs font-medium">Auth Token Sent</span>
+        {!isSupabaseConfigured && (
+          <div className="md:col-span-2 lg:col-span-3 p-3 bg-amber-50 border border-amber-200 rounded-md text-[11px] text-amber-800">
+            <p className="font-bold mb-1 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" /> VITE_SUPABASE_URL não detectada
+            </p>
+            <p>Para usar o Supabase real, configure as variáveis de ambiente no painel do <strong>Lovable</strong> (Settings &gt; Supabase &gt; Connect) ou adicione manualmente em <strong>Secrets</strong> com os nomes:</p>
+            <ul className="list-disc ml-4 mt-1 font-mono">
+              <li>VITE_SUPABASE_URL</li>
+              <li>VITE_SUPABASE_ANON_KEY</li>
+            </ul>
           </div>
-          <Badge variant="outline" className={tokenSent ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
-            {tokenSent ? "Sim" : "Não"}
-          </Badge>
-        </div>
+        )}
       </CardContent>
 
       {(edgeError || lastResponse) && (
