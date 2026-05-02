@@ -23,6 +23,7 @@ interface AuthContextType {
   login: (email: string, senha: string, remember: boolean) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   setSelectedEscolaId: (id: string) => void;
+  updateProfile: (updatedProfile: Partial<Profile>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -221,8 +222,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     keysToRemove.forEach(key => localStorage.removeItem(key));
   };
 
+  const updateProfile = (updatedProfile: Partial<Profile>) => {
+    if (!profile) return;
+    const newProfile = { ...profile, ...updatedProfile };
+    setProfile(newProfile);
+    localStorage.setItem("agenda_mock_profile", JSON.stringify(newProfile));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, profile, selectedEscolaId, loading, login, logout, setSelectedEscolaId }}>
+    <AuthContext.Provider value={{ user, profile, selectedEscolaId, loading, login, logout, setSelectedEscolaId, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

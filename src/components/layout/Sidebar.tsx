@@ -154,15 +154,23 @@ const Sidebar = () => {
       </nav>
 
       <div className="mt-auto p-4 border-t border-slate-100">
-        <div className="flex items-center gap-3 mb-4 px-2">
-          <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 text-xs font-bold border border-white shadow-sm">
-            {profile?.full_name.charAt(0)}
+        <NavLink
+          to="/perfil"
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 mb-4 px-2 py-2 rounded-lg transition-all duration-200 group",
+              isActive ? "bg-slate-50 ring-1 ring-slate-100" : "hover:bg-slate-50"
+            )
+          }
+        >
+          <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-sm group-hover:scale-110 transition-transform">
+            {profile?.full_name.charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col min-w-0">
-            <p className="text-xs font-bold text-slate-900 truncate leading-tight">{profile?.full_name}</p>
-            <p className="text-[10px] font-medium text-slate-500 capitalize truncate">{profile?.role.replace("_", " ")}</p>
+            <p className="text-xs font-bold text-slate-900 truncate leading-tight group-hover:text-blue-700 transition-colors">{profile?.full_name}</p>
+            <p className="text-[10px] font-medium text-slate-500 capitalize truncate">Meu Perfil</p>
           </div>
-        </div>
+        </NavLink>
         <button
           onClick={() => {
             logout();
