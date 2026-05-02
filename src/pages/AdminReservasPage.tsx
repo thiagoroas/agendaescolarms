@@ -11,11 +11,11 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 
 const AdminReservasPage = () => {
-  const { user } = useAuth();
+  const { user, selectedEscolaId } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
 
   const schoolReservas = reservas
-    .filter(r => r.escola_id === user?.escola_id)
+    .filter(r => r.escola_id === (selectedEscolaId || user?.escola_id))
     .filter(r => 
       r.nome_professor.toLowerCase().includes(searchTerm.toLowerCase()) || 
       r.disciplina.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -31,6 +31,13 @@ const AdminReservasPage = () => {
           <p className="text-sm text-slate-500">Histórico completo de agendamentos da escola.</p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => {
+            const escolaNome = escolas.find(e => e.id === (selectedEscolaId || user?.escola_id))?.nome;
+            toast.success(`Gerando relatório PDF para ${escolaNome}...`);
+            setTimeout(() => window.print(), 500);
+          }}>
+            Gerar PDF
+          </Button>
           <Button variant="outline" onClick={() => toast.info("Exportando...")}>
             Exportar CSV
           </Button>

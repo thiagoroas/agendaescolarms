@@ -15,8 +15,8 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 const Sidebar = () => {
-  const { user, logout } = useAuth();
-  const escola = escolas.find(e => e.id === user?.escola_id);
+  const { user, logout, selectedEscolaId, setSelectedEscolaId } = useAuth();
+  const escola = escolas.find(e => e.id === (selectedEscolaId || user?.escola_id));
 
   const menuItems = [
     { icon: Calendar, label: "Agenda", path: "/agenda" },
@@ -46,7 +46,21 @@ const Sidebar = () => {
           </div>
           <span className="text-lg font-bold tracking-tight text-slate-900">Agenda Escolar</span>
         </div>
-        <p className="text-xs text-slate-500 font-medium px-0.5 truncate">{escola?.nome || "Sem Escola"}</p>
+        {user?.papel === "admin_plataforma" ? (
+          <div className="mt-1">
+            <select 
+              value={selectedEscolaId || ""} 
+              onChange={(e) => setSelectedEscolaId(e.target.value)}
+              className="w-full text-xs bg-slate-50 border-none text-slate-600 font-medium px-0.5 focus:ring-0 cursor-pointer"
+            >
+              {escolas.map(e => (
+                <option key={e.id} value={e.id}>{e.nome}</option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <p className="text-xs text-slate-500 font-medium px-0.5 truncate">{escola?.nome || "Sem Escola"}</p>
+        )}
       </div>
 
       <div className="px-4">
