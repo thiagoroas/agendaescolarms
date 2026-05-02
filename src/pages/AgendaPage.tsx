@@ -9,6 +9,7 @@ import { escolas as initialEscolas, recursos as initialRecursos, reservas as ini
 import { getMockEscolas, getMockRecursos, getMockReservas, resetMockData } from "../data/storage";
 import { horarios, diasSemana } from "../data/horarios";
 import { toast } from "sonner";
+import { saveMockReservas } from "../data/storage";
 import NovaReservaModal from "../components/reservas/NovaReservaModal";
 import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
 import RelatorioReservasModal from "../components/reservas/RelatorioReservasModal";
@@ -310,17 +311,21 @@ const AgendaPage = () => {
                             <span>{recurso.nome}</span>
                           </div>
                           <div className="event-actions">
-                            <span
-                              className="event-action-btn"
-                              role="button"
-                              aria-label="Excluir"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toast.info("Funcionalidade de exclusão em breve");
-                              }}
-                            >
-                              <Trash2 size={12} />
-                            </span>
+                            {(profile?.role === 'admin_plataforma' || 
+                              (profile?.role === 'admin_lab' && reserva.escola_id === profile.escola_id) ||
+                              (profile?.role === 'professor' && reserva.professor_id === user?.id)) && (
+                              <span
+                                className="event-action-btn"
+                                role="button"
+                                aria-label="Excluir"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleExcluirReserva(reserva.id);
+                                }}
+                              >
+                                <Trash2 size={12} />
+                              </span>
+                            )}
                           </div>
                         </button>
                       ) : (
