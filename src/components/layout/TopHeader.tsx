@@ -25,30 +25,30 @@ const TopHeader = () => {
   };
 
   return (
-    <header className="h-16 border-b bg-white flex items-center justify-between px-4 md:px-8 sticky top-0 z-30">
+    <header className="h-16 border-b bg-white flex items-center justify-between px-4 md:px-8 sticky top-0 z-[40]">
       <div className="flex items-center gap-4">
         <div className="md:hidden">
           {/* Mobile logo could go here if sidebar is hidden */}
         </div>
         
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-400 hidden sm:inline uppercase tracking-wider">
-            Escola ativa:
+          <span className="text-[10px] font-bold text-slate-400 hidden sm:inline uppercase tracking-wider">
+            {isAdminPlataforma ? "Escola ativa:" : "Minha escola:"}
           </span>
           
           {isAdminPlataforma ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors border border-blue-100 group">
-                  <Building className="h-3.5 w-3.5 shrink-0" />
+                <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all border border-blue-200 group shadow-sm">
+                  <Building className="h-3.5 w-3.5 shrink-0 text-blue-600" />
                   <span className="text-xs font-bold truncate max-w-[120px] sm:max-w-[200px]">
                     {escola?.nome || "Selecionar Escola"}
                   </span>
-                  <ChevronRight className="h-3 w-3 shrink-0 group-data-[state=open]:rotate-90 transition-transform" />
+                  <ChevronRight className="h-3 w-3 shrink-0 group-data-[state=open]:rotate-90 transition-transform text-blue-400" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <div className="px-2 py-1.5 text-[10px] font-bold text-slate-400 uppercase">
+              <DropdownMenuContent align="start" className="w-56 z-[50]">
+                <div className="px-2 py-1.5 text-[10px] font-bold text-slate-400 uppercase border-b mb-1">
                   Mudar escola ativa
                 </div>
                 {escolas.map((e) => (
@@ -56,20 +56,26 @@ const TopHeader = () => {
                     key={e.id}
                     onClick={() => handleEscolaChange(e.id)}
                     className={cn(
-                      "text-xs cursor-pointer",
-                      selectedEscolaId === e.id && "bg-blue-50 text-blue-700 font-semibold"
+                      "text-xs cursor-pointer py-2 px-3",
+                      selectedEscolaId === e.id && "bg-blue-50 text-blue-700 font-bold"
                     )}
                   >
+                    <Building className={cn("h-3 w-3 mr-2", selectedEscolaId === e.id ? "text-blue-600" : "text-slate-400")} />
                     {e.nome}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Badge variant="secondary" className="bg-slate-100 text-slate-700 hover:bg-slate-100 border-slate-200 px-3 py-1 rounded-full gap-1.5">
-              <Building className="h-3 w-3" />
-              <span className="truncate max-w-[150px] sm:max-w-none">{escola?.nome || "Sem Escola"}</span>
-            </Badge>
+            <div className={cn(
+              "flex items-center gap-2 px-3 py-1.5 rounded-full border shadow-sm",
+              profile?.role === "admin_lab" 
+                ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
+                : "bg-blue-50 text-blue-700 border-blue-100"
+            )}>
+              <Building className={cn("h-3.5 w-3.5 shrink-0", profile?.role === "admin_lab" ? "text-emerald-600" : "text-blue-600")} />
+              <span className="text-xs font-bold truncate max-w-[150px] sm:max-w-none">{escola?.nome || "Sem Escola"}</span>
+            </div>
           )}
         </div>
       </div>
