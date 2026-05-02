@@ -1,14 +1,13 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import { Usuario } from "../data/mockData";
+import { useAuth, UserRole } from "../contexts/AuthContext";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: Usuario["papel"][];
+  allowedRoles?: UserRole[];
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -19,7 +18,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.papel)) {
+  if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
     return (
       <div className="flex h-screen flex-col items-center justify-center p-4 text-center">
         <h1 className="mb-2 text-2xl font-bold text-destructive">Acesso negado</h1>
