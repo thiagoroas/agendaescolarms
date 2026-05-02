@@ -47,7 +47,15 @@ const initialsOf = (name: string) =>
 
 const AgendaPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(() => {
+    const today = new Date();
+    const day = today.getDay();
+    // Se for final de semana (Sábado=6, Domingo=0), inicia na Segunda-feira da próxima semana
+    if (day === 0 || day === 6) {
+      return addDays(today, (8 - day) % 7);
+    }
+    return today;
+  });
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobile, setIsMobile] = useState(false);
