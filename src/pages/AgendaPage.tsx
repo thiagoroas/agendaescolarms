@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from "react";
-import { format, addDays, startOfWeek, isSameDay } from "date-fns";
+import React, { useState, useMemo, useEffect } from "react";
+import { format, addDays, startOfWeek, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { escolas, recursos, reservas, Reserva, Recurso } from "../data/mockData";
 import { horarios, diasSemana } from "../data/horarios";
@@ -42,6 +42,14 @@ const AgendaPage = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
   const [isModalDetalhesOpen, setIsModalDetalhesOpen] = useState(false);
@@ -63,7 +71,7 @@ const AgendaPage = () => {
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(monday, i));
 
   const navigateWeek = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => addDays(prev, direction === 'prev' ? -7 : 7));
+    setCurrentDate(prev => addDays(prev, isMobile ? (direction === 'prev' ? -1 : 1) : (direction === 'prev' ? -7 : 7)));
   };
 
   const getReservaForSlot = (date: Date, aula: number) => {
@@ -117,22 +125,24 @@ const AgendaPage = () => {
     <div className="agenda-proto">
       {/* Topbar */}
       <div className="topbar">
-        <div>
+        <div className="flex-1">
           <div className="topbar-title">Agenda Escolar Digital</div>
-          <div className="topbar-sub">
-            <span>{escola?.nome}</span>
-            <span className="dot" />
-            <span>{weekLabel}</span>
+          <div className="topbar-sub flex flex-wrap gap-x-3">
+            <span className="truncate">{escola?.nome}</span>
+            <span className="dot hidden sm:block" />
+            <span className="font-bold text-slate-900 whitespace-nowrap">{isMobile ? format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR }) : weekLabel}</span>
           </div>
         </div>
         <div className="topbar-actions">
-          <button className="btn btn-ghost" onClick={() => setCurrentDate(new Date())}>Hoje</button>
-          <button className="btn-icon" onClick={() => navigateWeek('prev')} aria-label="Semana anterior">
-            <ChevronLeft size={16} />
-          </button>
-          <button className="btn-icon" onClick={() => navigateWeek('next')} aria-label="Próxima semana">
-            <ChevronRight size={16} />
-          </button>
+          {!isMobile && <button className="btn btn-ghost" onClick={() => setCurrentDate(new Date())}>Hoje</button>}
+          <div className="flex items-center gap-1">
+            <button className="btn-icon" onClick={() => navigateWeek('prev')} aria-label={isMobile ? "Dia anterior" : "Semana anterior"}>
+              <ChevronLeft size={16} />
+            </button>
+            <button className="btn-icon" onClick={() => navigateWeek('next')} aria-label={isMobile ? "Próximo dia" : "Próxima semana"}>
+              <ChevronRight size={16} />
+            </button>
+          </div>
           <button className="btn-icon relative" aria-label="Notificações">
             <Bell size={16} />
             {reservasHoje.length > 0 && (
@@ -141,36 +151,41 @@ const AgendaPage = () => {
               </span>
             )}
           </button>
-          <button className="btn btn-primary" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
-            <Plus size={16} /> Nova reserva
-          </button>
+          {!isMobile && (
+            <button className="btn btn-primary" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
+              <Plus size={16} /> Nova reserva
+            </button>
+          )}
         </div>
       </div>
 
       {/* Toolbar */}
       <div className="toolbar">
-        <button
-          className={`chip ${!selectedRecurso ? 'active' : ''}`}
-          onClick={() => setSelectedRecurso(null)}
-        >
-          Todos
-        </button>
-        {schoolRecursos.map(r => (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-2 px-2 w-full sm:w-auto">
           <button
-            key={r.id}
-            className={`chip ${selectedRecurso === r.id ? 'active' : ''}`}
-            onClick={() => setSelectedRecurso(r.id)}
+            className={`chip ${!selectedRecurso ? 'active' : ''}`}
+            onClick={() => setSelectedRecurso(null)}
           >
-            <span className="chip-dot" style={{ background: r.cor_borda }} />
-            {r.nome}
+            Todos
           </button>
-        ))}
+          {schoolRecursos.map(r => (
+            <button
+              key={r.id}
+              className={`chip ${selectedRecurso === r.id ? 'active' : ''}`}
+              onClick={() => setSelectedRecurso(r.id)}
+            >
+              <span className="chip-dot" style={{ background: r.cor_borda }} />
+              {r.nome}
+            </button>
+          ))}
+        </div>
 
-        <div className="toolbar-divider" />
+        {!isMobile && <div className="toolbar-divider" />}
 
-        <div className="search">
+        <div className="search w-full sm:w-auto mt-2 sm:mt-0">
           <span className="search-icon"><Search size={14} /></span>
           <input
+            className="w-full sm:w-[220px]"
             placeholder="Buscar professor, turma…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -189,90 +204,162 @@ const AgendaPage = () => {
 
       {/* Calendar */}
       <div className="calendar-wrap">
-        <div className="calendar">
-          <div className="cal-header">
-            <div className="cal-header-cell" />
-            {weekDates.map((date, i) => {
-              const isToday = isSameDay(date, new Date());
-              return (
-                <div key={i} className={`cal-header-cell ${isToday ? 'today' : ''}`}>
-                  <div className="cal-day-label">{diasSemana[i].substring(0, 3)}</div>
-                  <div className={`cal-day-num ${isToday ? 'today' : ''}`}>{format(date, "d")}</div>
-                </div>
-              );
-            })}
-          </div>
-
-          {horarios.map((h, hIdx) => (
-            <div key={hIdx} className={`cal-row ${h.isIntervalo ? 'break' : ''}`}>
-              <div className="cal-time">
-                <div className="cal-time-label">{h.label}</div>
-                {!h.isIntervalo && <div className="cal-time-range">{h.inicio}</div>}
-              </div>
-
-              {weekDates.map((date, dIdx) => {
-                if (h.isIntervalo) {
-                  return (
-                    <div key={dIdx} className="cal-cell break-cell">
-                      {dIdx === 2 && <div className="break-label">Intervalo</div>}
-                    </div>
-                  );
-                }
-
-                const reserva = getReservaForSlot(date, h.aula);
-                const recurso = recursos.find(r => r.id === reserva?.recurso_id);
-
+        {!isMobile ? (
+          <div className="calendar">
+            <div className="cal-header">
+              <div className="cal-header-cell" />
+              {weekDates.map((date, i) => {
+                const isToday = isSameDay(date, new Date());
                 return (
-                  <div
-                    key={dIdx}
-                    className="cal-cell"
-                    onClick={() => !reserva && handleSlotClick(date, h)}
-                  >
-                    {reserva && recurso ? (
-                      <button
-                        className={`event ${tipoColor(recurso.tipo)}`}
-                        onClick={(e) => { e.stopPropagation(); handleSlotClick(date, h); }}
-                        title={`${reserva.nome_professor} • ${reserva.turma} • ${recurso.nome}`}
-                      >
-                        <div className="event-title">
-                          <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo) }}>
-                            {initialsOf(reserva.nome_professor)}
-                          </span>
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {reserva.nome_professor}
-                          </span>
-                        </div>
-                        <div className="event-meta">
-                          <span>{reserva.turma}</span>
-                          <span>•</span>
-                          <span>{recurso.nome}</span>
-                        </div>
-                        <div className="event-actions">
-                          <span
-                            className="event-action-btn"
-                            role="button"
-                            aria-label="Excluir"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toast.info("Funcionalidade de exclusão em breve");
-                            }}
-                          >
-                            <Trash2 size={12} />
-                          </span>
-                        </div>
-                      </button>
-                    ) : (
-                      <div className="add-hint">
-                        <Plus size={14} /> Reservar
-                      </div>
-                    )}
+                  <div key={i} className={`cal-header-cell ${isToday ? 'today' : ''}`}>
+                    <div className="cal-day-label">{diasSemana[i].substring(0, 3)}</div>
+                    <div className={`cal-day-num ${isToday ? 'today' : ''}`}>{format(date, "d")}</div>
                   </div>
                 );
               })}
             </div>
-          ))}
-        </div>
+
+            {horarios.map((h, hIdx) => (
+              <div key={hIdx} className={`cal-row ${h.isIntervalo ? 'break' : ''}`}>
+                <div className="cal-time">
+                  <div className="cal-time-label">{h.label}</div>
+                  {!h.isIntervalo && <div className="cal-time-range">{h.inicio}</div>}
+                </div>
+
+                {weekDates.map((date, dIdx) => {
+                  if (h.isIntervalo) {
+                    return (
+                      <div key={dIdx} className="cal-cell break-cell">
+                        {dIdx === 2 && <div className="break-label">Intervalo</div>}
+                      </div>
+                    );
+                  }
+
+                  const reserva = getReservaForSlot(date, h.aula);
+                  const recurso = recursos.find(r => r.id === reserva?.recurso_id);
+
+                  return (
+                    <div
+                      key={dIdx}
+                      className="cal-cell"
+                      onClick={() => !reserva && handleSlotClick(date, h)}
+                    >
+                      {reserva && recurso ? (
+                        <button
+                          className={`event ${tipoColor(recurso.tipo)}`}
+                          onClick={(e) => { e.stopPropagation(); handleSlotClick(date, h); }}
+                          title={`${reserva.nome_professor} • ${reserva.turma} • ${recurso.nome}`}
+                        >
+                          <div className="event-title">
+                            <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo) }}>
+                              {initialsOf(reserva.nome_professor)}
+                            </span>
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {reserva.nome_professor}
+                            </span>
+                          </div>
+                          <div className="event-meta">
+                            <span>{reserva.turma}</span>
+                            <span>•</span>
+                            <span>{recurso.nome}</span>
+                          </div>
+                          <div className="event-actions">
+                            <span
+                              className="event-action-btn"
+                              role="button"
+                              aria-label="Excluir"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toast.info("Funcionalidade de exclusão em breve");
+                              }}
+                            >
+                              <Trash2 size={12} />
+                            </span>
+                          </div>
+                        </button>
+                      ) : (
+                        <div className="add-hint">
+                          <Plus size={14} /> Reservar
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mobile-timeline">
+            <div className="mobile-day-header">
+              <div className="flex items-center gap-3">
+                <CalendarIcon size={20} className="text-blue-600" />
+                <span className="mobile-day-label">
+                  {format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
+                </span>
+              </div>
+              <button 
+                className="text-[11px] font-black uppercase tracking-widest text-blue-600 px-2 py-1 rounded-md bg-blue-50"
+                onClick={() => setCurrentDate(new Date())}
+              >
+                Hoje
+              </button>
+            </div>
+
+            {horarios.map((h, hIdx) => {
+              const reserva = getReservaForSlot(currentDate, h.aula);
+              const recurso = recursos.find(r => r.id === reserva?.recurso_id);
+
+              return (
+                <div key={hIdx} className={`mobile-slot ${h.isIntervalo ? 'is-break' : ''}`}>
+                  <div className="mobile-slot-time">
+                    <span className="mobile-slot-label">{h.label.replace("Aula ", "A")}</span>
+                    <span className="mobile-slot-hour">{h.inicio}</span>
+                  </div>
+                  <div className="mobile-slot-content">
+                    {h.isIntervalo ? (
+                      <span className="break-label text-[10px] font-black uppercase text-slate-300 tracking-[0.2em]">Intervalo</span>
+                    ) : reserva && recurso ? (
+                      <button 
+                        className={`mobile-card-event ${tipoColor(recurso.tipo)}`}
+                        onClick={() => handleSlotClick(currentDate, h)}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo), width: '22px', height: '22px', fontSize: '10px' }}>
+                            {initialsOf(reserva.nome_professor)}
+                          </span>
+                          <span className="text-[13px] font-bold text-slate-900 leading-none">{reserva.nome_professor}</span>
+                        </div>
+                        <div className="flex items-center gap-3 mt-auto">
+                          <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md">{reserva.turma}</span>
+                          <span className="text-[11px] font-medium text-slate-500">• {recurso.nome}</span>
+                        </div>
+                      </button>
+                    ) : (
+                      <button 
+                        className="mobile-card-available"
+                        onClick={() => handleSlotClick(currentDate, h)}
+                      >
+                        <Plus size={14} className="mr-2 text-blue-400" />
+                        Disponível — toque para reservar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
+
+      {isMobile && (
+        <button 
+          className="mobile-fab"
+          onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}
+          aria-label="Nova reserva"
+        >
+          <Plus size={24} />
+        </button>
+      )}
 
       <NovaReservaModal
         isOpen={isModalNovaOpen}
