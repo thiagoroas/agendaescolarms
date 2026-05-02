@@ -15,8 +15,8 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 const Sidebar = () => {
-  const { user, logout, selectedEscolaId, setSelectedEscolaId } = useAuth();
-  const escola = escolas.find(e => e.id === (selectedEscolaId || user?.escola_id));
+  const { user, profile, logout, selectedEscolaId, setSelectedEscolaId } = useAuth();
+  const escola = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
 
   const menuItems = [
     { icon: Calendar, label: "Agenda", path: "/agenda" },
@@ -34,8 +34,8 @@ const Sidebar = () => {
     { icon: Building2, label: "Escolas", path: "/admin/escolas", roles: ["admin_plataforma"] },
   ];
 
-  const filteredAdmin = adminItems.filter(i => i.roles.includes(user?.papel || ""));
-  const filteredPlatform = platformItems.filter(i => i.roles?.includes(user?.papel || ""));
+  const filteredAdmin = adminItems.filter(i => i.roles.includes(profile?.role || ""));
+  const filteredPlatform = platformItems.filter(i => i.roles?.includes(profile?.role || ""));
 
   return (
     <aside className="fixed left-0 top-0 hidden h-full w-[264px] flex-col border-r bg-white md:flex z-40">
@@ -46,7 +46,7 @@ const Sidebar = () => {
           </div>
           <span className="text-lg font-bold tracking-tight text-slate-900">Agenda Escolar</span>
         </div>
-        {user?.papel === "admin_plataforma" ? (
+        {profile?.role === "admin_plataforma" ? (
           <div className="mt-1">
             <select 
               value={selectedEscolaId || ""} 
@@ -152,11 +152,11 @@ const Sidebar = () => {
       <div className="mt-auto p-4 border-t border-slate-100">
         <div className="flex items-center gap-3 mb-4 px-2">
           <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 text-xs font-bold border border-white shadow-sm">
-            {user?.nome.charAt(0)}
+            {profile?.full_name.charAt(0)}
           </div>
           <div className="flex flex-col min-w-0">
-            <p className="text-xs font-bold text-slate-900 truncate leading-tight">{user?.nome}</p>
-            <p className="text-[10px] font-medium text-slate-500 capitalize truncate">{user?.papel.replace("_", " ")}</p>
+            <p className="text-xs font-bold text-slate-900 truncate leading-tight">{profile?.full_name}</p>
+            <p className="text-[10px] font-medium text-slate-500 capitalize truncate">{profile?.role.replace("_", " ")}</p>
           </div>
         </div>
         <button

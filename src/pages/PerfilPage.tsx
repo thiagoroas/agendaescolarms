@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogOut, User as UserIcon, Mail, Building, Shield } from "lucide-react";
 
 const PerfilPage = () => {
-  const { user, logout } = useAuth();
-  const escola = escolas.find(e => e.id === user?.escola_id);
+  const { user, profile, logout } = useAuth();
+  const escola = escolas.find(e => e.id === profile?.escola_id);
 
   const getRoleBadge = (role: string) => {
     switch (role) {
@@ -28,11 +28,11 @@ const PerfilPage = () => {
         <CardHeader className="bg-slate-50 border-b">
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold">
-              {user?.nome.charAt(0)}
+              {profile?.full_name.charAt(0)}
             </div>
             <div>
-              <CardTitle className="text-xl font-bold text-slate-900">{user?.nome}</CardTitle>
-              <div className="mt-1">{getRoleBadge(user?.papel || "")}</div>
+              <CardTitle className="text-xl font-bold text-slate-900">{profile?.full_name}</CardTitle>
+              <div className="mt-1">{getRoleBadge(profile?.role || "")}</div>
             </div>
           </div>
         </CardHeader>
@@ -57,7 +57,7 @@ const PerfilPage = () => {
             <Shield className="h-5 w-5 text-slate-400" />
             <div>
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Papel</p>
-              <p className="text-slate-900 font-medium capitalize">{user?.papel.replace("_", " ")}</p>
+              <p className="text-slate-900 font-medium capitalize">{profile?.role.replace("_", " ")}</p>
             </div>
           </div>
 
