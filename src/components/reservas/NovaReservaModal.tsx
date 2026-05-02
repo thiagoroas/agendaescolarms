@@ -221,7 +221,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           horario: h ? `${h.inicio} – ${h.fim}` : "",
           objetivo_pedagogico: formData.objetivo_pedagogico,
           observacao: formData.observacao,
-          status: (profile?.role === 'professor' ? "pendente" : "aprovada") as any,
+          status: "confirmada" as any,
           criado_em: new Date().toISOString()
         };
         newReservas.push(newReserva);

@@ -37,10 +37,11 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
               {reserva.status && (
                 <Badge className={cn(
                   "px-2 py-0.5 text-[9px] font-black uppercase tracking-widest border-none",
-                  reserva.status === "aprovada" ? "bg-green-500 text-white" :
+                  (reserva.status === "confirmada" || reserva.status === "aprovada") ? "bg-green-500 text-white" :
                   reserva.status === "pendente" ? "bg-amber-500 text-white" :
                   reserva.status === "recusada" ? "bg-red-500 text-white" :
                   reserva.status === "cancelada" ? "bg-slate-500 text-white" :
+                  (reserva.status === "manutencao" || reserva.status === "bloqueada") ? "bg-slate-700 text-white" :
                   "bg-blue-500 text-white"
                 )}>
                   {reserva.status}

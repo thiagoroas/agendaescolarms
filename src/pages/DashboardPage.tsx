@@ -70,24 +70,24 @@ const DashboardPage = () => {
     return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, 5);
   }, [reservasEscola, profile?.role, user?.id]);
 
-  const pendencias = useMemo(() => {
-    if (profile?.role === "professor") {
-      return reservasEscola.filter(r => r.professor_id === user?.id && r.status === "pendente");
-    }
-    return reservasEscola.filter(r => r.status === "pendente");
-  }, [reservasEscola, profile?.role, user?.id]);
+  const alertas = useMemo(() => {
+    return reservasEscola.filter(r => r.status === "manutencao" || r.status === "bloqueada");
+  }, [reservasEscola]);
 
   const recursosEmUsoHoje = useMemo(() => {
-    const ids = new Set(reservasHoje.filter(r => r.status === "aprovada").map(r => r.recurso_id));
+    const ids = new Set(reservasHoje.filter(r => r.status === "confirmada" || r.status === "aprovada").map(r => r.recurso_id));
     return recursosEscola.filter(r => ids.has(r.id));
   }, [reservasHoje, recursosEscola]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "confirmada":
       case "aprovada": return "bg-green-500";
       case "pendente": return "bg-amber-500";
       case "recusada": return "bg-red-500";
       case "cancelada": return "bg-slate-400";
+      case "manutencao":
+      case "bloqueada": return "bg-slate-600";
       default: return "bg-blue-500";
     }
   };
@@ -181,10 +181,10 @@ const DashboardPage = () => {
               <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
                 <Bell size={20} />
               </div>
-              <Badge className="bg-amber-600 text-white border-none font-black">{pendencias.length}</Badge>
+              <Badge className="bg-slate-600 text-white border-none font-black">{alertas.length}</Badge>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">Solicitações</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1">Pendentes</h3>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Bloqueios</p>
+            <h3 className="text-xl font-black text-slate-900 mt-1">Manutenção</h3>
           </CardContent>
         </Card>
 
