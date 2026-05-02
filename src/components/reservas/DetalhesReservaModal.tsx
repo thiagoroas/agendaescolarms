@@ -98,7 +98,7 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
             </div>
           )}
 
-          {reserva.status === 'recusada' && reserva.motivo_recusa && (
+          {reserva.status === 'recusada' && reserva.motivo_cancelamento && (
             <div className="space-y-3 bg-red-50 p-5 rounded-2xl border border-red-100">
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-red-400">
                 <AlertCircle className="h-3 w-3" /> Motivo da Recusa
