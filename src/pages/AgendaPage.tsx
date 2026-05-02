@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { recursos as initialRecursos, reservas as initialReservas, Reserva, Recurso, AvisoLaboratorio } from "../data/mockData";
+import { reservas as initialReservas, Reserva, Recurso, AvisoLaboratorio } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
-import { getMockEscolas, getMockRecursos, getMockReservas, resetMockData, getMockAvisos } from "../data/storage";
+import { useRecursos } from "@/hooks/useRecursos";
+import { getMockEscolas, getMockReservas, resetMockData, getMockAvisos, getMockRecursos } from "../data/storage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { horarios, diasSemana } from "../data/horarios";
@@ -22,7 +23,8 @@ import "./agenda.css";
 const tipoColor = (tipo: string) => {
   switch (tipo) {
     case "laboratorio": return "c-blue";
-    case "projetor": return "c-green";
+    case "projetor":
+    case "equipamento": return "c-green";
     case "biblioteca": return "c-amber";
     case "auditorio": return "c-purple";
     case "quadra": return "c-pink";
@@ -34,7 +36,8 @@ const tipoColor = (tipo: string) => {
 const tipoSwatch = (tipo: string) => {
   switch (tipo) {
     case "laboratorio": return "var(--accent-blue)";
-    case "projetor": return "var(--accent-green)";
+    case "projetor":
+    case "equipamento": return "var(--accent-green)";
     case "biblioteca": return "var(--accent-amber)";
     case "auditorio": return "var(--accent-purple)";
     case "quadra": return "var(--accent-pink)";
@@ -42,6 +45,7 @@ const tipoSwatch = (tipo: string) => {
     default: return "var(--accent-blue)";
   }
 };
+
 
 const initialsOf = (name: string) =>
   name.split(" ").filter(Boolean).slice(0, 2).map(n => n[0]?.toUpperCase()).join("");
@@ -62,7 +66,7 @@ const AgendaPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobile, setIsMobile] = useState(false);
   const [reservasState, setReservasState] = useState<Reserva[]>([]);
-  const [recursosState, setRecursosState] = useState<Recurso[]>([]);
+  const { recursos: schoolRecursos, loading: loadingRecursos } = useRecursos();
   const [avisosState, setAvisosState] = useState<AvisoLaboratorio[]>([]);
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
   const [isModalRelatorioOpen, setIsModalRelatorioOpen] = useState(false);
@@ -71,10 +75,10 @@ const AgendaPage = () => {
   useEffect(() => {
     if (!isSupabaseConfigured) {
       setReservasState(getMockReservas());
-      setRecursosState(getMockRecursos());
       setAvisosState(getMockAvisos());
     }
   }, [isModalNovaOpen]); // Refresh when modal closes (might have added something)
+
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -97,8 +101,8 @@ const AgendaPage = () => {
 
   const schoolEscolas = allEscolas;
   const escola = schoolEscolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
-  const schoolRecursosList = isSupabaseConfigured ? initialRecursos : recursosState;
-  const schoolRecursos = schoolRecursosList.filter(r => r.escola_id === (selectedEscolaId || profile?.escola_id));
+  const schoolRecursosList = schoolRecursos;
+
 
   const monday = useMemo(() => startOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate]);
   const weekDates = useMemo(() => Array.from({ length: 5 }, (_, i) => addDays(monday, i)), [monday]);

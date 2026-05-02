@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { recursos as initialRecursos, Recurso } from "../data/mockData";
-import { getMockRecursos, saveMockRecursos } from "../data/storage";
+import { Recurso } from "../data/mockData";
+import { useRecursos } from "@/hooks/useRecursos";
 import { Button } from "@/components/ui/button";
-import { Plus, Monitor, Laptop, Projector, Settings2, School, Users, Info } from "lucide-react";
+import { Plus, Monitor, Laptop, Projector, Settings2, School, Trash2, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -13,21 +13,29 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const AdminRecursosPage = () => {
-  const { profile } = useAuth();
-  const [localRecursos, setLocalRecursos] = useState<Recurso[]>([]);
+  const { profile, selectedEscolaId } = useAuth();
+  const { recursos, loading, createRecurso, updateRecurso, toggleRecursoAtivo, deleteRecurso } = useRecursos();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingRecurso, setEditingRecurso] = useState<Recurso | null>(null);
   
   const [nome, setNome] = useState("");
   const [tipo, setTipo] = useState("outro");
   const [corPersonalizada, setCorPersonalizada] = useState<string | null>(null);
 
-  useEffect(() => {
-    setLocalRecursos(getMockRecursos());
-  }, []);
 
-  const schoolRecursos = localRecursos.filter(r => r.escola_id === profile?.escola_id);
+  const mapToDbTipo = (uiTipo: string) => {
+    switch (uiTipo) {
+      case "laboratorio": return "laboratorio";
+      case "projetor": return "equipamento";
+      case "sala": return "sala";
+      case "equipamento": return "equipamento";
+      case "informatica": return "equipamento";
+      default: return "equipamento";
+    }
+  };
 
   const categorias = [
     { value: "laboratorio", label: "Laboratório", cor_fundo: "#DBEAFE", cor_texto: "#1E40AF", cor_borda: "#93C5FD" },
@@ -55,11 +63,13 @@ const AdminRecursosPage = () => {
       case "projetor": return <Projector className="h-5 w-5" />;
       case "sala": return <School className="h-5 w-5" />;
       case "informatica": return <Laptop className="h-5 w-5" />;
+      case "equipamento": return <Monitor className="h-5 w-5" />;
       default: return <Monitor className="h-5 w-5" />;
     }
   };
 
-  const handleSalvarRecurso = (e: React.FormEvent) => {
+
+  const handleSalvarRecurso = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome.trim()) { toast.error("Nome é obrigatório"); return; }
 
@@ -68,30 +78,57 @@ const AdminRecursosPage = () => {
       ? coresDisponiveis.find(c => c.cor_fundo === corPersonalizada) || categoriaSelecionada
       : categoriaSelecionada;
 
-    const novoRecurso: Recurso = {
-      id: "rec-" + Date.now(),
-      escola_id: profile?.escola_id || "",
-      nome: nome.trim(),
-      tipo,
-      cor_fundo: corSelecionada.cor_fundo,
-      cor_texto: corSelecionada.cor_texto,
-      cor_borda: corSelecionada.cor_borda,
-      ativo: true,
-    };
+    const targetEscolaId = selectedEscolaId || profile?.escola_id || "";
 
-    setLocalRecursos(prev => {
-      const updated = [...prev, novoRecurso];
-      if (!isSupabaseConfigured) {
-        saveMockRecursos(updated);
+    if (editingRecurso) {
+      const success = await updateRecurso(editingRecurso.id, {
+        nome: nome.trim(),
+        tipo: isSupabaseConfigured ? mapToDbTipo(tipo) : tipo,
+        cor_fundo: corSelecionada.cor_fundo,
+        cor_texto: corSelecionada.cor_texto,
+        cor_borda: corSelecionada.cor_borda,
+      });
+      if (success) {
+        setIsModalOpen(false);
+        resetForm();
       }
-      return updated;
-    });
+    } else {
+      const result = await createRecurso({
+        escola_id: targetEscolaId,
+        nome: nome.trim(),
+        tipo: isSupabaseConfigured ? mapToDbTipo(tipo) : tipo,
+        cor_fundo: corSelecionada.cor_fundo,
+        cor_texto: corSelecionada.cor_texto,
+        cor_borda: corSelecionada.cor_borda,
+        ativo: true,
+      });
+
+      if (result) {
+        setIsModalOpen(false);
+        resetForm();
+      }
+    }
+  };
+
+  const resetForm = () => {
     setNome("");
     setTipo("outro");
     setCorPersonalizada(null);
-    setIsModalOpen(false);
-    toast.success("Recurso cadastrado com sucesso!");
+    setEditingRecurso(null);
   };
+
+  const handleEdit = (recurso: Recurso) => {
+    setEditingRecurso(recurso);
+    setNome(recurso.nome);
+    setTipo(recurso.tipo);
+    setCorPersonalizada(recurso.cor_fundo);
+    setIsModalOpen(true);
+  };
+
+  const handleToggle = async (id: string, ativo: boolean) => {
+    await toggleRecursoAtivo(id, ativo);
+  };
+
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20 md:pb-8">
@@ -116,60 +153,94 @@ const AdminRecursosPage = () => {
       )}
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {schoolRecursos.map((r) => (
-          <Card key={r.id} className="group overflow-hidden border-slate-100 bg-white rounded-3xl transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 border-2">
-            <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
-              <div 
-                className="h-14 w-14 rounded-2xl flex items-center justify-center border-2 shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3"
-                style={{ backgroundColor: r.cor_fundo, color: r.cor_texto, borderColor: r.cor_borda }}
-              >
-                {getIcon(r.tipo)}
-              </div>
-              <Badge 
-                variant={r.ativo ? "default" : "secondary"} 
-                className={cn(
-                  "px-3 py-1 text-[10px] font-black uppercase tracking-widest",
-                  r.ativo ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-slate-200 text-slate-500"
-                )}
-              >
-                {r.ativo ? "Ativo" : "Inativo"}
-              </Badge>
-            </CardHeader>
-            <CardContent className="p-6 pt-4">
-              <CardTitle className="text-xl font-black text-slate-900 tracking-tight leading-tight mb-1">{r.nome}</CardTitle>
-              <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">
-                <div className="h-1.5 w-1.5 rounded-full bg-slate-200"></div>
-                {r.tipo}
-              </div>
-              
-              <div className="flex gap-3">
-                <Button variant="ghost" size="sm" className="flex-1 h-11 rounded-xl font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all" onClick={() => toast.info("Edição em breve")}>
-                  <Settings2 className="mr-2 h-4 w-4" />
-                  Editar
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className={cn(
-                    "flex-[1.5] h-11 rounded-xl font-black uppercase tracking-widest transition-all", 
-                    r.ativo ? "text-red-500 hover:bg-red-50 border-red-100 hover:border-red-200" : "text-emerald-500 hover:bg-emerald-50 border-emerald-100 hover:border-emerald-200"
-                  )} 
-                  onClick={() => toast.success("Status alterado")}
+        {loading ? (
+          <div className="col-span-full py-20 text-center font-bold text-slate-400">Carregando recursos...</div>
+        ) : recursos.length === 0 ? (
+          <div className="col-span-full py-20 text-center font-bold text-slate-400">Nenhum recurso cadastrado para esta escola.</div>
+        ) : (
+          recursos.map((r) => (
+            <Card key={r.id} className="group overflow-hidden border-slate-100 bg-white rounded-3xl transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 border-2">
+              <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
+                <div 
+                  className="h-14 w-14 rounded-2xl flex items-center justify-center border-2 shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3"
+                  style={{ backgroundColor: r.cor_fundo, color: r.cor_texto, borderColor: r.cor_borda }}
                 >
-                  {r.ativo ? "Desativar" : "Ativar"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  {getIcon(r.tipo)}
+                </div>
+                <div className="flex gap-2">
+                  <Badge 
+                    variant={r.ativo ? "default" : "secondary"} 
+                    className={cn(
+                      "px-3 py-1 text-[10px] font-black uppercase tracking-widest",
+                      r.ativo ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-slate-200 text-slate-500"
+                    )}
+                  >
+                    {r.ativo ? "Ativo" : "Inativo"}
+                  </Badge>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-300 hover:text-red-500 transition-colors">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="rounded-3xl border-none">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-xl font-black uppercase tracking-tight">Excluir Recurso?</AlertDialogTitle>
+                        <AlertDialogDescription className="font-medium text-slate-500">
+                          Esta ação não pode ser desfeita. O recurso será removido permanentemente.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="rounded-xl font-bold uppercase tracking-widest text-[10px]">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteRecurso(r.id)} className="bg-red-500 hover:bg-red-600 rounded-xl font-bold uppercase tracking-widest text-[10px]">Excluir</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6 pt-4">
+                <CardTitle className="text-xl font-black text-slate-900 tracking-tight leading-tight mb-1">{r.nome}</CardTitle>
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">
+                  <div className="h-1.5 w-1.5 rounded-full bg-slate-200"></div>
+                  {r.tipo}
+                </div>
+                
+                <div className="flex gap-3">
+                  <Button variant="ghost" size="sm" className="flex-1 h-11 rounded-xl font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all" onClick={() => handleEdit(r)}>
+                    <Settings2 className="mr-2 h-4 w-4" />
+                    Editar
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className={cn(
+                      "flex-[1.5] h-11 rounded-xl font-black uppercase tracking-widest transition-all", 
+                      r.ativo ? "text-red-500 hover:bg-red-50 border-red-100 hover:border-red-200" : "text-emerald-500 hover:bg-emerald-50 border-emerald-100 hover:border-emerald-200"
+                    )} 
+                    onClick={() => handleToggle(r.id, r.ativo)}
+                  >
+                    {r.ativo ? "Desativar" : "Ativar"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+
+      <Dialog open={isModalOpen} onOpenChange={(open) => {
+        setIsModalOpen(open);
+        if (!open) resetForm();
+      }}>
         <DialogContent className="max-w-md p-0 border-none rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-black tracking-tight text-white uppercase">Novo Recurso</DialogTitle>
+              <DialogTitle className="text-2xl font-black tracking-tight text-white uppercase">
+                {editingRecurso ? "Editar Recurso" : "Novo Recurso"}
+              </DialogTitle>
             </DialogHeader>
+
             <p className="text-blue-100 text-sm font-medium mt-1 opacity-90">Cadastre laboratórios, projetores e equipamentos.</p>
           </div>
 

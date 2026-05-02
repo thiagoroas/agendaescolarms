@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { getMockAvisos, saveMockAvisos, createMockAviso, updateMockAviso, deleteMockAviso, getMockRecursos } from "../data/storage";
+import { useRecursos } from "@/hooks/useRecursos";
 import { AvisoLaboratorio, Recurso } from "../data/mockData";
 import { Button } from "@/components/ui/button";
 import { Plus, Bell, Edit2, Trash2, Power, PowerOff, Filter, Calendar as CalendarIcon, Clock, CheckCircle2, AlertTriangle, Info } from "lucide-react";
@@ -22,7 +23,7 @@ const AdminAvisosPage = () => {
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
   
   const [avisos, setAvisos] = useState<AvisoLaboratorio[]>([]);
-  const [recursos, setRecursos] = useState<Recurso[]>([]);
+  const { recursos, loading: loadingRecursos } = useRecursos();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAviso, setEditingAviso] = useState<AvisoLaboratorio | null>(null);
   
@@ -48,8 +49,8 @@ const AdminAvisosPage = () => {
 
   useEffect(() => {
     setAvisos(getMockAvisos());
-    setRecursos(getMockRecursos().filter(r => r.escola_id === currentEscolaId));
   }, [currentEscolaId]);
+
 
   const schoolAvisos = avisos.filter(a => a.escola_id === currentEscolaId);
   

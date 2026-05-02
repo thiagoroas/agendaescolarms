@@ -8,8 +8,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { useAuth } from "../../contexts/AuthContext";
-import { recursos as initialRecursos, usuarios as initialUsuarios, Usuario, reservas as initialReservas, AvisoLaboratorio } from "../../data/mockData";
-import { getMockRecursos, getMockUsuarios, getMockReservas, saveMockReservas, getMockAvisos } from "../../data/storage";
+import { usuarios as initialUsuarios, Usuario, reservas as initialReservas, AvisoLaboratorio } from "../../data/mockData";
+import { getMockUsuarios, getMockReservas, saveMockReservas, getMockAvisos, getMockRecursos } from "../../data/storage";
+import { useRecursos } from "@/hooks/useRecursos";
 import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 import { horarios } from "../../data/horarios";
 import { format, parseISO } from "date-fns";
@@ -38,6 +39,8 @@ const TURMAS_OPCOES = [
 
 const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProps) => {
   const { user, profile } = useAuth();
+  const { recursos: availableRecursos } = useRecursos();
+
   const [formData, setFormData] = useState({
     professorId: "",
     disciplina: "",
@@ -193,8 +196,8 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     }
   }, [formData.professorId, profile?.role]);
 
-  const mockRecursos = getMockRecursos();
-  const availableRecursos = mockRecursos.filter(r => r.escola_id === profile?.escola_id);
+  // Use non-interval hours
+
   // Show ALL non-interval hours in a single section as requested
   const allHorarios = horarios.filter(h => !h.isIntervalo);
 
