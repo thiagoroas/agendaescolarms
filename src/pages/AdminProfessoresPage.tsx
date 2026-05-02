@@ -456,9 +456,20 @@ const AdminProfessoresPage = () => {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingUserId ? "Editar Usuário" : "Novo Usuário"}</DialogTitle>
+            <DialogTitle>{editingUserId ? (senha ? "Alterar Senha e Dados" : "Editar Usuário") : "Novo Usuário"}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSalvarUsuario} className="space-y-4 py-4">
+          {loading && (
+            <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+          )}
+          <form onSubmit={handleSalvarUsuario} className="space-y-4 py-4 relative">
+            {editingUserId && isSupabaseConfigured && (
+              <div className="bg-amber-50 p-2 rounded text-[10px] text-amber-700 border border-amber-100 flex gap-2">
+                <Key className="h-3 w-3 shrink-0" />
+                <span>Preencha o campo "Nova Senha" apenas se desejar alterar a senha deste usuário.</span>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="nome">Nome Completo</Label>
               <Input id="nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: João Silva" required />
