@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { escolas as initialEscolas } from "../data/mockData";
-import { getMockUsuarios, saveMockUsuarios, getMockEscolas } from "../data/storage";
+import { useEscolas } from "@/hooks/useEscolas";
+import { getMockUsuarios, saveMockUsuarios } from "../data/storage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
