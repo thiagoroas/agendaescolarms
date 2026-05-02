@@ -8,8 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { useAuth } from "../../contexts/AuthContext";
-import { usuarios as initialUsuarios, Usuario, Reserva, AvisoLaboratorio } from "../../data/mockData";
-import { getMockUsuarios, getMockReservas, saveMockReservas, getMockAvisos, getMockRecursos } from "../../data/storage";
+import { Usuario, Reserva } from "../../data/mockData";
+import { getMockUsuarios, getMockReservas, getMockAvisos } from "../../data/storage";
 import { useRecursos } from "@/hooks/useRecursos";
 import { useReservas } from "@/hooks/useReservas";
 import { supabase, isSupabaseConfigured } from "../../lib/supabase";
@@ -38,6 +38,13 @@ const TURMAS_OPCOES = [
     ]
   }
 ];
+
+const formatDateLocal = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProps) => {
   const { user, profile } = useAuth();
@@ -81,7 +88,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
       return true;
     }).sort((a, b) => {
       const prioridade = { urgente: 0, atencao: 1, informativo: 2 };
-      return prioridade[a.tipo] - prioridade[b.tipo];
+      return prioridade[a.tipo] - prioridade[b.tipo] as any;
     });
   }, [avisosState, currentSchoolId, formData.data, formData.recursoId]);
 
@@ -103,7 +110,8 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             .select('*')
             .eq('data', formData.data)
             .eq('recurso_id', formData.recursoId)
-            .eq('escola_id', profile?.escola_id);
+            .eq('escola_id', profile?.escola_id)
+            .neq('status', 'cancelada');
           
           if (error) throw error;
           setExistingReservations(data || []);
@@ -113,7 +121,8 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           const mockFiltered = allMockReservas.filter(r => 
             r.data === formData.data && 
             r.recurso_id === formData.recursoId && 
-            r.escola_id === profile?.escola_id
+            r.escola_id === profile?.escola_id &&
+            r.status !== 'cancelada'
           );
           setExistingReservations(mockFiltered);
         }
@@ -145,7 +154,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
       const isProfessor = profile?.role === 'professor';
       const initialProfessorId = isProfessor ? user?.id : "";
       
-      let initialProfessor = null;
+      let initialProfessor: Usuario | null = null;
       if (isProfessor) {
         initialProfessor = {
           id: user?.id || "",
@@ -162,17 +171,26 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
         ? initialProfessor.disciplinas[0] 
         : "";
       
+      // Determine initial date
+      let initialDate = initialData?.date || "";
+      if (!initialDate) {
+        // Fallback to current agenda date if available in some context, 
+        // but here we just use today's local date as default for "Nova reserva" button
+        initialDate = formatDateLocal(new Date());
+      }
+
       setFormData({
         professorId: initialProfessorId || "",
         disciplina: initialDisciplina,
         turma: "",
-        data: initialData?.date || "",
+        data: initialDate,
         recursoId: "",
         aulas: initialData?.aula ? [initialData.aula] : [],
         objetivo_pedagogico: "",
         observacao: ""
       });
       setSelectedProfessor(initialProfessor);
+      setAvisosConfirmados({});
     }
   }, [isOpen, initialData, user, profile]);
 
@@ -270,7 +288,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           <p className="text-blue-100 text-sm font-medium mt-1 opacity-90">Preencha os detalhes para reservar o recurso.</p>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 bg-white overflow-y-auto max-h-[calc(90vh-180px)]">
+        <form onSubmit={handleSubmit} noValidate className="p-6 space-y-6 bg-white overflow-y-auto max-h-[calc(90vh-180px)]">
           {/* Seção de Avisos */}
           {avisosAtivos.length > 0 && (
             <div className="space-y-3">
@@ -342,12 +360,20 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             </div>
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Data da Reserva</Label>
-              {initialData?.date ? (
-                <div className="h-10 px-3 flex items-center border border-blue-100 rounded-xl bg-blue-50 text-blue-700 font-black text-xs uppercase tracking-tight">
+              <Input 
+                type="date" 
+                value={formData.data} 
+                onChange={e => setFormData({...formData, data: e.target.value})} 
+                className={cn(
+                  "rounded-xl border-slate-200 h-10 font-bold",
+                  initialData?.date && "bg-blue-50 border-blue-100 text-blue-700"
+                )}
+                disabled={!!initialData?.date}
+              />
+              {initialData?.date && (
+                <div className="text-[10px] font-bold text-blue-500 mt-1 uppercase tracking-tight">
                   {formattedDate}
                 </div>
-              ) : (
-                <Input type="date" required value={formData.data} onChange={e => setFormData({...formData, data: e.target.value})} className="rounded-xl border-slate-200 h-10" />
               )}
             </div>
           </div>
@@ -376,7 +402,6 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
                 )
               ) : (
                 <Input 
-                  required 
                   value={formData.disciplina} 
                   onChange={e => setFormData({...formData, disciplina: e.target.value})} 
                   placeholder="Ex: Matemática" 
@@ -468,7 +493,6 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
               Objetivo Pedagógico {profile?.role === 'professor' && <span className="text-red-500">*</span>}
             </Label>
             <Input 
-              required={profile?.role === 'professor'}
               value={formData.objetivo_pedagogico} 
               onChange={e => setFormData({...formData, objetivo_pedagogico: e.target.value})} 
               placeholder="Ex: Aula prática de pesquisa, desenvolvimento de atividade em grupo..." 
