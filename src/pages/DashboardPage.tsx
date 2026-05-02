@@ -1,9 +1,10 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { getMockEscolas, getMockAvisos, getMockRecursos, getMockReservas } from "../data/storage";
+import { getMockEscolas, getMockRecursos, getMockReservas } from "../data/storage";
 import { useRecursos } from "@/hooks/useRecursos";
 import { useReservas } from "@/hooks/useReservas";
+import { useAvisos } from "@/hooks/useAvisos";
 import { Reserva, Recurso, Escola, AvisoLaboratorio } from "../data/mockData";
 import { format, parseISO, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -48,13 +49,12 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const { recursos: todosRecursos, loading: loadingRecursos } = useRecursos();
   const { reservas: todasReservas, loading: loadingReservas } = useReservas();
+  const { avisos, loading: loadingAvisos } = useAvisos();
 
   const [todasEscolas, setTodasEscolas] = useState<Escola[]>([]);
-  const [avisos, setAvisos] = useState<AvisoLaboratorio[]>([]);
 
   useEffect(() => {
     setTodasEscolas(getMockEscolas());
-    setAvisos(getMockAvisos());
   }, []);
 
 
