@@ -150,6 +150,59 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
   }, [existingReservations, formData.aulas]);
 
   const [selectedProfessor, setSelectedProfessor] = useState<Usuario | null>(null);
+  const [professoresDaEscola, setProfessoresDaEscola] = useState<Usuario[]>([]);
+  const [isLoadingProfessores, setIsLoadingProfessores] = useState(false);
+
+  useEffect(() => {
+    const fetchProfessores = async () => {
+      if (!isOpen) return;
+      
+      const targetEscolaId = profile?.role === 'admin_plataforma' 
+        ? localStorage.getItem('agenda_selected_escola_id') || profile?.escola_id
+        : profile?.escola_id;
+
+      if (!targetEscolaId) return;
+
+      setIsLoadingProfessores(true);
+      try {
+        if (isSupabaseConfigured) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('escola_id', targetEscolaId)
+            .eq('papel', 'professor')
+            .eq('status', 'ativo');
+          
+          if (error) throw error;
+          
+          const mappedProfessores: Usuario[] = (data || []).map(p => ({
+            id: p.id,
+            nome: p.nome,
+            email: p.email || "",
+            escola_id: p.escola_id,
+            papel: p.papel,
+            status: p.status,
+            disciplinas: p.disciplinas || []
+          }));
+          
+          setProfessoresDaEscola(mappedProfessores);
+        } else {
+          const mockUsuarios = getMockUsuarios();
+          const filtered = mockUsuarios.filter(u => 
+            u.escola_id === targetEscolaId && u.papel === 'professor' && u.status === 'ativo'
+          );
+          setProfessoresDaEscola(filtered);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar professores:", err);
+        toast.error("Erro ao carregar lista de professores");
+      } finally {
+        setIsLoadingProfessores(false);
+      }
+    };
+
+    fetchProfessores();
+  }, [isOpen, profile?.escola_id, profile?.role]);
 
   useEffect(() => {
     if (isOpen) {
@@ -173,11 +226,8 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
         ? initialProfessor.disciplinas[0] 
         : "";
       
-      // Determine initial date
       let initialDate = initialData?.date || "";
       if (!initialDate) {
-        // Fallback to current agenda date if available in some context, 
-        // but here we just use today's local date as default for "Nova reserva" button
         initialDate = formatDateLocal(new Date());
       }
 
@@ -198,8 +248,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
   useEffect(() => {
     if (formData.professorId && profile?.role !== 'professor') {
-      const mockUsuarios = getMockUsuarios();
-      const prof = mockUsuarios.find(u => u.id === formData.professorId);
+      const prof = professoresDaEscola.find(u => u.id === formData.professorId);
       if (prof) {
         setSelectedProfessor(prof);
         const disciplines = prof.disciplinas || [];
@@ -217,17 +266,9 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
       setSelectedProfessor(null);
       setFormData(prev => ({ ...prev, disciplina: "" }));
     }
-  }, [formData.professorId, profile?.role]);
+  }, [formData.professorId, profile?.role, professoresDaEscola]);
 
-  // Use non-interval hours
-
-  // Show ALL non-interval hours in a single section as requested
   const allHorarios = horarios.filter(h => !h.isIntervalo);
-
-  const mockUsuariosList = getMockUsuarios();
-  const professoresDaEscola = mockUsuariosList.filter(u => 
-    u.escola_id === profile?.escola_id && u.papel === 'professor' && u.status === 'ativo'
-  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
