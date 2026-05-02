@@ -111,6 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const normalizedPassword = senha.trim();
       
       const mockUsuarios = getMockUsuarios();
+      console.log("AuthContext: Tentando login com", normalizedEmail, "Total usuários no storage:", mockUsuarios.length);
       const foundUser = mockUsuarios.find(
         (u) => u.email.trim().toLowerCase() === normalizedEmail
       );
