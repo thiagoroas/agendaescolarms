@@ -18,7 +18,7 @@ const SupabaseConfigError = () => (
     <div className="max-w-md p-8 border rounded-lg shadow-sm bg-card">
       <h1 className="mb-4 text-2xl font-bold text-destructive">Supabase não configurado</h1>
       <p className="text-muted-foreground mb-6">
-        As variáveis de ambiente <code>VITE_SUPABASE_URL</code> e <code>VITE_SUPABASE_ANON_KEY</code> não foram encontradas.
+        As variáveis de ambiente <code>VITE_SUPABASE_URL</code> e <code>VITE_SUPABASE_PUBLISHABLE_KEY</code> não foram encontradas.
       </p>
       <p className="text-sm text-muted-foreground">
         Por favor, conecte o projeto ao Supabase nas configurações do Lovable para restaurar o funcionamento.

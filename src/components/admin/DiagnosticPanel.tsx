@@ -102,10 +102,20 @@ export const DiagnosticPanel = () => {
         <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-slate-400" />
-            <span className="text-xs font-medium">VITE_SUPABASE_ANON_KEY</span>
+            <span className="text-xs font-medium">VITE_SUPABASE_PUBLISHABLE_KEY</span>
           </div>
-          <Badge variant="outline" className={import.meta.env.VITE_SUPABASE_ANON_KEY ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
-            {import.meta.env.VITE_SUPABASE_ANON_KEY ? "Presente" : "Ausente"}
+          <Badge variant="outline" className={import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
+            {import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? "Presente" : "Ausente"}
+          </Badge>
+        </div>
+
+        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-slate-400" />
+            <span className="text-xs font-medium">VITE_SUPABASE_PROJECT_ID</span>
+          </div>
+          <Badge variant="outline" className={import.meta.env.VITE_SUPABASE_PROJECT_ID ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
+            {import.meta.env.VITE_SUPABASE_PROJECT_ID ? "Presente" : "Ausente"}
           </Badge>
         </div>
 
@@ -214,7 +224,7 @@ export const DiagnosticPanel = () => {
             <p>Para usar o Supabase real, configure as variáveis de ambiente no painel do <strong>Lovable</strong> (Settings &gt; Supabase &gt; Connect) ou adicione manualmente em <strong>Secrets</strong> com os nomes:</p>
             <ul className="list-disc ml-4 mt-1 font-mono">
               <li>VITE_SUPABASE_URL</li>
-              <li>VITE_SUPABASE_ANON_KEY</li>
+              <li>VITE_SUPABASE_PUBLISHABLE_KEY</li>
             </ul>
           </div>
         )}
