@@ -118,8 +118,8 @@ const RelatorioReservasModal: React.FC<RelatorioReservasModalProps> = ({
                         <td className="py-3 px-2 text-xs text-slate-600 font-medium">
                           {reserva.turma}
                         </td>
-                        <td className="py-3 px-2 text-xs text-slate-500 italic max-w-[150px] truncate" title={reserva.observacoes}>
-                          {reserva.observacoes || '-'}
+                        <td className="py-3 px-2 text-xs text-slate-500 italic max-w-[150px] truncate" title={reserva.observacao}>
+                          {reserva.observacao || '-'}
                         </td>
                       </tr>
                     );
