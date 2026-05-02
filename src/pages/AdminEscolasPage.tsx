@@ -238,7 +238,6 @@ const AdminEscolasPage = () => {
           </form>
         </DialogContent>
       </Dialog>
-      </Dialog>
 
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <DialogContent className="max-w-md">
