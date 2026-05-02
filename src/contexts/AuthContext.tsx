@@ -86,20 +86,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     try {
+      // First try real profiles table
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", userId)
+        .eq("user_id", userId) // Alterado de id para user_id para bater com o schema real
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.warn("Real profile not found, checking mock data:", error.message);
+        
+        // Fallback for transition: if not in Supabase, check if mock exists
+        const savedProfile = localStorage.getItem("agenda_mock_profile");
+        if (savedProfile) {
+          const parsed = JSON.parse(savedProfile);
+          if (parsed.id === userId || parsed.user_id === userId) {
+            setProfile(parsed);
+            const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
+            setSelectedEscolaIdState(savedEscolaId || parsed.escola_id);
+            return;
+          }
+        }
+        throw error;
+      }
 
-      setProfile(data);
+      // Map real profile to App's Profile interface if needed
+      const mappedProfile: Profile = {
+        id: data.id,
+        full_name: data.nome,
+        escola_id: data.escola_id,
+        role: data.papel as UserRole,
+        status: data.status as "ativo" | "pendente" | "bloqueado",
+        disciplinas: data.disciplinas
+      };
+
+      setProfile(mappedProfile);
       
       const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
       setSelectedEscolaIdState(savedEscolaId || data.escola_id);
     } catch (error) {
       console.error("Error fetching profile:", error);
+      setProfile(null);
     } finally {
       setLoading(false);
     }
