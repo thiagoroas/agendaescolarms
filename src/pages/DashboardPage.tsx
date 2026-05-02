@@ -17,16 +17,31 @@ import {
   Bell,
   Info,
   AlertTriangle,
-  ChevronRight
+  ChevronRight,
+  Trash2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { resetMockData } from "../data/storage";
+import { useToast } from "@/hooks/use-toast";
 
 const DashboardPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [todasReservas, setTodasReservas] = useState<Reserva[]>([]);
   const [todosRecursos, setTodosRecursos] = useState<Recurso[]>([]);
@@ -360,6 +375,64 @@ const DashboardPage = () => {
           {/* Status dos Recursos */}
         </div>
       </div>
+
+      {/* Seção Admin Plataforma: Modo Protótipo */}
+      {profile?.role === "admin_plataforma" && (
+        <div className="mt-12 pt-8 border-t border-slate-100 animate-in slide-in-from-bottom duration-700">
+          <div className="bg-slate-50 rounded-[2.5rem] p-8 md:p-10 border border-slate-200 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-2xl bg-red-100 flex items-center justify-center text-red-600">
+                    <Trash2 size={22} />
+                  </div>
+                  Modo Protótipo
+                </h3>
+                <p className="text-sm font-medium text-slate-500 max-w-xl leading-relaxed">
+                  Use esta opção apenas antes de iniciar um novo teste piloto. Isso restaurará as configurações e dados iniciais do sistema, removendo todas as alterações feitas nesta sessão de demonstração.
+                </p>
+              </div>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="border-red-200 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 font-black uppercase tracking-[0.15em] text-[11px] h-14 px-8 rounded-2xl shadow-lg shadow-red-50 transition-all hover:scale-105"
+                  >
+                    Resetar dados demo
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-[2.5rem] border-none p-10 shadow-2xl">
+                  <AlertDialogHeader>
+                    <div className="h-16 w-16 rounded-3xl bg-red-100 flex items-center justify-center text-red-600 mb-6">
+                      <AlertTriangle size={32} />
+                    </div>
+                    <AlertDialogTitle className="text-2xl font-black text-slate-900 uppercase tracking-tight">Confirmar Reset?</AlertDialogTitle>
+                    <AlertDialogDescription className="text-base font-medium text-slate-500 mt-2 leading-relaxed">
+                      Tem certeza que deseja resetar os dados demo? Isso apagará permanentemente todos os usuários, reservas, recursos, escolas e avisos criados no modo protótipo.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="mt-10 gap-3">
+                    <AlertDialogCancel className="rounded-2xl font-black uppercase tracking-widest text-[10px] h-12 px-6 border-slate-200">Cancelar</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={() => {
+                        toast({
+                          title: "Dados demo resetados",
+                          description: "O sistema será reiniciado com os dados originais.",
+                        });
+                        setTimeout(resetMockData, 1500);
+                      }}
+                      className="bg-red-600 hover:bg-red-700 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] h-12 px-8 shadow-lg shadow-red-100 transition-transform active:scale-95"
+                    >
+                      Sim, resetar tudo
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
