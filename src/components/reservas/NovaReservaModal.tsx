@@ -184,16 +184,24 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Disciplina</Label>
               {selectedProfessor?.disciplinas && selectedProfessor.disciplinas.length > 0 ? (
-                <Select value={formData.disciplina} onValueChange={(v) => setFormData({...formData, disciplina: v})}>
-                  <SelectTrigger className="rounded-xl border-slate-200 h-10 font-medium">
-                    <SelectValue placeholder="Escolha a disciplina" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectedProfessor.disciplinas.map(d => (
-                      <SelectItem key={d} value={d}>{d}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                selectedProfessor.disciplinas.length === 1 ? (
+                  <Input 
+                    value={selectedProfessor.disciplinas[0]} 
+                    disabled 
+                    className="bg-slate-50 border-slate-100 font-bold text-slate-600 rounded-xl" 
+                  />
+                ) : (
+                  <Select value={formData.disciplina} onValueChange={(v) => setFormData({...formData, disciplina: v})}>
+                    <SelectTrigger className="rounded-xl border-slate-200 h-10 font-medium">
+                      <SelectValue placeholder="Escolha a disciplina" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectedProfessor.disciplinas.map(d => (
+                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )
               ) : (
                 <Input 
                   required 
