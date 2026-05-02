@@ -80,7 +80,7 @@ const AdminEscolasPage = () => {
           <h1 className="text-2xl font-bold text-slate-900">Gerenciar Escolas</h1>
           <p className="text-sm text-slate-500">Administração global das instituições da plataforma.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setIsModalOpen(true)}>
+        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => handleOpenModal()}>
           <Plus className="mr-2 h-4 w-4" />
           Nova Escola
         </Button>
@@ -96,45 +96,67 @@ const AdminEscolasPage = () => {
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 pb-20 md:pb-0">
-        {filteredEscolas.map((e) => (
-          <Card key={e.id} className="border-slate-200 shadow-sm overflow-hidden hover:border-blue-300 transition-colors">
-            <CardHeader className="bg-slate-50/50 pb-4">
-              <div className="flex justify-between items-start">
-                <div className="flex gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-white border shadow-sm flex items-center justify-center text-blue-600">
-                    <Building2 className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg font-bold text-slate-900">{e.nome}</CardTitle>
-                    <div className="flex items-center gap-1 text-slate-500 text-xs mt-1">
-                      <MapPin className="h-3 w-3" />
-                      <span>{e.cidade}, {e.estado}</span>
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+          <Loader2 className="h-8 w-8 animate-spin mb-2" />
+          <p>Carregando escolas...</p>
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 pb-20 md:pb-0">
+          {filteredEscolas.map((e) => (
+            <Card key={e.id} className="border-slate-200 shadow-sm overflow-hidden hover:border-blue-300 transition-colors">
+              <CardHeader className="bg-slate-50/50 pb-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex gap-3">
+                    <div className="h-12 w-12 rounded-xl bg-white border shadow-sm flex items-center justify-center text-blue-600">
+                      <Building2 className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg font-bold text-slate-900">{e.nome}</CardTitle>
+                      <div className="flex items-center gap-1 text-slate-500 text-xs mt-1">
+                        <MapPin className="h-3 w-3" />
+                        <span>{e.cidade}, {e.estado}</span>
+                      </div>
                     </div>
                   </div>
+                  <Badge variant={e.status === "ativa" ? "default" : "secondary"} className={e.status === "ativa" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100" : ""}>
+                    {e.status === "ativa" ? "Ativa" : "Inativa"}
+                  </Badge>
                 </div>
-                <Badge variant={e.status === "ativa" ? "default" : "secondary"} className={e.status === "ativa" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100" : ""}>
-                  {e.status === "ativa" ? "Ativa" : "Inativa"}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardFooter className="bg-white border-t p-4 flex flex-col sm:flex-row justify-between gap-3">
-              <Button variant="outline" size="sm" className="flex-1 h-10" onClick={() => toast.success("Agenda acessada")}>
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Acessar Agenda
-              </Button>
-              <Button variant="outline" size="sm" className="flex-1 h-10" onClick={() => toast.info("Edição")}>
-                Editar Dados
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+              </CardHeader>
+              <CardFooter className="bg-white border-t p-4 flex flex-col sm:flex-row justify-between gap-3">
+                <Button variant="outline" size="sm" className="flex-1 h-10" onClick={() => handleOpenModal(e)}>
+                  <Edit2 className="mr-2 h-4 w-4" />
+                  Editar
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={cn(
+                    "flex-1 h-10",
+                    e.status === "ativa" ? "text-amber-600 hover:text-amber-700" : "text-emerald-600 hover:text-emerald-700"
+                  )}
+                  onClick={() => toggleEscolaStatus(e.id, e.status)}
+                >
+                  <Power className="mr-2 h-4 w-4" />
+                  {e.status === "ativa" ? "Inativar" : "Ativar"}
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+          {filteredEscolas.length === 0 && (
+            <div className="col-span-full py-20 text-center border rounded-xl bg-slate-50 border-dashed">
+              <Building2 className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+              <p className="text-slate-500">Nenhuma escola encontrada.</p>
+            </div>
+          )}
+        </div>
+      )}
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Nova Escola</DialogTitle>
+            <DialogTitle>{editingEscola ? "Editar Escola" : "Nova Escola"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSalvarEscola} className="space-y-4 py-4">
             <div className="space-y-2">
