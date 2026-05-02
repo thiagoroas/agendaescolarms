@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,14 +8,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { useAuth } from "../../contexts/AuthContext";
-import { recursos as initialRecursos, usuarios as initialUsuarios, Usuario, reservas as initialReservas } from "../../data/mockData";
-import { getMockRecursos, getMockUsuarios, getMockReservas, saveMockReservas } from "../../data/storage";
+import { recursos as initialRecursos, usuarios as initialUsuarios, Usuario, reservas as initialReservas, AvisoLaboratorio } from "../../data/mockData";
+import { getMockRecursos, getMockUsuarios, getMockReservas, saveMockReservas, getMockAvisos } from "../../data/storage";
 import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 import { horarios } from "../../data/horarios";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { AlertTriangle, Info } from "lucide-react";
 
 interface NovaReservaModalProps {
   isOpen: boolean;
@@ -51,6 +52,38 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
   const [existingReservations, setExistingReservations] = useState<any[]>([]);
   const [isCheckingConflicts, setIsCheckingConflicts] = useState(false);
   const [conflictingAulas, setConflictingAulas] = useState<number[]>([]);
+  const [avisosConfirmados, setAvisosConfirmados] = useState<Record<string, boolean>>({});
+
+  const avisosState = useMemo(() => getMockAvisos(), [isOpen]);
+  
+  const currentSchoolId = profile?.escola_id;
+
+  const avisosAtivos = useMemo(() => {
+    if (!formData.data) return [];
+    
+    const hojeStr = formData.data;
+    
+    return avisosState.filter(a => {
+      if (!a.ativo || a.escola_id !== currentSchoolId || !a.exibir_no_modal_reserva) return false;
+      
+      const dentroData = hojeStr >= a.data_inicio && hojeStr <= a.data_fim;
+      if (!dentroData) return false;
+
+      // Se o aviso é vinculado a um recurso, só mostra se o recurso estiver selecionado
+      if (a.recurso_id && a.recurso_id !== formData.recursoId) return false;
+
+      return true;
+    }).sort((a, b) => {
+      const prioridade = { urgente: 0, atencao: 1, informativo: 2 };
+      return prioridade[a.tipo] - prioridade[b.tipo];
+    });
+  }, [avisosState, currentSchoolId, formData.data, formData.recursoId]);
+
+  const allAvisosConfirmados = useMemo(() => {
+    const avisosQueExigemConfirmacao = avisosAtivos.filter(a => a.exigir_confirmacao);
+    if (avisosQueExigemConfirmacao.length === 0) return true;
+    return avisosQueExigemConfirmacao.every(a => avisosConfirmados[a.id]);
+  }, [avisosAtivos, avisosConfirmados]);
 
   useEffect(() => {
     const fetchExistingReservations = async () => {
@@ -207,6 +240,8 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
       
       formData.aulas.forEach(aula => {
         const h = allHorarios.find(hour => hour.aula === aula);
+        const avisoConfirmado = avisosAtivos.find(a => a.exigir_confirmacao);
+        
         const newReserva = {
           id: `res-${Date.now()}-${aula}`,
           escola_id: profile?.escola_id || "",
@@ -222,7 +257,9 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           objetivo_pedagogico: formData.objetivo_pedagogico,
           observacao: formData.observacao,
           status: "confirmada" as any,
-          criado_em: new Date().toISOString()
+          criado_em: new Date().toISOString(),
+          aviso_confirmado_id: avisoConfirmado?.id,
+          aviso_confirmado_em: avisoConfirmado ? new Date().toISOString() : undefined
         };
         newReservas.push(newReserva);
       });
@@ -251,6 +288,57 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
         </div>
         
         <form onSubmit={handleSubmit} className="p-6 space-y-6 bg-white overflow-y-auto max-h-[calc(90vh-180px)]">
+          {/* Seção de Avisos */}
+          {avisosAtivos.length > 0 && (
+            <div className="space-y-3">
+              {avisosAtivos.map(aviso => (
+                <div 
+                  key={aviso.id}
+                  className={cn(
+                    "p-4 rounded-2xl border flex flex-col gap-3 shadow-sm animate-in fade-in duration-300",
+                    aviso.tipo === "urgente" ? "bg-red-50 border-red-100 text-red-900" :
+                    aviso.tipo === "atencao" ? "bg-amber-50 border-amber-100 text-amber-900" :
+                    "bg-blue-50 border-blue-100 text-blue-900"
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={cn(
+                      "p-2 rounded-xl shrink-0",
+                      aviso.tipo === "urgente" ? "bg-red-100 text-red-600" :
+                      aviso.tipo === "atencao" ? "bg-amber-100 text-amber-600" :
+                      "bg-blue-100 text-blue-600"
+                    )}>
+                      {aviso.tipo === "urgente" ? <AlertTriangle size={18} /> : <Info size={18} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-black uppercase tracking-tight">{aviso.titulo}</h4>
+                      <p className="text-xs font-medium opacity-80 mt-0.5">{aviso.mensagem}</p>
+                    </div>
+                  </div>
+                  
+                  {aviso.exigir_confirmacao && (
+                    <div className="flex items-center gap-2 pt-2 border-t border-current border-opacity-10">
+                      <Checkbox 
+                        id={`confirm-${aviso.id}`} 
+                        checked={!!avisosConfirmados[aviso.id]}
+                        onCheckedChange={(checked) => setAvisosConfirmados(prev => ({...prev, [aviso.id]: !!checked}))}
+                        className={cn(
+                          "border-current",
+                          aviso.tipo === "urgente" ? "data-[state=checked]:bg-red-600" :
+                          aviso.tipo === "atencao" ? "data-[state=checked]:bg-amber-600" :
+                          "data-[state=checked]:bg-blue-600"
+                        )}
+                      />
+                      <Label htmlFor={`confirm-${aviso.id}`} className="text-xs font-bold cursor-pointer">
+                        Li e entendi este aviso.
+                      </Label>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Professor Responsável</Label>
@@ -414,13 +502,13 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             <Button type="button" variant="ghost" onClick={onClose} className="flex-1 h-12 rounded-xl font-bold text-slate-400 hover:text-slate-600 transition-colors">Cancelar</Button>
             <Button 
               type="submit" 
-              disabled={conflictingAulas.length > 0 || isCheckingConflicts}
+              disabled={conflictingAulas.length > 0 || isCheckingConflicts || !allAvisosConfirmados}
               className={cn(
                 "flex-[2] h-12 bg-blue-600 hover:bg-blue-700 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-blue-100 active:scale-95 transition-all",
-                (conflictingAulas.length > 0 || isCheckingConflicts) && "opacity-50 cursor-not-allowed bg-slate-400 hover:bg-slate-400 shadow-none"
+                (conflictingAulas.length > 0 || isCheckingConflicts || !allAvisosConfirmados) && "opacity-50 cursor-not-allowed bg-slate-400 hover:bg-slate-400 shadow-none"
               )}
             >
-              {isCheckingConflicts ? "Validando..." : conflictingAulas.length > 0 ? "Conflito de Horário" : "Salvar Agendamento"}
+              {isCheckingConflicts ? "Validando..." : conflictingAulas.length > 0 ? "Conflito de Horário" : !allAvisosConfirmados ? "Confirme os avisos" : "Salvar Agendamento"}
             </Button>
           </DialogFooter>
         </form>
