@@ -226,7 +226,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, error: error.message };
     }
 
-    // Profile will be fetched by the onAuthStateChange listener
+    if (data.user) {
+      // Fetch the profile immediately to check status before allowing navigation
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("status")
+        .eq("id", data.user.id)
+        .single();
+
+      if (profileError) {
+        console.error("Erro ao buscar perfil após login:", profileError);
+        // We let it pass if it's just a profile fetch error, the onAuthStateChange will handle it
+      } else if (profileData) {
+        if (profileData.status === "pendente") {
+          await supabase.auth.signOut();
+          return { success: false, error: "Seu acesso ainda está aguardando aprovação." };
+        }
+        if (profileData.status === "bloqueado") {
+          await supabase.auth.signOut();
+          return { success: false, error: "Seu acesso está bloqueado." };
+        }
+      }
+    }
+
     return { success: true };
   };
 
