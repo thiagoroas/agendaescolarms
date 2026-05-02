@@ -1,5 +1,6 @@
 import React from "react";
 import Sidebar from "./Sidebar";
+import TopHeader from "./TopHeader";
 import MobileBottomNav from "./MobileBottomNav";
 import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -11,9 +12,10 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="h-screen flex overflow-hidden" style={{ backgroundColor: '#f7f8fb' }}>
       <Sidebar />
-      <main className="flex-1 md:ml-[264px] relative overflow-hidden h-full">
+      <main className="flex-1 md:ml-[264px] relative flex flex-col overflow-hidden h-full">
+        <TopHeader />
         <div className={cn(
-          "h-full w-full",
+          "flex-1 w-full",
           !isAgenda && "mx-auto max-w-7xl p-4 md:p-8 overflow-y-auto"
         )}>
           {children}
