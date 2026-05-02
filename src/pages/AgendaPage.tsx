@@ -450,7 +450,7 @@ const AgendaPage = () => {
                           <div className="event-actions">
                             {(profile?.role === 'admin_plataforma' || 
                               (profile?.role === 'admin_lab' && reserva.escola_id === profile.escola_id) ||
-                              (profile?.role === 'professor' && reserva.professor_id === user?.id)) && (
+                              (profile?.role === 'professor' && reserva.profile_id === user?.id)) && (
                               <span
                                 className="event-action-btn"
                                 role="button"
