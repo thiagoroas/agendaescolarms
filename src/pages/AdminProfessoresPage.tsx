@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const AdminProfessoresPage = () => {
-  const { user, profile, selectedEscolaId } = useAuth();
+  const { user, profile, selectedEscolaId, setSelectedEscolaId } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [localUsers, setLocalUsers] = useState<Usuario[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -150,7 +150,7 @@ const AdminProfessoresPage = () => {
         id: "user-" + Date.now(),
         nome: nome.trim(),
         email: email.trim(),
-        escola_id: isAdminPlataforma ? escolaId : (profile?.escola_id || ""),
+        escola_id: isAdminPlataforma ? (escolaId || selectedEscolaId || "") : (profile?.escola_id || ""),
         papel: papel,
         status: "ativo",
         disciplinas: papel === "professor" ? disciplinasArray : undefined
@@ -164,7 +164,14 @@ const AdminProfessoresPage = () => {
         }
         return updated;
       });
-      toast.success(`${papel === "professor" ? "Professor" : "Admin do Laboratório"} cadastrado com sucesso!`);
+
+      // Se admin_plataforma cadastrou em outra escola, mudar automaticamente a escola ativa
+      if (isAdminPlataforma && escolaId && escolaId !== selectedEscolaId) {
+        setSelectedEscolaId(escolaId);
+        toast.success(`${papel === "professor" ? "Professor" : "Admin do Laboratório"} cadastrado e escola ativa alterada!`);
+      } else {
+        toast.success(`${papel === "professor" ? "Professor" : "Admin do Laboratório"} cadastrado com sucesso!`);
+      }
     }
     
     setIsModalOpen(false);
