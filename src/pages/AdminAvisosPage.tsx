@@ -49,8 +49,8 @@ const AdminAvisosPage = () => {
 
   useEffect(() => {
     setAvisos(getMockAvisos());
-    setRecursos(getMockRecursos().filter(r => r.escola_id === currentEscolaId));
   }, [currentEscolaId]);
+
 
   const schoolAvisos = avisos.filter(a => a.escola_id === currentEscolaId);
   
