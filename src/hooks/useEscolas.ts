@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { Escola } from "@/data/mockData";
-import { getMockEscolas, saveMockEscolas } from "@/data/storage";
+import { getMockEscolas, saveMockEscolas, getMockUsuarios, getMockRecursos, getMockReservas, getMockAvisos } from "@/data/storage";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const useEscolas = () => {
-  const { profile } = useAuth();
+  const { profile, selectedEscolaId, setSelectedEscolaId } = useAuth();
   const [escolas, setEscolas] = useState<Escola[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -143,12 +143,90 @@ export const useEscolas = () => {
     return updateEscola(id, { status: newStatus });
   };
 
+  const deleteEscola = async (id: string) => {
+    if (isSupabaseConfigured) {
+      try {
+        // Verificar vínculos no Supabase
+        const [usersCheck, resourcesCheck, reservationsCheck, announcementsCheck] = await Promise.all([
+          supabase.from("profiles").select("id", { count: 'exact', head: true }).eq("escola_id", id),
+          supabase.from("recursos").select("id", { count: 'exact', head: true }).eq("escola_id", id),
+          supabase.from("reservas").select("id", { count: 'exact', head: true }).eq("escola_id", id),
+          supabase.from("avisos_laboratorio").select("id", { count: 'exact', head: true }).eq("escola_id", id)
+        ]);
+
+        if (usersCheck.count && usersCheck.count > 0 || 
+            resourcesCheck.count && resourcesCheck.count > 0 || 
+            reservationsCheck.count && reservationsCheck.count > 0 || 
+            announcementsCheck.count && announcementsCheck.count > 0) {
+          toast.error("Não é possível excluir esta escola porque existem usuários, recursos, reservas ou avisos vinculados. Inative a escola ou remova os vínculos primeiro.");
+          return false;
+        }
+
+        const { error } = await supabase
+          .from("escolas")
+          .delete()
+          .eq("id", id);
+
+        if (error) throw error;
+        
+        // Se a escola excluída era a escola ativa, trocar para a primeira disponível
+        if (selectedEscolaId === id) {
+          const remainingEscolas = escolas.filter(e => e.id !== id && e.status === "ativa");
+          if (remainingEscolas.length > 0) {
+            setSelectedEscolaId(remainingEscolas[0].id);
+          }
+        }
+
+        setEscolas(prev => prev.filter(e => e.id !== id));
+        toast.success("Escola excluída com sucesso.");
+        return true;
+      } catch (error: any) {
+        console.error("Error deleting school:", error.message);
+        toast.error("Erro ao excluir escola");
+        return false;
+      }
+    } else {
+      // Verificar vínculos no Mock
+      const users = getMockUsuarios();
+      const resources = getMockRecursos();
+      const reservations = getMockReservas();
+      const announcements = getMockAvisos();
+
+      const hasLinks = users.some(u => u.escola_id === id) || 
+                       resources.some(r => r.escola_id === id) || 
+                       reservations.some(res => res.escola_id === id) || 
+                       announcements.some(a => a.escola_id === id);
+
+      if (hasLinks) {
+        toast.error("Não é possível excluir esta escola porque existem usuários, recursos, reservas ou avisos vinculados. Inative a escola ou remova os vínculos primeiro.");
+        return false;
+      }
+
+      // Se a escola excluída era a escola ativa, trocar para a primeira disponível
+      if (selectedEscolaId === id) {
+        const remainingEscolas = escolas.filter(e => e.id !== id && e.status === "ativa");
+        if (remainingEscolas.length > 0) {
+          setSelectedEscolaId(remainingEscolas[0].id);
+        }
+      }
+
+      setEscolas(prev => {
+        const updated = prev.filter(e => e.id !== id);
+        saveMockEscolas(updated);
+        return updated;
+      });
+      toast.success("Escola excluída com sucesso.");
+      return true;
+    }
+  };
+
   return {
     escolas,
     loading,
     refresh: fetchEscolas,
     createEscola,
     updateEscola,
-    toggleEscolaStatus
+    toggleEscolaStatus,
+    deleteEscola
   };
 };
