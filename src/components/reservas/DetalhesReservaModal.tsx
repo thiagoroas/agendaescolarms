@@ -9,12 +9,13 @@ import { ptBR } from "date-fns/locale";
 interface DetalhesReservaModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onDelete: (reservaId: string) => void;
   reserva: Reserva | null;
   recurso: Recurso | null;
   canEdit: boolean;
 }
 
-const DetalhesReservaModal = ({ isOpen, onClose, reserva, recurso, canEdit }: DetalhesReservaModalProps) => {
+const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, canEdit }: DetalhesReservaModalProps) => {
   if (!reserva) return null;
 
   return (
@@ -84,7 +85,13 @@ const DetalhesReservaModal = ({ isOpen, onClose, reserva, recurso, canEdit }: De
           <div className="flex flex-col sm:flex-row gap-3">
             {canEdit ? (
               <>
-                <Button variant="ghost" className="flex-1 h-12 rounded-xl font-black uppercase tracking-widest text-red-500 hover:text-red-600 hover:bg-red-50 transition-all">
+                <Button 
+                  variant="ghost" 
+                  className="flex-1 h-12 rounded-xl font-black uppercase tracking-widest text-red-500 hover:text-red-600 hover:bg-red-50 transition-all"
+                  onClick={() => {
+                    if (reserva) onDelete(reserva.id);
+                  }}
+                >
                   <Trash2 className="mr-2 h-4 w-4" />
                   Excluir
                 </Button>

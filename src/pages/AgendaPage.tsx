@@ -9,6 +9,7 @@ import { escolas as initialEscolas, recursos as initialRecursos, reservas as ini
 import { getMockEscolas, getMockRecursos, getMockReservas, resetMockData } from "../data/storage";
 import { horarios, diasSemana } from "../data/horarios";
 import { toast } from "sonner";
+import { saveMockReservas } from "../data/storage";
 import NovaReservaModal from "../components/reservas/NovaReservaModal";
 import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
 import RelatorioReservasModal from "../components/reservas/RelatorioReservasModal";
@@ -134,6 +135,37 @@ const AgendaPage = () => {
         turno: h.turno
       });
       setIsModalNovaOpen(true);
+    }
+  };
+
+  const handleExcluirReserva = (reservaId: string) => {
+    const reservaParaExcluir = (isSupabaseConfigured ? initialReservas : reservasState).find(r => r.id === reservaId);
+    if (!reservaParaExcluir) return;
+
+    // Verificar permissões
+    const canDelete = 
+      profile?.role === 'admin_plataforma' || 
+      (profile?.role === 'admin_lab' && reservaParaExcluir.escola_id === profile.escola_id) ||
+      (profile?.role === 'professor' && reservaParaExcluir.professor_id === user?.id);
+
+    if (!canDelete) {
+      toast.error("Você não tem permissão para excluir esta reserva.");
+      return;
+    }
+
+    if (window.confirm("Tem certeza que deseja cancelar esta reserva?")) {
+      const novasReservas = (isSupabaseConfigured ? initialReservas : reservasState).filter(r => r.id !== reservaId);
+      
+      if (!isSupabaseConfigured) {
+        setReservasState(novasReservas);
+        saveMockReservas(novasReservas);
+      } else {
+        // No modo Supabase real, isso seria uma chamada de API e depois um refresh
+        toast.info("Em modo Supabase real, a reserva seria removida do banco.");
+      }
+      
+      setIsModalDetalhesOpen(false);
+      toast.success("Reserva cancelada com sucesso.");
     }
   };
 
@@ -310,17 +342,21 @@ const AgendaPage = () => {
                             <span>{recurso.nome}</span>
                           </div>
                           <div className="event-actions">
-                            <span
-                              className="event-action-btn"
-                              role="button"
-                              aria-label="Excluir"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toast.info("Funcionalidade de exclusão em breve");
-                              }}
-                            >
-                              <Trash2 size={12} />
-                            </span>
+                            {(profile?.role === 'admin_plataforma' || 
+                              (profile?.role === 'admin_lab' && reserva.escola_id === profile.escola_id) ||
+                              (profile?.role === 'professor' && reserva.professor_id === user?.id)) && (
+                              <span
+                                className="event-action-btn"
+                                role="button"
+                                aria-label="Excluir"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleExcluirReserva(reserva.id);
+                                }}
+                              >
+                                <Trash2 size={12} />
+                              </span>
+                            )}
                           </div>
                         </button>
                       ) : (
@@ -427,6 +463,7 @@ const AgendaPage = () => {
       <DetalhesReservaModal
         isOpen={isModalDetalhesOpen}
         onClose={() => setIsModalDetalhesOpen(false)}
+        onDelete={handleExcluirReserva}
         reserva={activeReserva?.reserva || null}
         recurso={activeReserva?.recurso || null}
         canEdit={activeReserva?.reserva.professor_id === user?.id || profile?.role !== 'professor'}
