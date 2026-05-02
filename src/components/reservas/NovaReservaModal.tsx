@@ -8,7 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { useAuth } from "../../contexts/AuthContext";
-import { recursos, usuarios, Usuario } from "../../data/mockData";
+import { recursos, usuarios, Usuario, reservas } from "../../data/mockData";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 import { horarios } from "../../data/horarios";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -44,6 +45,56 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     aulas: [] as number[],
     observacao: ""
   });
+
+  const [existingReservations, setExistingReservations] = useState<any[]>([]);
+  const [isCheckingConflicts, setIsCheckingConflicts] = useState(false);
+  const [conflictingAulas, setConflictingAulas] = useState<number[]>([]);
+
+  useEffect(() => {
+    const fetchExistingReservations = async () => {
+      if (!isOpen || !formData.data || !formData.recursoId) return;
+      
+      setIsCheckingConflicts(true);
+      try {
+        if (isSupabaseConfigured) {
+          const { data, error } = await supabase
+            .from('reservas')
+            .select('*')
+            .eq('data', formData.data)
+            .eq('recurso_id', formData.recursoId)
+            .eq('escola_id', profile?.escola_id);
+          
+          if (error) throw error;
+          setExistingReservations(data || []);
+        } else {
+          // Fallback to mock data
+          const mockFiltered = reservas.filter(r => 
+            r.data === formData.data && 
+            r.recurso_id === formData.recursoId && 
+            r.escola_id === profile?.escola_id
+          );
+          setExistingReservations(mockFiltered);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar reservas para validação:", err);
+      } finally {
+        setIsCheckingConflicts(false);
+      }
+    };
+
+    fetchExistingReservations();
+  }, [isOpen, formData.data, formData.recursoId, profile?.escola_id]);
+
+  useEffect(() => {
+    if (existingReservations.length > 0 && formData.aulas.length > 0) {
+      const conflicts = formData.aulas.filter(aula => 
+        existingReservations.some(r => Number(r.aula) === Number(aula))
+      );
+      setConflictingAulas(conflicts);
+    } else {
+      setConflictingAulas([]);
+    }
+  }, [existingReservations, formData.aulas]);
 
   const [selectedProfessor, setSelectedProfessor] = useState<Usuario | null>(null);
 
@@ -121,11 +172,8 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     if (!formData.recursoId) { toast.error("Selecione um recurso"); return; }
     if (formData.aulas.length === 0) { toast.error("Selecione pelo menos uma aula"); return; }
     
-    // Check for conflicts
-    const conflict = false; // Mock conflict check
-    
-    if (conflict) {
-      toast.error("Este recurso já está reservado para este horário.");
+    if (conflictingAulas.length > 0) {
+      toast.error(`Este recurso já está reservado nesta data para a(s) aula(s): ${conflictingAulas.join(', ')}.`);
       return;
     }
 
@@ -304,7 +352,16 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
           <DialogFooter className="bg-white p-6 flex flex-col sm:flex-row gap-3 border-t border-slate-100">
             <Button type="button" variant="ghost" onClick={onClose} className="flex-1 h-12 rounded-xl font-bold text-slate-400 hover:text-slate-600 transition-colors">Cancelar</Button>
-            <Button type="submit" className="flex-[2] h-12 bg-blue-600 hover:bg-blue-700 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-blue-100 active:scale-95 transition-all">Salvar Agendamento</Button>
+            <Button 
+              type="submit" 
+              disabled={conflictingAulas.length > 0 || isCheckingConflicts}
+              className={cn(
+                "flex-[2] h-12 bg-blue-600 hover:bg-blue-700 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-blue-100 active:scale-95 transition-all",
+                (conflictingAulas.length > 0 || isCheckingConflicts) && "opacity-50 cursor-not-allowed bg-slate-400 hover:bg-slate-400 shadow-none"
+              )}
+            >
+              {isCheckingConflicts ? "Validando..." : conflictingAulas.length > 0 ? "Conflito de Horário" : "Salvar Agendamento"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
