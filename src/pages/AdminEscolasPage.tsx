@@ -3,22 +3,27 @@ import { useAuth } from "../contexts/AuthContext";
 import { Escola } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
 import { Button } from "@/components/ui/button";
-import { Plus, Building2, MapPin, Search, ExternalLink, Edit2, Power, Loader2 } from "lucide-react";
+import { Plus, Building2, MapPin, Search, ExternalLink, Edit2, Power, Loader2, Trash2, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 const AdminEscolasPage = () => {
-  const { user } = useAuth();
-  const { escolas, loading, createEscola, updateEscola, toggleEscolaStatus } = useEscolas();
+  const { profile } = useAuth();
+  const { escolas, loading, createEscola, updateEscola, toggleEscolaStatus, deleteEscola } = useEscolas();
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [escolaToDelete, setEscolaToDelete] = useState<Escola | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
+
+  const isAdminPlataforma = profile?.role === "admin_plataforma";
 
   // Form state
   const [nome, setNome] = useState("");
@@ -69,6 +74,24 @@ const AdminEscolasPage = () => {
         estado
       });
       if (result) setIsModalOpen(false);
+    }
+  };
+
+  const handleDeleteClick = (escola: Escola) => {
+    setEscolaToDelete(escola);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!escolaToDelete) return;
+    
+    setIsDeleting(true);
+    const success = await deleteEscola(escolaToDelete.id);
+    setIsDeleting(false);
+    
+    if (success) {
+      setIsDeleteModalOpen(false);
+      setEscolaToDelete(null);
     }
   };
 
@@ -142,6 +165,17 @@ const AdminEscolasPage = () => {
                   <Power className="mr-2 h-4 w-4" />
                   {e.status === "ativa" ? "Inativar" : "Ativar"}
                 </Button>
+                {isAdminPlataforma && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 h-10 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100"
+                    onClick={() => handleDeleteClick(e)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Excluir
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           ))}
@@ -202,6 +236,40 @@ const AdminEscolasPage = () => {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="h-5 w-5" />
+              Confirmar Exclusão
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Tem certeza que deseja excluir a escola <strong>{escolaToDelete?.nome}</strong>? Esta ação não poderá ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-4">
+            <Button type="button" variant="outline" onClick={() => setIsDeleteModalOpen(false)} disabled={isDeleting}>
+              Cancelar
+            </Button>
+            <Button 
+              type="button" 
+              className="bg-red-600 hover:bg-red-700 text-white" 
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                "Confirmar Exclusão"
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
