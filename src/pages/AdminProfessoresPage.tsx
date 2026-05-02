@@ -1,22 +1,26 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { usuarios as initialUsuarios, Usuario } from "../data/mockData";
+import { Usuario, escolas } from "../data/mockData";
 import { getMockUsuarios, saveMockUsuarios } from "../data/storage";
 import { Button } from "@/components/ui/button";
-import { Plus, UserPlus, UserCheck, Search, Info } from "lucide-react";
+import { Plus, UserPlus, UserCheck, Search, Info, Building2, Trash2, Edit2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const AdminProfessoresPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [localUsers, setLocalUsers] = useState<Usuario[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("professores");
   
   // Modal Form State
   const [nome, setNome] = useState("");
@@ -24,16 +28,43 @@ const AdminProfessoresPage = () => {
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [papel, setPapel] = useState<"professor" | "admin_lab">("professor");
+  const [escolaId, setEscolaId] = useState("");
+  const [disciplinas, setDisciplinas] = useState("");
+  const [status, setStatus] = useState<"ativo" | "pendente" | "bloqueado">("ativo");
 
   useEffect(() => {
     setLocalUsers(getMockUsuarios());
   }, []);
 
-  const schoolUsers = localUsers.filter(u => 
-    u.escola_id === (selectedEscolaId || profile?.escola_id) && 
-    (u.papel === "professor" || u.papel === "admin_lab") &&
-    (u.nome.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Filter users based on profile role and selected school
+  const isAdminPlataforma = profile?.role === "admin_plataforma";
+  const isAdminLab = profile?.role === "admin_lab";
+  
+  const filteredUsers = localUsers.filter(u => {
+    // Basic role filter: only show professor and admin_lab in this page
+    if (u.papel !== "professor" && u.papel !== "admin_lab") return false;
+    
+    // Tab filter
+    if (activeTab === "professores" && u.papel !== "professor") return false;
+    if (activeTab === "usuarios_lab" && u.papel !== "admin_lab") return false;
+
+    // Multi-school filtering
+    if (!isAdminPlataforma) {
+      // admin_lab can only see users from their own school
+      if (u.escola_id !== profile?.escola_id) return false;
+    } else if (selectedEscolaId) {
+      // admin_plataforma can filter by selected school if they want
+      // But typically for the "Users" list we might want to see all if no specific school is selected in the sidebar
+      // However, usually selectedEscolaId is always set for admin_plataforma in this app's context
+      if (u.escola_id !== selectedEscolaId) return false;
+    }
+
+    // Search filter
+    const matchesSearch = u.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         u.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesSearch;
+  });
 
   const handleSalvarUsuario = (e: React.FormEvent) => {
     e.preventDefault();
