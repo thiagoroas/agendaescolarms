@@ -14,7 +14,9 @@ export const DiagnosticPanel = () => {
   const [tokenSent, setTokenSent] = useState<boolean>(false);
 
   const checkEdgeFunction = async () => {
-    if (!isSupabaseConfigured || !user) {
+    // Mesmo que isSupabaseConfigured seja falso, se tivermos um user e um token, tentamos
+    // Isso resolve casos onde a detecção automática falha mas o cliente está funcionando
+    if (!user) {
       setEdgeFunctionStatus("unauthorized");
       return;
     }
@@ -22,32 +24,46 @@ export const DiagnosticPanel = () => {
     setEdgeFunctionStatus("checking");
     setEdgeError(null);
     setLastResponse(null);
+    setTokenSent(false);
     
     try {
       const { data: sessionData } = await supabase.auth.getSession();
-      setTokenSent(!!sessionData.session?.access_token);
+      const session = sessionData.session;
+      
+      if (!session?.access_token) {
+        setEdgeFunctionStatus("unauthorized");
+        setEdgeError("Sessão ativa não encontrada ou token expirado.");
+        return;
+      }
 
+      setTokenSent(true);
+
+      // Chamada explícita com o token para garantir o envio
       const { data, error } = await supabase.functions.invoke('manage-user', {
-        body: { action: 'ping' } 
+        body: { action: 'ping' },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
       });
 
       setLastResponse(data || error);
 
       if (error) {
-        if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")) {
+        // Se for erro de rede (função não deployada ou URL errada)
+        if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError") || error.name === "FunctionsFetchError") {
           setEdgeFunctionStatus("error");
-          setEdgeError("Não foi possível alcançar a Edge Function (Network Error/Not Deployed)");
+          setEdgeError(`Não foi possível alcançar a Edge Function: ${error.message || "Erro de rede"}`);
         } else {
+          // Outros erros da função (ex: 401, 403, 500) são considerados "comunicação ok" mas com erro lógico
           setEdgeFunctionStatus("ok");
         }
-      } else if (data?.error) {
-        setEdgeFunctionStatus("ok");
       } else {
         setEdgeFunctionStatus("ok");
       }
     } catch (err: any) {
+      console.error("Erro ao testar Edge Function:", err);
       setEdgeFunctionStatus("error");
-      setEdgeError(err.message || "Erro desconhecido");
+      setEdgeError(err.message || "Erro desconhecido ao chamar a função");
       setLastResponse(err);
     }
   };
