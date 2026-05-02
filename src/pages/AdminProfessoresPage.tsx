@@ -163,8 +163,12 @@ const AdminProfessoresPage = () => {
           userData.id = editingUserId;
           // Se preencheu senha na edição, é um reset
           if (senha) {
+            const { data: { session } } = await supabase.auth.getSession();
             const { error: resetError } = await supabase.functions.invoke('manage-user', {
-              body: { action: 'reset_password', userData: { id: editingUserId, password: senha } }
+              body: { action: 'reset_password', userData: { id: editingUserId, password: senha } },
+              headers: {
+                Authorization: `Bearer ${session?.access_token}`
+              }
             });
             if (resetError) throw resetError;
             toast.success("Senha atualizada!");
@@ -173,8 +177,12 @@ const AdminProfessoresPage = () => {
           userData.password = senha;
         }
 
+        const { data: { session } } = await supabase.auth.getSession();
         const { data, error } = await supabase.functions.invoke('manage-user', {
-          body: { action, userData }
+          body: { action, userData },
+          headers: {
+            Authorization: `Bearer ${session?.access_token}`
+          }
         });
 
         if (error) throw error;
@@ -345,8 +353,12 @@ const AdminProfessoresPage = () => {
                                 if (isSupabaseConfigured) {
                                   setLoading(true);
                                   try {
+                                    const { data: { session } } = await supabase.auth.getSession();
                                     const { error } = await supabase.functions.invoke('manage-user', {
-                                      body: { action: 'update', userData: { id: u.id, status: 'ativo' } }
+                                      body: { action: 'update', userData: { id: u.id, status: 'ativo' } },
+                                      headers: {
+                                        Authorization: `Bearer ${session?.access_token}`
+                                      }
                                     });
                                     if (error) throw error;
                                     toast.success("Acesso aprovado!");
@@ -382,8 +394,12 @@ const AdminProfessoresPage = () => {
                                 if (isSupabaseConfigured) {
                                   setLoading(true);
                                   try {
+                                    const { data: { session } } = await supabase.auth.getSession();
                                     const { error } = await supabase.functions.invoke('manage-user', {
-                                      body: { action: 'delete_or_disable', userData: { id: u.id } }
+                                      body: { action: 'delete_or_disable', userData: { id: u.id } },
+                                      headers: {
+                                        Authorization: `Bearer ${session?.access_token}`
+                                      }
                                     });
                                     if (error) throw error;
                                     toast.success("Usuário bloqueado com sucesso.");
