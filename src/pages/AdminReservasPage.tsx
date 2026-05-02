@@ -176,12 +176,9 @@ const AdminReservasPage = () => {
                   variant="outline" 
                   size="sm" 
                   className="flex-1 text-red-600 border-red-100" 
-                  onClick={() => {
-                    if (window.confirm("Deseja realmente excluir esta reserva?")) {
-                      const novasReservas = reservas.filter(res => res.id !== r.id);
-                      setReservas(novasReservas);
-                      saveMockReservas(novasReservas);
-                      toast.success("Reserva excluída");
+                  onClick={async () => {
+                    if (window.confirm("Deseja realmente cancelar esta reserva?")) {
+                      await cancelReserva(r.id);
                     }
                   }}
                 >
