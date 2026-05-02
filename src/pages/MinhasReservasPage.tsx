@@ -82,10 +82,7 @@ const MinhasReservasPage = () => {
               className="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700" 
               onClick={() => {
                 if (window.confirm("Deseja realmente cancelar esta reserva?")) {
-                  const novasReservas = reservas.filter(res => res.id !== r.id);
-                  setReservas(novasReservas);
-                  saveMockReservas(novasReservas);
-                  toast.success("Reserva cancelada com sucesso");
+                  await cancelReserva(r.id);
                 }
               }}
             >
