@@ -48,6 +48,7 @@ const initialsOf = (name: string) =>
 
 const AgendaPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
+  const { escolas: allEscolas, loading: loadingEscolas } = useEscolas();
   const [currentDate, setCurrentDate] = useState(() => {
     const today = new Date();
     const day = today.getDay();
