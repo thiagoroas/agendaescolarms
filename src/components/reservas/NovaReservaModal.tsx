@@ -288,7 +288,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           <p className="text-blue-100 text-sm font-medium mt-1 opacity-90">Preencha os detalhes para reservar o recurso.</p>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 bg-white overflow-y-auto max-h-[calc(90vh-180px)]">
+        <form onSubmit={handleSubmit} noValidate className="p-6 space-y-6 bg-white overflow-y-auto max-h-[calc(90vh-180px)]">
           {/* Seção de Avisos */}
           {avisosAtivos.length > 0 && (
             <div className="space-y-3">
