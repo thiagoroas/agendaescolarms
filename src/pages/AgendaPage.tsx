@@ -1,13 +1,13 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { format, addDays, startOfWeek, isSameDay, parseISO } from "date-fns";
+import { format, addDays, startOfWeek, isSameDay, parseISO, isWithinInterval, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon, Info, FileText, CheckCircle, XCircle, LayoutDashboard, ClipboardList, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon, Info, FileText, CheckCircle, XCircle, LayoutDashboard, ClipboardList, CalendarDays, AlertTriangle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { escolas as initialEscolas, recursos as initialRecursos, reservas as initialReservas, Reserva, Recurso } from "../data/mockData";
-import { getMockEscolas, getMockRecursos, getMockReservas, resetMockData } from "../data/storage";
+import { escolas as initialEscolas, recursos as initialRecursos, reservas as initialReservas, Reserva, Recurso, AvisoLaboratorio } from "../data/mockData";
+import { getMockEscolas, getMockRecursos, getMockReservas, resetMockData, getMockAvisos } from "../data/storage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { horarios, diasSemana } from "../data/horarios";
@@ -138,6 +138,30 @@ const AgendaPage = () => {
       )
     ).length;
   }, [monday, weekDates, selectedRecurso, searchQuery, profile?.escola_id, selectedEscolaId, reservasState]);
+
+  const currentSchoolId = selectedEscolaId || profile?.escola_id;
+
+  const avisosAtivos = useMemo(() => {
+    const agora = new Date();
+    const hojeStr = format(agora, "yyyy-MM-dd");
+    const horaAtualStr = format(agora, "HH:mm");
+
+    return avisosState.filter(a => {
+      if (!a.ativo || a.escola_id !== currentSchoolId || !a.exibir_na_agenda) return false;
+      
+      const dentroData = hojeStr >= a.data_inicio && hojeStr <= a.data_fim;
+      if (!dentroData) return false;
+
+      if (a.hora_inicio && a.hora_fim) {
+        return horaAtualStr >= a.hora_inicio && horaAtualStr <= a.hora_fim;
+      }
+
+      return true;
+    }).sort((a, b) => {
+      const prioridade = { urgente: 0, atencao: 1, informativo: 2 };
+      return prioridade[a.tipo] - prioridade[b.tipo];
+    });
+  }, [avisosState, currentSchoolId]);
 
   const handleSlotClick = (date: Date, h: typeof horarios[0]) => {
     const res = getReservaForSlot(date, h.aula);
@@ -313,6 +337,54 @@ const AgendaPage = () => {
               Resetar dados demo
             </Button>
           )}
+        </div>
+      )}
+
+      {/* Banner de Avisos */}
+      {avisosAtivos.length > 0 && (
+        <div className="mx-4 mb-4 space-y-2">
+          {avisosAtivos.slice(0, showAllAvisos ? undefined : 1).map((aviso) => (
+            <div 
+              key={aviso.id}
+              className={cn(
+                "p-4 rounded-2xl border flex items-start gap-4 shadow-sm animate-in slide-in-from-top duration-300",
+                aviso.tipo === "urgente" ? "bg-red-50 border-red-100 text-red-900" :
+                aviso.tipo === "atencao" ? "bg-amber-50 border-amber-100 text-amber-900" :
+                "bg-blue-50 border-blue-100 text-blue-900"
+              )}
+            >
+              <div className={cn(
+                "p-2 rounded-xl shrink-0",
+                aviso.tipo === "urgente" ? "bg-red-100 text-red-600" :
+                aviso.tipo === "atencao" ? "bg-amber-100 text-amber-600" :
+                "bg-blue-100 text-blue-600"
+              )}>
+                {aviso.tipo === "urgente" ? <AlertTriangle size={18} /> : <Info size={18} />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="text-sm font-black uppercase tracking-tight">{aviso.titulo}</h4>
+                  {avisosAtivos.length > 1 && !showAllAvisos && (
+                    <button 
+                      onClick={() => setShowAllAvisos(true)}
+                      className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1 hover:underline"
+                    >
+                      Ver todos ({avisosAtivos.length}) <ChevronDown size={12} />
+                    </button>
+                  )}
+                  {showAllAvisos && aviso.id === avisosAtivos[0].id && (
+                    <button 
+                      onClick={() => setShowAllAvisos(false)}
+                      className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1 hover:underline"
+                    >
+                      Recolher
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs font-medium opacity-80 mt-0.5">{aviso.mensagem}</p>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
