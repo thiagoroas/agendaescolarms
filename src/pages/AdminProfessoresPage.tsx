@@ -564,9 +564,14 @@ const AdminProfessoresPage = () => {
             )}
 
             <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                {editingUserId ? "Salvar Alterações" : "Cadastrar Usuário"}
+              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} disabled={loading}>Cancelar</Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : editingUserId ? "Salvar Alterações" : "Cadastrar Usuário"}
               </Button>
             </DialogFooter>
           </form>
