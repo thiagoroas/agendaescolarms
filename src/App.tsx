@@ -124,7 +124,6 @@ const AppContent = () => {
       </Routes>
     </>
   );
-  );
 };
 
 import LoginPage from "./pages/LoginPage";
