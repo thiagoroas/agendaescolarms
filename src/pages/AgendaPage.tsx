@@ -398,13 +398,24 @@ const AgendaPage = () => {
       </div>
 
       {isMobile && (
-        <button 
-          className="mobile-fab"
-          onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}
-          aria-label="Nova reserva"
-        >
-          <Plus size={24} />
-        </button>
+        <div className="fixed bottom-20 right-4 flex flex-col gap-3 z-50">
+          {(profile?.role === 'admin_plataforma' || profile?.role === 'admin_lab') && (
+            <button 
+              className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-slate-600 border border-slate-200"
+              onClick={() => setIsModalRelatorioOpen(true)}
+              aria-label="Relatório"
+            >
+              <FileText size={20} />
+            </button>
+          )}
+          <button 
+            className="w-14 h-14 rounded-full bg-blue-600 shadow-lg flex items-center justify-center text-white"
+            onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}
+            aria-label="Nova reserva"
+          >
+            <Plus size={24} />
+          </button>
+        </div>
       )}
 
       <NovaReservaModal
