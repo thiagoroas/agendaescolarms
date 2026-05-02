@@ -91,7 +91,11 @@ const AgendaPage = () => {
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(monday, i));
 
   const navigateWeek = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => addDays(prev, isMobile ? (direction === 'prev' ? -1 : 1) : (direction === 'prev' ? -7 : 7)));
+    setCurrentDate(prev => {
+      // No mobile, navega dia a dia. No desktop, navega semana a semana (7 dias).
+      const step = isMobile ? 1 : 7;
+      return addDays(prev, direction === 'prev' ? -step : step);
+    });
   };
 
   const getReservaForSlot = (date: Date, aula: number) => {
