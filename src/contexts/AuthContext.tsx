@@ -1,9 +1,6 @@
-/* AUTH INIT: iniciando */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
-import { usuarios } from "@/data/mockData";
-import { getMockUsuarios } from "@/data/storage";
 
 export type UserRole = "admin_plataforma" | "admin_lab" | "professor";
 
@@ -19,325 +16,185 @@ export interface Profile {
 interface AuthContextType {
   user: User | null;
   profile: Profile | null;
-  selectedEscolaId: string | null;
   loading: boolean;
-  profileLoading: boolean; // Novo: separa loading de profile
+  error: string | null;
+  selectedEscolaId: string | null;
   login: (email: string, senha: string, remember: boolean) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   setSelectedEscolaId: (id: string) => void;
   updateProfile: (updatedProfile: Partial<Profile>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-import { useRef } from "react";
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [selectedEscolaId, setSelectedEscolaIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const lastFetchedUserIdRef = useRef<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedEscolaId, setSelectedEscolaIdState] = useState<string | null>(null);
 
   const setSelectedEscolaId = (id: string) => {
     setSelectedEscolaIdState(id);
     localStorage.setItem("agenda_selected_escola_id", id);
   };
 
-  useEffect(() => {
-    if (!isSupabaseConfigured) {
-      const savedUser = localStorage.getItem("agenda_mock_user");
-      const savedProfile = localStorage.getItem("agenda_mock_profile");
-      
-      if (savedUser && savedProfile) {
-        setUser(JSON.parse(savedUser));
-        setProfile(JSON.parse(savedProfile));
-        
-        const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
-        if (savedEscolaId) setSelectedEscolaIdState(savedEscolaId);
+  const loadProfile = async (u: User) => {
+    console.log("[AUTH] fetching profile id:", u.id);
+    try {
+      const { data, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", u.id)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error("[AUTH] erro ao buscar profile", profileError);
+        setError(profileError.message);
+        setProfile(null);
+        return null;
       }
+
+      if (!data) {
+        console.warn("[AUTH] profile não encontrado para", u.email);
+        setError("profile_not_found");
+        setProfile(null);
+        return null;
+      }
+
+      console.log("[AUTH] profile found:", data.nome);
+      const mappedProfile: Profile = {
+        id: data.id,
+        full_name: data.nome,
+        escola_id: data.escola_id,
+        role: data.papel as UserRole,
+        status: data.status as "ativo" | "pendente" | "bloqueado",
+        disciplinas: data.disciplinas
+      };
       
-      setLoading(false);
-      return;
+      setProfile(mappedProfile);
+      setError(null);
+      
+      const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
+      setSelectedEscolaIdState(savedEscolaId || data.escola_id);
+      return mappedProfile;
+    } catch (e) {
+      console.error("[AUTH] exception in loadProfile", e);
+      setError("Exceção ao carregar perfil");
+      setProfile(null);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    async function initAuth() {
+      console.log("[AUTH] init start");
+      setLoading(true);
+
+      if (!isSupabaseConfigured) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          console.log("[AUTH] no session");
+          setUser(null);
+          setProfile(null);
+        } else {
+          console.log("[AUTH] session found:", session.user.email);
+          setUser(session.user);
+          await loadProfile(session.user);
+        }
+      } catch (err) {
+        console.error("[AUTH] init error", err);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("[AUTH] getSession result:", session ? "Session found" : "No session");
-      if (session?.user) {
-        setUser(session.user);
-        fetchProfile(session.user.id);
-      } else {
-        console.log("[AUTH] no session, showing login");
-        setUser(null);
-        setProfile(null);
-        setLoading(false);
-        setProfileLoading(false);
-      }
-    }).catch(err => {
-      console.error("[AUTH] Supabase session error:", err);
-      setLoading(false);
-      setProfileLoading(false);
-    });
+    initAuth();
 
-    // Listen for changes on auth state (logged in, signed out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("[AUTH] onAuthStateChange event:", event, session ? "Session found" : "No session");
+      console.log("[AUTH] event:", event);
       
-      if (session?.user) {
-        // Evitar loop: só buscar se o usuário mudou ou se é um evento explícito de login
-        if (lastFetchedUserIdRef.current !== session.user.id || event === 'SIGNED_IN') {
-          setUser(session.user);
-          await fetchProfile(session.user.id);
-        }
-      } else {
-        lastFetchedUserIdRef.current = null;
+      if (event === "SIGNED_IN" && session?.user) {
+        setUser(session.user);
+        setLoading(true);
+        await loadProfile(session.user);
+        setLoading(false);
+      } else if (event === "SIGNED_OUT") {
+        console.log("[AUTH] signed out");
         setUser(null);
         setProfile(null);
-        setSelectedEscolaIdState(null);
+        setError(null);
         setLoading(false);
-        setProfileLoading(false);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (userId: string) => {
-    if (!userId) {
-      setLoading(false);
-      setProfileLoading(false);
-      return;
-    }
-
-    lastFetchedUserIdRef.current = userId;
-    setProfileLoading(true);
-    
-    // Timeout de segurança: se demorar mais de 8s, libera o loading
-    const safetyTimeout = setTimeout(() => {
-      if (profileLoading) {
-        console.warn("[AUTH] fetchProfile timeout atingido (8s)");
-        setProfileLoading(false);
-        setLoading(false);
-      }
-    }, 8000);
-
-    try {
-      console.log("[AUTH] fetchProfile start", userId);
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (error) {
-        console.error("[AUTH] fetchProfile error", error.message, "Código:", error.code);
-        
-        if (!isSupabaseConfigured) {
-          const savedProfile = localStorage.getItem("agenda_mock_profile");
-          if (savedProfile) {
-            const parsed = JSON.parse(savedProfile);
-            if (parsed.id === userId) {
-              setProfile(parsed);
-              const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
-              setSelectedEscolaIdState(savedEscolaId || parsed.escola_id);
-              return;
-            }
-          }
-        }
-        setProfile(null);
-      }
-
-      if (data) {
-        console.log("[AUTH] fetchProfile success", data.nome);
-        const mappedProfile: Profile = {
-          id: data.id,
-          full_name: data.nome,
-          escola_id: data.escola_id,
-          role: data.papel as UserRole,
-          status: data.status as "ativo" | "pendente" | "bloqueado",
-          disciplinas: data.disciplinas
-        };
-        setProfile(mappedProfile);
-        const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
-        setSelectedEscolaIdState(savedEscolaId || data.escola_id);
-      } else {
-        setProfile(null);
-      }
-    } catch (error) {
-      console.error("[AUTH] fetchProfile catch", error);
-      setProfile(null);
-    } finally {
-      clearTimeout(safetyTimeout);
-      console.log("[AUTH] fetchProfile finally");
-      setProfileLoading(false);
-      setLoading(false);
-    }
-  };
-
   const login = async (email: string, senha: string, remember: boolean): Promise<{ success: boolean; error?: string }> => {
-    if (!isSupabaseConfigured) {
-      const normalizedEmail = email.trim().toLowerCase();
-      const normalizedPassword = senha.trim();
-      
-      const mockUsuarios = getMockUsuarios();
-      console.log("AuthContext: Tentando login com", normalizedEmail, "Total usuários no storage:", mockUsuarios.length);
-      const foundUser = mockUsuarios.find(
-        (u) => u.email.trim().toLowerCase() === normalizedEmail
-      );
-      
-      if (!foundUser || foundUser.senha.trim() !== normalizedPassword) {
-        return { success: false, error: "E-mail ou senha incorretos." };
-      }
-
-      if (foundUser.status === "pendente") {
-        return { success: false, error: "Seu acesso ainda está aguardando aprovação." };
-      }
-
-      if (foundUser.status === "bloqueado") {
-        return { success: false, error: "Seu acesso está bloqueado." };
-      }
-
-      const safeUser = {
-        id: foundUser.id,
-        nome: foundUser.nome,
-        email: foundUser.email,
-        escola_id: foundUser.escola_id,
-        papel: foundUser.papel,
-        status: foundUser.status,
-        disciplinas: foundUser.disciplinas || []
-      };
-
-      // Mock objects for state
-      const mockUser: User = {
-        id: safeUser.id,
-        email: safeUser.email,
-        aud: "authenticated",
-        role: "authenticated",
-        app_metadata: {},
-        user_metadata: { full_name: safeUser.nome },
-        created_at: new Date().toISOString()
-      } as User;
-
-      const mockProfile: Profile = {
-        id: safeUser.id,
-        full_name: safeUser.nome,
-        escola_id: safeUser.escola_id,
-        role: safeUser.papel as UserRole,
-        status: safeUser.status as "ativo" | "pendente" | "bloqueado",
-        disciplinas: safeUser.disciplinas
-      };
-
-      setUser(mockUser);
-      setProfile(mockProfile);
-      
-      // Determine currentSchoolId logic
-      let currentSchoolId = safeUser.escola_id;
-      if (safeUser.papel === "admin_plataforma") {
-        currentSchoolId = localStorage.getItem("agenda_selected_escola_id") || "escola-1";
-      }
-      setSelectedEscolaIdState(currentSchoolId);
-
-      localStorage.setItem("agenda_mock_user", JSON.stringify(mockUser));
-      localStorage.setItem("agenda_mock_profile", JSON.stringify(mockProfile));
-      localStorage.setItem("agenda_selected_escola_id", currentSchoolId);
-      
-      if (remember) {
-        localStorage.setItem("agenda_remembered_email", normalizedEmail);
-        localStorage.setItem("agenda_remembered_password", normalizedPassword);
-      } else {
-        localStorage.removeItem("agenda_remembered_email");
-        localStorage.removeItem("agenda_remembered_password");
-      }
-
-      return { success: true };
-    }
-
-    const { data, error } = await supabase.auth.signInWithPassword({
+    setError(null);
+    const { data, error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password: senha,
     });
 
-    if (error) {
-      return { success: false, error: error.message };
+    if (loginError) {
+      return { success: false, error: loginError.message };
     }
 
     if (data.user) {
-      // Fetch the profile immediately to check status before allowing navigation
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("status")
-        .eq("id", data.user.id)
-        .single();
-
-      if (profileError) {
-        console.error("Erro ao buscar perfil após login:", profileError);
-        // We let it pass if it's just a profile fetch error, the onAuthStateChange will handle it
-      } else if (profileData) {
-        if (profileData.status === "pendente") {
-          await supabase.auth.signOut();
-          return { success: false, error: "Seu acesso ainda está aguardando aprovação." };
-        }
-        if (profileData.status === "bloqueado") {
-          await supabase.auth.signOut();
-          return { success: false, error: "Seu acesso está bloqueado." };
-        }
-      }
+      // O profile será carregado pelo onAuthStateChange (SIGNED_IN)
+      return { success: true };
     }
 
-    return { success: true };
+    return { success: false, error: "Falha ao obter usuário após login" };
   };
 
   const logout = async () => {
-    console.log("[AUTH] Iniciando logout seguro...");
     try {
-      if (isSupabaseConfigured) {
-        await supabase.auth.signOut();
-      }
+      await supabase.auth.signOut();
     } catch (err) {
-      console.error("[AUTH] Erro ao deslogar do Supabase:", err);
+      console.error("[AUTH] logout error", err);
     }
-    
-    // Limpar estados locais
     setUser(null);
     setProfile(null);
-    setSelectedEscolaIdState(null);
+    setError(null);
     setLoading(false);
-    setProfileLoading(false);
     
-    // Limpar apenas chaves de sessão específicas do Supabase no localStorage
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && (key.startsWith("sb-") || key.includes("supabase.auth.token"))) {
-        keysToRemove.push(key);
-      }
-    }
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-
-    // Limpar dados de sessão mock se existirem
-    localStorage.removeItem("agenda_mock_user");
-    localStorage.removeItem("agenda_mock_profile");
-    
-    console.log("[AUTH] Logout concluído.");
+    // Limpar apenas chaves Supabase
+    Object.keys(localStorage)
+      .filter(k => k.startsWith("sb-"))
+      .forEach(k => localStorage.removeItem(k));
+      
+    window.location.href = "/login";
   };
 
   const updateProfile = (updatedProfile: Partial<Profile>) => {
     if (!profile) return;
-    const newProfile = { ...profile, ...updatedProfile };
-    setProfile(newProfile);
-    localStorage.setItem("agenda_mock_profile", JSON.stringify(newProfile));
+    setProfile({ ...profile, ...updatedProfile });
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, selectedEscolaId, loading, profileLoading, login, logout, setSelectedEscolaId, updateProfile }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      profile, 
+      loading, 
+      error, 
+      selectedEscolaId, 
+      login, 
+      logout, 
+      setSelectedEscolaId, 
+      updateProfile 
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
