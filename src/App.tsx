@@ -109,7 +109,6 @@ const AppContent = () => {
   }
 
   // 4. Status de Acesso (Pendente/Bloqueado)
-  const { logout } = useAuth();
 
   if (profile) {
     if (profile.status === "pendente") {
