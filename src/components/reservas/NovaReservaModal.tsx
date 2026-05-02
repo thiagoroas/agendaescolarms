@@ -121,14 +121,26 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     if (!formData.recursoId) { toast.error("Selecione um recurso"); return; }
     if (formData.aulas.length === 0) { toast.error("Selecione pelo menos uma aula"); return; }
     
-    // Check for conflicts (Simplified mock logic - usually handled by backend)
-    // Here we'd need to check if any of selected slots are already taken
+    // Check for conflicts
+    const conflict = false; // Mock conflict check
     
-    console.log("Reserva enviada:", { 
+    if (conflict) {
+      toast.error("Este recurso já está reservado para este horário.");
+      return;
+    }
+
+    const payload = { 
       ...formData, 
-      nome_professor: selectedProfessor?.nome, 
-      escola_id: profile?.escola_id 
-    });
+      professor_id: formData.professorId,
+      nome_professor: selectedProfessor?.nome || profile?.full_name, 
+      escola_id: profile?.escola_id,
+      data: formData.data,
+      recurso_id: formData.recursoId,
+      disciplina: formData.disciplina,
+      turma: formData.turma
+    };
+    
+    console.log("Reserva enviada:", payload);
     
     toast.success("Reserva realizada com sucesso!");
     onClose();
