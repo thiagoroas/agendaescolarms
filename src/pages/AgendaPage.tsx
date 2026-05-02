@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { format, addDays, startOfWeek, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon, Info, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
@@ -11,6 +11,7 @@ import { horarios, diasSemana } from "../data/horarios";
 import { toast } from "sonner";
 import NovaReservaModal from "../components/reservas/NovaReservaModal";
 import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
+import RelatorioReservasModal from "../components/reservas/RelatorioReservasModal";
 import "./agenda.css";
 
 const tipoColor = (tipo: string) => {
@@ -49,6 +50,7 @@ const AgendaPage = () => {
   const [reservasState, setReservasState] = useState<Reserva[]>([]);
   const [recursosState, setRecursosState] = useState<Recurso[]>([]);
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
+  const [isModalRelatorioOpen, setIsModalRelatorioOpen] = useState(false);
   
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -168,9 +170,16 @@ const AgendaPage = () => {
             )}
           </button>
           {!isMobile && (
-            <button className="btn btn-primary" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
-              <Plus size={16} /> Nova reserva
-            </button>
+            <div className="flex items-center gap-2">
+              {(profile?.role === 'admin_plataforma' || profile?.role === 'admin_lab') && (
+                <button className="btn btn-outline gap-2" onClick={() => setIsModalRelatorioOpen(true)}>
+                  <FileText size={16} /> Relatório
+                </button>
+              )}
+              <button className="btn btn-primary" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
+                <Plus size={16} /> Nova reserva
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -410,6 +419,15 @@ const AgendaPage = () => {
         reserva={activeReserva?.reserva || null}
         recurso={activeReserva?.recurso || null}
         canEdit={activeReserva?.reserva.professor_id === user?.id || profile?.role !== 'professor'}
+      />
+
+      <RelatorioReservasModal
+        isOpen={isModalRelatorioOpen}
+        onClose={() => setIsModalRelatorioOpen(false)}
+        reservas={isSupabaseConfigured ? initialReservas : reservasState}
+        recursos={schoolRecursosList}
+        escolas={schoolEscolas}
+        selectedEscolaId={selectedEscolaId || profile?.escola_id}
       />
     </div>
   );
