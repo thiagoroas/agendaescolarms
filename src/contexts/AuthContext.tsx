@@ -30,12 +30,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+import { useRef } from "react";
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedEscolaId, setSelectedEscolaIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
+  const lastFetchedUserIdRef = useRef<string | null>(null);
 
   const setSelectedEscolaId = (id: string) => {
     setSelectedEscolaIdState(id);
