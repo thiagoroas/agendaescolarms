@@ -23,7 +23,7 @@ const AdminAvisosPage = () => {
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
   
   const [avisos, setAvisos] = useState<AvisoLaboratorio[]>([]);
-  const [recursos, setRecursos] = useState<Recurso[]>([]);
+  const { recursos, loading: loadingRecursos } = useRecursos();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAviso, setEditingAviso] = useState<AvisoLaboratorio | null>(null);
   
