@@ -95,7 +95,7 @@ const AgendaPage = () => {
     );
   }, [selectedEscolaId, profile?.escola_id, reservasState]);
 
-  const schoolEscolas = isSupabaseConfigured ? initialEscolas : getMockEscolas();
+  const schoolEscolas = allEscolas;
   const escola = schoolEscolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
   const schoolRecursosList = isSupabaseConfigured ? initialRecursos : recursosState;
   const schoolRecursos = schoolRecursosList.filter(r => r.escola_id === (selectedEscolaId || profile?.escola_id));
