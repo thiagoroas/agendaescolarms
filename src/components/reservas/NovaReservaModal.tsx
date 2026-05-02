@@ -360,12 +360,20 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             </div>
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Data da Reserva</Label>
-              {initialData?.date ? (
-                <div className="h-10 px-3 flex items-center border border-blue-100 rounded-xl bg-blue-50 text-blue-700 font-black text-xs uppercase tracking-tight">
+              <Input 
+                type="date" 
+                value={formData.data} 
+                onChange={e => setFormData({...formData, data: e.target.value})} 
+                className={cn(
+                  "rounded-xl border-slate-200 h-10 font-bold",
+                  initialData?.date && "bg-blue-50 border-blue-100 text-blue-700"
+                )}
+                disabled={!!initialData?.date}
+              />
+              {initialData?.date && (
+                <div className="text-[10px] font-bold text-blue-500 mt-1 uppercase tracking-tight">
                   {formattedDate}
                 </div>
-              ) : (
-                <Input type="date" required value={formData.data} onChange={e => setFormData({...formData, data: e.target.value})} className="rounded-xl border-slate-200 h-10" />
               )}
             </div>
           </div>
