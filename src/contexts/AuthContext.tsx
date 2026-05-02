@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("user_id", userId) // Alterado de id para user_id para bater com o schema real
+        .eq("id", userId) // Alterado de user_id para id para bater com o schema 1.6
         .single();
 
       if (error) {
@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const savedProfile = localStorage.getItem("agenda_mock_profile");
         if (savedProfile) {
           const parsed = JSON.parse(savedProfile);
-          if (parsed.id === userId || parsed.user_id === userId) {
+          if (parsed.id === userId) {
             setProfile(parsed);
             const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
             setSelectedEscolaIdState(savedEscolaId || parsed.escola_id);
@@ -110,7 +110,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
 
-      // Map real profile to App's Profile interface if needed
+      // Check status
+      if (data.status === "pendente") {
+        console.warn("User status is pending approval");
+      } else if (data.status === "bloqueado") {
+        console.warn("User status is blocked");
+      }
+
+      // Map real profile to App's Profile interface
       const mappedProfile: Profile = {
         id: data.id,
         full_name: data.nome,
@@ -219,7 +226,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, error: error.message };
     }
 
-    // Profile will be fetched by the onAuthStateChange listener
+    if (data.user) {
+      // Fetch the profile immediately to check status before allowing navigation
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("status")
+        .eq("id", data.user.id)
+        .single();
+
+      if (profileError) {
+        console.error("Erro ao buscar perfil após login:", profileError);
+        // We let it pass if it's just a profile fetch error, the onAuthStateChange will handle it
+      } else if (profileData) {
+        if (profileData.status === "pendente") {
+          await supabase.auth.signOut();
+          return { success: false, error: "Seu acesso ainda está aguardando aprovação." };
+        }
+        if (profileData.status === "bloqueado") {
+          await supabase.auth.signOut();
+          return { success: false, error: "Seu acesso está bloqueado." };
+        }
+      }
+    }
+
     return { success: true };
   };
 
