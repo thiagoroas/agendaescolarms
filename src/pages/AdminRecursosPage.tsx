@@ -56,7 +56,7 @@ const AdminRecursosPage = () => {
     }
   };
 
-  const handleSalvarRecurso = (e: React.FormEvent) => {
+  const handleSalvarRecurso = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome.trim()) { toast.error("Nome é obrigatório"); return; }
 
@@ -65,30 +65,56 @@ const AdminRecursosPage = () => {
       ? coresDisponiveis.find(c => c.cor_fundo === corPersonalizada) || categoriaSelecionada
       : categoriaSelecionada;
 
-    const novoRecurso: Recurso = {
-      id: "rec-" + Date.now(),
-      escola_id: profile?.escola_id || "",
-      nome: nome.trim(),
-      tipo,
-      cor_fundo: corSelecionada.cor_fundo,
-      cor_texto: corSelecionada.cor_texto,
-      cor_borda: corSelecionada.cor_borda,
-      ativo: true,
-    };
+    const targetEscolaId = selectedEscolaId || profile?.escola_id || "";
 
-    setLocalRecursos(prev => {
-      const updated = [...prev, novoRecurso];
-      if (!isSupabaseConfigured) {
-        saveMockRecursos(updated);
+    if (editingRecurso) {
+      const success = await updateRecurso(editingRecurso.id, {
+        nome: nome.trim(),
+        tipo,
+        cor_fundo: corSelecionada.cor_fundo,
+        cor_texto: corSelecionada.cor_texto,
+        cor_borda: corSelecionada.cor_borda,
+      });
+      if (success) {
+        setIsModalOpen(false);
+        resetForm();
       }
-      return updated;
-    });
+    } else {
+      const result = await createRecurso({
+        escola_id: targetEscolaId,
+        nome: nome.trim(),
+        tipo,
+        cor_fundo: corSelecionada.cor_fundo,
+        cor_texto: corSelecionada.cor_texto,
+        cor_borda: corSelecionada.cor_borda,
+        ativo: true,
+      });
+      if (result) {
+        setIsModalOpen(false);
+        resetForm();
+      }
+    }
+  };
+
+  const resetForm = () => {
     setNome("");
     setTipo("outro");
     setCorPersonalizada(null);
-    setIsModalOpen(false);
-    toast.success("Recurso cadastrado com sucesso!");
+    setEditingRecurso(null);
   };
+
+  const handleEdit = (recurso: Recurso) => {
+    setEditingRecurso(recurso);
+    setNome(recurso.nome);
+    setTipo(recurso.tipo);
+    setCorPersonalizada(recurso.cor_fundo);
+    setIsModalOpen(true);
+  };
+
+  const handleToggle = async (id: string, ativo: boolean) => {
+    await toggleRecursoAtivo(id, ativo);
+  };
+
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20 md:pb-8">
