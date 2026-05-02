@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { escolas } from "../../data/mockData";
+import { useEscolas } from "@/hooks/useEscolas";
 import { 
   Calendar, 
   BookOpen, 
@@ -22,6 +22,7 @@ import { toast } from "sonner";
 
 const Sidebar = () => {
   const { profile, logout, selectedEscolaId, setSelectedEscolaId } = useAuth();
+  const { escolas, loading } = useEscolas();
   const escola = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
 
   const handleEscolaChange = (id: string) => {
