@@ -180,8 +180,8 @@ const DashboardPage = () => {
               </div>
               <Badge className="bg-slate-600 text-white border-none font-black">{alertas.length}</Badge>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">Solicitações</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1">Pendentes</h3>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Bloqueios</p>
+            <h3 className="text-xl font-black text-slate-900 mt-1">Manutenção</h3>
           </CardContent>
         </Card>
 
