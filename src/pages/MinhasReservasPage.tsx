@@ -48,9 +48,14 @@ const MinhasReservasPage = () => {
                 {rec?.nome}
               </Badge>
               {r.status && (
-                <Badge variant={r.status === "aprovada" ? "default" : r.status === "pendente" ? "outline" : "destructive"} className={cn(
+                <Badge variant={
+                  r.status === "confirmada" || r.status === "aprovada" ? "default" : 
+                  (r.status === "manutencao" || r.status === "bloqueada") ? "secondary" : 
+                  r.status === "pendente" ? "outline" : "destructive"
+                } className={cn(
                   "text-[9px] font-black uppercase tracking-widest",
-                  r.status === "pendente" && "bg-amber-50 text-amber-700 border-amber-200"
+                  r.status === "pendente" && "bg-amber-50 text-amber-700 border-amber-200",
+                  (r.status === "manutencao" || r.status === "bloqueada") && "bg-slate-100 text-slate-700 border-slate-300"
                 )}>
                   {r.status}
                 </Badge>
