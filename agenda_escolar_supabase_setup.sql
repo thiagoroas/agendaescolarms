@@ -1,6 +1,6 @@
 -- ==========================================
 -- AGENDA ESCOLAR DIGITAL - SETUP SUPABASE COMPLETO
--- Versão 1.4 - Final (Segurança Refinada e Seeds Dinâmicos)
+-- Versão 1.6 - Final (Correções de Segurança e Estrutura)
 -- ==========================================
 
 -- 1. EXTENSÕES
@@ -16,11 +16,12 @@ CREATE TABLE IF NOT EXISTS escolas (
     cidade TEXT,
     estado TEXT,
     logo_url TEXT,
+    status TEXT DEFAULT 'ativa' CHECK (status IN ('ativa', 'inativa')),
     configuracoes JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Profiles
+-- Profiles (id = auth.users.id)
 CREATE TABLE IF NOT EXISTS profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT UNIQUE NOT NULL,
@@ -58,7 +59,7 @@ CREATE TABLE IF NOT EXISTS reservas (
     recurso_id UUID REFERENCES recursos(id) ON DELETE CASCADE,
     profile_id UUID REFERENCES profiles(id),
     nome_professor TEXT NOT NULL,
-    disciplina TEXT,
+    disciplina TEXT NOT NULL,
     turma TEXT NOT NULL,
     data DATE NOT NULL,
     aula INTEGER NOT NULL CHECK (aula BETWEEN 1 AND 8),
@@ -77,16 +78,19 @@ CREATE TABLE IF NOT EXISTS avisos_laboratorio (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     escola_id UUID REFERENCES escolas(id) ON DELETE CASCADE,
     recurso_id UUID REFERENCES recursos(id) ON DELETE CASCADE,
-    profile_id UUID REFERENCES profiles(id),
     titulo TEXT NOT NULL,
     mensagem TEXT NOT NULL,
-    tipo TEXT NOT NULL DEFAULT 'informativo' CHECK (tipo IN ('informativo', 'alerta', 'manutencao')),
+    tipo TEXT NOT NULL DEFAULT 'informativo' CHECK (tipo IN ('informativo', 'atencao', 'urgente')),
+    ativo BOOLEAN DEFAULT true,
     data_inicio DATE NOT NULL,
     data_fim DATE NOT NULL,
+    hora_inicio TIME,
+    hora_fim TIME,
     exibir_na_agenda BOOLEAN DEFAULT true,
     exibir_no_modal_reserva BOOLEAN DEFAULT true,
     exibir_no_dashboard BOOLEAN DEFAULT true,
     exigir_confirmacao BOOLEAN DEFAULT false,
+    criado_por UUID REFERENCES profiles(id),
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -118,7 +122,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_conflito_reserva_parcial
 ON reservas (escola_id, recurso_id, data, aula) 
 WHERE status IN ('confirmada', 'manutencao', 'bloqueada');
 
--- 4. FUNÇÕES AUXILIARES
+-- 4. FUNÇÕES AUXILIARES (SECURITY DEFINER)
 
 CREATE OR REPLACE FUNCTION is_admin_plataforma()
 RETURNS BOOLEAN AS $$
@@ -130,11 +134,12 @@ BEGIN
     AND status = 'ativo'
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE OR REPLACE FUNCTION is_admin_lab()
 RETURNS BOOLEAN AS $$
 BEGIN
+  -- Corrigido: Apenas admin_lab, sem admin_plataforma aqui
   RETURN EXISTS (
     SELECT 1 FROM profiles 
     WHERE id = auth.uid() 
@@ -142,21 +147,21 @@ BEGIN
     AND status = 'ativo'
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE OR REPLACE FUNCTION my_escola_id()
 RETURNS UUID AS $$
 BEGIN
   RETURN (SELECT escola_id FROM profiles WHERE id = auth.uid());
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE OR REPLACE FUNCTION my_profile_id()
 RETURNS UUID AS $$
 BEGIN
   RETURN auth.uid();
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Trigger para criar profile automaticamente
 CREATE OR REPLACE FUNCTION handle_new_user()
@@ -172,7 +177,7 @@ BEGIN
   );
   RETURN new;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
@@ -208,7 +213,8 @@ CREATE POLICY "Admin Lab pode deletar professores na escola" ON profiles FOR DEL
 USING (is_admin_lab() AND escola_id = my_escola_id() AND papel = 'professor');
 
 CREATE POLICY "Usuários podem ver seu próprio profile" ON profiles FOR SELECT TO authenticated USING (id = auth.uid());
-CREATE POLICY "Usuários podem atualizar seu próprio profile" ON profiles FOR UPDATE TO authenticated USING (id = auth.uid());
+-- Nota: Política de UPDATE do próprio profile removida/restrita para ser feita via RPC ou restrita a campos seguros
+-- CREATE POLICY "Usuários podem atualizar seu próprio profile" ON profiles FOR UPDATE TO authenticated USING (id = auth.uid());
 CREATE POLICY "Usuários podem ver colegas da mesma escola" ON profiles FOR SELECT TO authenticated USING (escola_id = my_escola_id());
 
 -- Políticas Recursos
@@ -220,8 +226,19 @@ CREATE POLICY "Todos podem ver recursos da escola" ON recursos FOR SELECT TO aut
 CREATE POLICY "Admin Plataforma pode tudo em reservas" ON reservas FOR ALL TO authenticated USING (is_admin_plataforma());
 CREATE POLICY "Admin Lab pode gerenciar reservas da escola" ON reservas FOR ALL TO authenticated USING (is_admin_lab() AND escola_id = my_escola_id());
 CREATE POLICY "Professores podem ver reservas da escola" ON reservas FOR SELECT TO authenticated USING (escola_id = my_escola_id());
-CREATE POLICY "Professores podem criar reservas" ON reservas FOR INSERT TO authenticated WITH CHECK (escola_id = my_escola_id() AND status = 'confirmada');
-CREATE POLICY "Professores podem alterar suas próprias reservas" ON reservas FOR UPDATE TO authenticated USING (profile_id = auth.uid());
+
+-- Corrigido: Professor só cria para si mesmo, na sua escola e com status confirmada
+CREATE POLICY "Professores podem criar reservas" ON reservas FOR INSERT TO authenticated 
+WITH CHECK (
+    escola_id = my_escola_id() 
+    AND profile_id = auth.uid() 
+    AND status = 'confirmada'
+);
+
+-- Corrigido: Professor só altera suas próprias reservas da sua escola
+CREATE POLICY "Professores podem alterar suas próprias reservas" ON reservas FOR UPDATE TO authenticated 
+USING (profile_id = auth.uid())
+WITH CHECK (profile_id = auth.uid() AND escola_id = my_escola_id());
 
 -- Políticas Avisos
 CREATE POLICY "Admin Plataforma pode tudo em avisos" ON avisos_laboratorio FOR ALL TO authenticated USING (is_admin_plataforma());
@@ -233,27 +250,27 @@ CREATE POLICY "Admin Plataforma pode tudo em logs" ON logs_auditoria FOR ALL TO 
 CREATE POLICY "Admin Lab pode ver logs da escola" ON logs_auditoria FOR SELECT TO authenticated USING (is_admin_lab() AND escola_id = my_escola_id());
 CREATE POLICY "Qualquer um pode inserir logs" ON logs_auditoria FOR INSERT TO authenticated WITH CHECK (profile_id = auth.uid());
 
--- 6. SEEDS (ESCOLAS E RECURSOS)
+-- 6. SEEDS (ESCOLAS E RECURSOS REAIS)
 
 DO $$
 DECLARE
     escola1_id UUID;
     escola2_id UUID;
 BEGIN
-    -- Inserir Escolas
-    INSERT INTO escolas (nome, cidade, estado)
-    VALUES ('E.E. 26 de Agosto', 'Campo Grande', 'MS')
+    -- Inserir Escolas Reais
+    INSERT INTO escolas (nome, cidade, estado, status)
+    VALUES ('E.E. 26 de Agosto', 'Campo Grande', 'MS', 'ativa')
     ON CONFLICT (nome) DO NOTHING;
 
-    INSERT INTO escolas (nome, cidade, estado)
-    VALUES ('E.E. Maria Eliza Bocayuva Corrêa', 'Campo Grande', 'MS')
+    INSERT INTO escolas (nome, cidade, estado, status)
+    VALUES ('E.E. Maria Eliza Bocayuva Corrêa', 'Campo Grande', 'MS', 'ativa')
     ON CONFLICT (nome) DO NOTHING;
 
     -- Capturar IDs
     SELECT id INTO escola1_id FROM escolas WHERE nome = 'E.E. 26 de Agosto';
     SELECT id INTO escola2_id FROM escolas WHERE nome = 'E.E. Maria Eliza Bocayuva Corrêa';
 
-    -- Inserir Recursos para Escola 1
+    -- Inserir Recursos para Escola 1 (26 de Agosto)
     IF escola1_id IS NOT NULL THEN
         INSERT INTO recursos (escola_id, nome, tipo, cor_fundo, cor_texto, cor_borda)
         VALUES 
@@ -262,7 +279,7 @@ BEGIN
         ON CONFLICT (escola_id, nome) DO NOTHING;
     END IF;
 
-    -- Inserir Recursos para Escola 2
+    -- Inserir Recursos para Escola 2 (Maria Eliza)
     IF escola2_id IS NOT NULL THEN
         INSERT INTO recursos (escola_id, nome, tipo, cor_fundo, cor_texto, cor_borda)
         VALUES 
