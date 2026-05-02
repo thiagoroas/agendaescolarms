@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useEscolas } from "@/hooks/useEscolas";
-import { getMockReservas, getMockRecursos, saveMockReservas } from "../data/storage";
+import { useReservas } from "@/hooks/useReservas";
+import { useRecursos } from "@/hooks/useRecursos";
 import { Reserva, Recurso, Escola } from "../data/mockData";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, Trash2, Edit, Calendar } from "lucide-react";
@@ -17,13 +18,9 @@ const AdminReservasPage = () => {
   const { profile, selectedEscolaId } = useAuth();
   const { escolas, loading: loadingEscolas } = useEscolas();
   const [searchTerm, setSearchTerm] = useState("");
-  const [reservas, setReservas] = useState<Reserva[]>([]);
-  const [recursos, setRecursos] = useState<Recurso[]>([]);
+  const { reservas, cancelReserva } = useReservas();
+  const { recursos } = useRecursos();
 
-  useEffect(() => {
-    setReservas(getMockReservas());
-    setRecursos(getMockRecursos());
-  }, []);
 
   const schoolReservas = reservas
     .filter(r => r.escola_id === (selectedEscolaId || profile?.escola_id))
