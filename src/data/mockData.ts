@@ -148,6 +148,6 @@ function getWeekDates(): string[] {
 const week = getWeekDates();
 
 export const reservas: Reserva[] = [
-  { id: "res-1", escola_id: "escola-1", recurso_id: "rec-1", professor_id: "user-prof-carlos", nome_professor: "Carlos Souza", disciplina: "Programação Web", turma: "3º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Aula prática de HTML/CSS", status: "confirmada", criado_em: new Date().toISOString() },
-  { id: "res-7", escola_id: "escola-2", recurso_id: "rec-3", professor_id: "user-joao", nome_professor: "João Pedro", disciplina: "Robótica", turma: "2º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Montagem de Arduino", status: "confirmada", criado_em: new Date().toISOString() },
+  { id: "res-1", escola_id: "escola-1", recurso_id: "rec-1", profile_id: "user-prof-carlos", nome_professor: "Carlos Souza", disciplina: "Programação Web", turma: "3º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Aula prática de HTML/CSS", status: "confirmada", criado_em: new Date().toISOString() },
+  { id: "res-7", escola_id: "escola-2", recurso_id: "rec-3", profile_id: "user-joao", nome_professor: "João Pedro", disciplina: "Robótica", turma: "2º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Montagem de Arduino", status: "confirmada", criado_em: new Date().toISOString() },
 ];
