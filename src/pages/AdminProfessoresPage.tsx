@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 
 const AdminProfessoresPage = () => {
-  const { user } = useAuth();
+  const { user, selectedEscolaId } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [localUsers, setLocalUsers] = useState<Usuario[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,7 +28,7 @@ const AdminProfessoresPage = () => {
   }, []);
 
   const schoolUsers = localUsers.filter(u => 
-    u.escola_id === user?.escola_id && 
+    u.escola_id === (selectedEscolaId || user?.escola_id) && 
     (u.papel === "professor" || u.papel === "admin_lab") &&
     (u.nome.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -45,7 +45,7 @@ const AdminProfessoresPage = () => {
       id: "user-" + Date.now(),
       nome: nome.trim(),
       email: email.trim(),
-      escola_id: user?.escola_id || "",
+      escola_id: (selectedEscolaId || user?.escola_id) || "",
       papel: papel,
       status: "ativo"
     };
@@ -124,6 +124,19 @@ const AdminProfessoresPage = () => {
                     )}
                     <Button variant="outline" size="sm" onClick={() => toast.info("Edição em breve")}>
                       Editar
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-red-600 hover:bg-red-50 border-red-100"
+                      onClick={() => {
+                        if (confirm("Tem certeza que deseja excluir este professor? Essa ação não poderá ser desfeita.")) {
+                          setLocalUsers(prev => prev.filter(user => user.id !== u.id));
+                          toast.success("Professor excluído com sucesso.");
+                        }
+                      }}
+                    >
+                      Excluir
                     </Button>
                   </div>
                 </TableCell>

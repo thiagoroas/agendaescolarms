@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { useAuth } from "../../contexts/AuthContext";
-import { recursos } from "../../data/mockData";
+import { recursos, usuarios, Usuario } from "../../data/mockData";
 import { horarios } from "../../data/horarios";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -20,42 +21,95 @@ interface NovaReservaModalProps {
   initialData?: { date?: string; aula?: number; turno?: "manha" | "tarde" };
 }
 
+const TURMAS_OPCOES = [
+  {
+    label: "Ensino Fundamental",
+    options: ["5º Ano", "6º Ano", "7º Ano", "8º Ano", "9º Ano"]
+  },
+  {
+    label: "Ensino Médio",
+    options: [
+      "1º Ano A", "1º Ano B", "1º Ano C",
+      "2º Ano A", "2º Ano B", "2º Ano C",
+      "3º Ano A", "3º Ano B", "3º Ano C"
+    ]
+  }
+];
+
 const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProps) => {
   const { user } = useAuth();
   const [formData, setFormData] = useState({
+    professorId: "",
     disciplina: "",
     turma: "",
     data: "",
-    turno: "manha" as "manha" | "tarde",
     recursoId: "",
     aulas: [] as number[],
     observacao: ""
   });
 
+  const [selectedProfessor, setSelectedProfessor] = useState<Usuario | null>(null);
+
   useEffect(() => {
     if (isOpen) {
+      const initialProfessorId = user?.papel === 'professor' ? user.id : "";
+      const initialProfessor = user?.papel === 'professor' ? user : null;
+      
       setFormData({
-        disciplina: "",
+        professorId: initialProfessorId,
+        disciplina: (initialProfessor?.disciplinas && initialProfessor.disciplinas.length === 1) ? initialProfessor.disciplinas[0] : "",
         turma: "",
         data: initialData?.date || "",
-        turno: initialData?.turno || "manha",
         recursoId: "",
         aulas: initialData?.aula ? [initialData.aula] : [],
         observacao: ""
       });
+      setSelectedProfessor(initialProfessor);
     }
-  }, [isOpen, initialData]);
+  }, [isOpen, initialData, user]);
+
+  useEffect(() => {
+    if (formData.professorId) {
+      const prof = usuarios.find(u => u.id === formData.professorId);
+      if (prof) {
+        setSelectedProfessor(prof);
+        if (prof.disciplinas && prof.disciplinas.length === 1) {
+          setFormData(prev => ({ ...prev, disciplina: prof.disciplinas![0] }));
+        } else if (!prof.disciplinas || !prof.disciplinas.includes(formData.disciplina)) {
+          setFormData(prev => ({ ...prev, disciplina: "" }));
+        }
+      }
+    } else {
+      setSelectedProfessor(null);
+    }
+  }, [formData.professorId]);
 
   const availableRecursos = recursos.filter(r => r.escola_id === user?.escola_id);
-  const availableHorarios = horarios.filter(h => h.turno === formData.turno && !h.isIntervalo);
+  // Show ALL non-interval hours in a single section as requested
+  const allHorarios = horarios.filter(h => !h.isIntervalo);
+
+  const professoresDaEscola = usuarios.filter(u => 
+    u.escola_id === user?.escola_id && u.papel === 'professor' && u.status === 'ativo'
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.professorId) { toast.error("Selecione o professor responsável"); return; }
+    if (!formData.disciplina) { toast.error("Informe a disciplina"); return; }
+    if (!formData.turma) { toast.error("Selecione a turma"); return; }
     if (!formData.data) { toast.error("Selecione uma data"); return; }
     if (!formData.recursoId) { toast.error("Selecione um recurso"); return; }
     if (formData.aulas.length === 0) { toast.error("Selecione pelo menos uma aula"); return; }
     
-    console.log("Reserva enviada:", { ...formData, professor: user?.nome, escola_id: user?.escola_id });
+    // Check for conflicts (Simplified mock logic - usually handled by backend)
+    // Here we'd need to check if any of selected slots are already taken
+    
+    console.log("Reserva enviada:", { 
+      ...formData, 
+      nome_professor: selectedProfessor?.nome, 
+      escola_id: user?.escola_id 
+    });
+    
     toast.success("Reserva realizada com sucesso!");
     onClose();
   };
@@ -64,19 +118,32 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg w-[95%] mx-auto overflow-y-auto max-h-[90vh] p-0 border-none rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white relative">
+      <DialogContent className="max-w-2xl w-[95%] mx-auto overflow-y-auto max-h-[90vh] p-0 border-none rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white relative">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tight text-white">Novo Agendamento</DialogTitle>
           </DialogHeader>
           <p className="text-blue-100 text-sm font-medium mt-1 opacity-90">Preencha os detalhes para reservar o recurso.</p>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-8 space-y-6 bg-white">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 bg-white">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Professor Responsável</Label>
-              <Input value={user?.nome} disabled className="bg-slate-50 border-slate-100 font-bold text-slate-600 rounded-xl" />
+              {user?.papel === 'professor' ? (
+                <Input value={user?.nome} disabled className="bg-slate-50 border-slate-100 font-bold text-slate-600 rounded-xl" />
+              ) : (
+                <Select value={formData.professorId} onValueChange={(v) => setFormData({...formData, professorId: v})}>
+                  <SelectTrigger className="rounded-xl border-slate-200 h-10 font-medium">
+                    <SelectValue placeholder="Selecione o professor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {professoresDaEscola.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Data da Reserva</Label>
@@ -90,14 +157,47 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Disciplina</Label>
-              <Input required value={formData.disciplina} onChange={e => setFormData({...formData, disciplina: e.target.value})} placeholder="Ex: Matemática" className="rounded-xl border-slate-200 h-10" />
+              {selectedProfessor?.disciplinas && selectedProfessor.disciplinas.length > 0 ? (
+                <Select value={formData.disciplina} onValueChange={(v) => setFormData({...formData, disciplina: v})}>
+                  <SelectTrigger className="rounded-xl border-slate-200 h-10 font-medium">
+                    <SelectValue placeholder="Escolha a disciplina" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectedProfessor.disciplinas.map(d => (
+                      <SelectItem key={d} value={d}>{d}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input 
+                  required 
+                  value={formData.disciplina} 
+                  onChange={e => setFormData({...formData, disciplina: e.target.value})} 
+                  placeholder="Ex: Matemática" 
+                  className="rounded-xl border-slate-200 h-10 font-medium" 
+                />
+              )}
             </div>
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Turma</Label>
-              <Input required placeholder="Ex: 3º Ano A" value={formData.turma} onChange={e => setFormData({...formData, turma: e.target.value})} className="rounded-xl border-slate-200 h-10" />
+              <Select value={formData.turma} onValueChange={(v) => setFormData({...formData, turma: v})}>
+                <SelectTrigger className="rounded-xl border-slate-200 h-10 font-medium">
+                  <SelectValue placeholder="Selecione a turma" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TURMAS_OPCOES.map(group => (
+                    <SelectGroup key={group.label}>
+                      <SelectLabel className="px-2 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">{group.label}</SelectLabel>
+                      {group.options.map(opt => (
+                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -127,22 +227,10 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Horários das Aulas</Label>
-              <RadioGroup value={formData.turno} onValueChange={v => setFormData({...formData, turno: v as any, aulas: []})} className="flex gap-4">
-                <div className="flex items-center space-x-1.5">
-                  <RadioGroupItem value="manha" id="manha" className="h-4 w-4" />
-                  <Label htmlFor="manha" className="text-xs font-bold text-slate-600 uppercase">Manhã</Label>
-                </div>
-                <div className="flex items-center space-x-1.5">
-                  <RadioGroupItem value="tarde" id="tarde" className="h-4 w-4" />
-                  <Label htmlFor="tarde" className="text-xs font-bold text-slate-600 uppercase">Tarde</Label>
-                </div>
-              </RadioGroup>
-            </div>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Horários das Aulas</Label>
             
-            <div className="grid grid-cols-2 gap-2">
-              {availableHorarios.map(h => (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {allHorarios.map(h => (
                 <div 
                   key={h.aula} 
                   className={cn(
@@ -160,9 +248,9 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
                       setFormData({...formData, aulas: newAulas});
                     }}
                   />
-                  <div className="flex flex-col">
-                    <Label htmlFor={`aula-${h.aula}`} className="text-[11px] font-black text-slate-900 cursor-pointer">{h.label}</Label>
-                    <span className="text-[9px] font-bold text-slate-400">{h.inicio} - {h.fim}</span>
+                  <div className="flex flex-col min-w-0">
+                    <Label htmlFor={`aula-${h.aula}`} className="text-[11px] font-black text-slate-900 cursor-pointer truncate">{h.label}</Label>
+                    <span className="text-[9px] font-bold text-slate-400 whitespace-nowrap">{h.inicio} - {h.fim}</span>
                   </div>
                 </div>
               ))}
@@ -171,12 +259,12 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
           <div className="space-y-2 pt-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Observações Extras</Label>
-            <Textarea value={formData.observacao} onChange={e => setFormData({...formData, observacao: e.target.value})} placeholder="Ex: Preciso de adaptador HDMI..." className="min-h-[80px] rounded-2xl bg-slate-50 border-slate-100 focus:bg-white transition-all" />
+            <Textarea value={formData.observacao} onChange={e => setFormData({...formData, observacao: e.target.value})} placeholder="Ex: Preciso de adaptador HDMI..." className="min-h-[80px] rounded-2xl bg-slate-50 border-slate-100 focus:bg-white transition-all font-medium" />
           </div>
 
-          <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-3">
-            <Button type="button" variant="ghost" onClick={onClose} className="flex-1 rounded-xl font-bold text-slate-400 hover:text-slate-600">Cancelar</Button>
-            <Button type="submit" className="flex-[2] h-12 bg-blue-600 hover:bg-blue-700 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-blue-100 active:scale-95 transition-all">Confirmar Agendamento</Button>
+          <DialogFooter className="sticky bottom-0 bg-white pt-4 pb-2 flex flex-col sm:flex-row gap-3 border-t border-slate-100">
+            <Button type="button" variant="ghost" onClick={onClose} className="flex-1 h-12 rounded-xl font-bold text-slate-400 hover:text-slate-600 transition-colors">Cancelar</Button>
+            <Button type="submit" className="flex-[2] h-12 bg-blue-600 hover:bg-blue-700 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-blue-100 active:scale-95 transition-all">Salvar Agendamento</Button>
           </DialogFooter>
         </form>
       </DialogContent>

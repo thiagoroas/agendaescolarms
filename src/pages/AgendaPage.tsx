@@ -38,7 +38,7 @@ const initialsOf = (name: string) =>
   name.split(" ").filter(Boolean).slice(0, 2).map(n => n[0]?.toUpperCase()).join("");
 
 const AgendaPage = () => {
-  const { user } = useAuth();
+  const { user, selectedEscolaId } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,8 +48,16 @@ const AgendaPage = () => {
   const [selectedSlot, setSelectedSlot] = useState<{date: string, aula: number, turno: "manha" | "tarde"} | null>(null);
   const [activeReserva, setActiveReserva] = useState<{reserva: Reserva, recurso: Recurso} | null>(null);
 
-  const escola = escolas.find(e => e.id === user?.escola_id);
-  const schoolRecursos = recursos.filter(r => r.escola_id === user?.escola_id);
+  const reservasHoje = useMemo(() => {
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    return reservas.filter(r => 
+      r.escola_id === (selectedEscolaId || user?.escola_id) && 
+      r.data === todayStr
+    );
+  }, [selectedEscolaId, user?.escola_id]);
+
+  const escola = escolas.find(e => e.id === (selectedEscolaId || user?.escola_id));
+  const schoolRecursos = recursos.filter(r => r.escola_id === (selectedEscolaId || user?.escola_id));
 
   const monday = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(monday, i));
@@ -63,7 +71,7 @@ const AgendaPage = () => {
     return reservas.find(r =>
       r.data === dateStr &&
       r.aula === aula &&
-      r.escola_id === user?.escola_id &&
+      r.escola_id === (selectedEscolaId || user?.escola_id) &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
       (!searchQuery ||
         r.nome_professor.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -76,7 +84,7 @@ const AgendaPage = () => {
     const mondayStr = format(monday, "yyyy-MM-dd");
     const fridayStr = format(weekDates[4], "yyyy-MM-dd");
     return reservas.filter(r =>
-      r.escola_id === user?.escola_id &&
+      r.escola_id === (selectedEscolaId || user?.escola_id) &&
       r.data >= mondayStr &&
       r.data <= fridayStr &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
@@ -85,7 +93,7 @@ const AgendaPage = () => {
         r.turma.toLowerCase().includes(searchQuery.toLowerCase())
       )
     ).length;
-  }, [monday, weekDates, selectedRecurso, searchQuery, user?.escola_id]);
+  }, [monday, weekDates, selectedRecurso, searchQuery, user?.escola_id, selectedEscolaId]);
 
   const handleSlotClick = (date: Date, h: typeof horarios[0]) => {
     const res = getReservaForSlot(date, h.aula);
@@ -125,8 +133,13 @@ const AgendaPage = () => {
           <button className="btn-icon" onClick={() => navigateWeek('next')} aria-label="Próxima semana">
             <ChevronRight size={16} />
           </button>
-          <button className="btn-icon" aria-label="Notificações">
+          <button className="btn-icon relative" aria-label="Notificações">
             <Bell size={16} />
+            {reservasHoje.length > 0 && (
+              <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                {reservasHoje.length}
+              </span>
+            )}
           </button>
           <button className="btn btn-primary" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
             <Plus size={16} /> Nova reserva
