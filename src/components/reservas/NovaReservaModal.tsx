@@ -402,7 +402,6 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
                 )
               ) : (
                 <Input 
-                  required 
                   value={formData.disciplina} 
                   onChange={e => setFormData({...formData, disciplina: e.target.value})} 
                   placeholder="Ex: Matemática" 
