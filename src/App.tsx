@@ -1,6 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -55,48 +55,56 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
 
 const AppContent = () => {
   const { loading, user, profile, logout } = useAuth();
-  const isLoginPage = window.location.pathname === "/login";
+  const location = useLocation();
 
-  console.log("[AppContent] state:", { loading, hasUser: !!user, hasProfile: !!profile, path: window.location.pathname });
+  console.log("[AppContent] state:", { 
+    loading, 
+    hasUser: !!user, 
+    hasProfile: !!profile, 
+    path: location.pathname,
+    status: profile?.status
+  });
 
-  // Regra radical: /login renderiza sempre se for o path
-  if (isLoginPage) {
-    return (
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    );
-  }
-
+  // 1. Loading global
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Carregando...</p>
+          <p className="text-sm text-muted-foreground font-medium">Carregando perfil...</p>
         </div>
       </div>
     );
   }
 
+  // 2. Se não está logado, a única rota permitida é /login
   if (!user) {
+    if (location.pathname === "/login") {
+      return (
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      );
+    }
     return <Navigate to="/login" replace />;
   }
 
-  if (!profile) {
+  // 3. Se está logado mas não tem perfil (e não é modo demo)
+  if (!profile && isSupabaseConfigured) {
     return (
       <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
         <h1 className="mb-2 text-2xl font-bold text-destructive">Perfil não encontrado</h1>
-        <p className="text-muted-foreground">Não encontramos dados de perfil vinculados a este e-mail.</p>
+        <p className="text-muted-foreground">Não encontramos dados de perfil vinculados a este e-mail ({user.email}).</p>
         <button onClick={() => logout()} className="mt-6 px-4 py-2 bg-primary text-white rounded-md">
-          Sair e voltar ao login
+          Sair e tentar outro e-mail
         </button>
       </div>
     );
   }
 
-  if (profile.status === "pendente") {
+  // 4. Se o perfil está pendente ou bloqueado
+  if (profile?.status === "pendente") {
     return (
       <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
         <h1 className="mb-2 text-2xl font-bold text-amber-600">Acesso em análise</h1>
@@ -108,7 +116,7 @@ const AppContent = () => {
     );
   }
 
-  if (profile.status === "bloqueado") {
+  if (profile?.status === "bloqueado") {
     return (
       <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
         <h1 className="mb-2 text-2xl font-bold text-destructive">Acesso bloqueado</h1>
@@ -120,6 +128,7 @@ const AppContent = () => {
     );
   }
 
+  // 5. Se está logado e ativo, renderiza as rotas protegidas
   return (
     <>
       {!isSupabaseConfigured && (
@@ -128,6 +137,8 @@ const AppContent = () => {
         </div>
       )}
       <Routes>
+        <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+        
         <Route path="/dashboard" element={<ProtectedRoute><AppLayout><DashboardPage /></AppLayout></ProtectedRoute>} />
         <Route path="/agenda" element={<ProtectedRoute><AppLayout><AgendaPage /></AppLayout></ProtectedRoute>} />
         <Route path="/minhas-reservas" element={<ProtectedRoute><AppLayout><MinhasReservasPage /></AppLayout></ProtectedRoute>} />
@@ -140,6 +151,7 @@ const AppContent = () => {
         <Route path="/admin/avisos" element={<ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}><AppLayout><AdminAvisosPage /></AppLayout></ProtectedRoute>} />
         <Route path="/admin/escolas" element={<ProtectedRoute allowedRoles={["admin_plataforma"]}><AppLayout><AdminEscolasPage /></AppLayout></ProtectedRoute>} />
 
+        {/* Redirecionamento da raiz e fallback */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
