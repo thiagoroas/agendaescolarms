@@ -10,7 +10,8 @@ import {
   ClipboardList, 
   Building2, 
   LogOut,
-  LayoutDashboard
+  LayoutDashboard,
+  CheckCircle
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ const Sidebar = () => {
   ];
 
   const adminItems = [
+    { icon: CheckCircle, label: "Aprovações", path: "/admin/aprovacoes", roles: ["admin_lab", "admin_plataforma"] },
     { icon: Users, label: "Professores", path: "/admin/professores", roles: ["admin_lab", "admin_plataforma"] },
     { icon: Monitor, label: "Recursos", path: "/admin/recursos", roles: ["admin_lab", "admin_plataforma"] },
     { icon: ClipboardList, label: "Todas as Reservas", path: "/admin/reservas", roles: ["admin_lab", "admin_plataforma"] },
