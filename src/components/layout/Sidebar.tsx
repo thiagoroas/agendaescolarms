@@ -78,7 +78,7 @@ const Sidebar = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1">
                     <p className="text-sm font-bold text-slate-900 truncate leading-none">
-                      {escola?.nome || "Selecione..."}
+                      {loading ? "Carregando..." : (escola?.nome || "Selecione...")}
                     </p>
                     <ChevronDown className="h-3.5 w-3.5 text-blue-600 shrink-0" />
                   </div>
