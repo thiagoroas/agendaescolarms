@@ -53,6 +53,7 @@ export const escolas: Escola[] = [
   { id: "escola-2", nome: "E.E. Maria Eliza Bocayuva Corrêa", cidade: "Campo Grande", estado: "MS", status: "ativa" },
 ];
 
+// Initial mock data used only as fallback in storage.ts
 export const usuarios: (Usuario & { senha: string })[] = [
   {
     id: "user-admin-thiago",

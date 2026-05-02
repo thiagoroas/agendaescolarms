@@ -33,7 +33,10 @@ const AdminProfessoresPage = () => {
   const [status, setStatus] = useState<"ativo" | "pendente" | "bloqueado">("ativo");
 
   useEffect(() => {
-    setLocalUsers(getMockUsuarios());
+    // Carregar usuários sempre do storage no modo protótipo
+    const storedUsers = getMockUsuarios();
+    console.log("AdminProfessoresPage: Carregando usuários do storage", storedUsers.length);
+    setLocalUsers(storedUsers);
   }, []);
 
   // Filter users based on profile role and selected school
@@ -135,7 +138,10 @@ const AdminProfessoresPage = () => {
           }
           return u;
         });
-        if (!isSupabaseConfigured) saveMockUsuarios(updated as any);
+        if (!isSupabaseConfigured) {
+          saveMockUsuarios(updated as any);
+          console.log("AdminProfessoresPage: Usuário editado e salvo no storage");
+        }
         return updated;
       });
       toast.success("Usuário atualizado com sucesso!");
@@ -152,7 +158,10 @@ const AdminProfessoresPage = () => {
 
       setLocalUsers(prev => {
         const updated = [{ ...novoUsuario, senha }, ...prev];
-        if (!isSupabaseConfigured) saveMockUsuarios(updated as any);
+        if (!isSupabaseConfigured) {
+          saveMockUsuarios(updated as any);
+          console.log("AdminProfessoresPage: Novo usuário cadastrado e salvo no storage");
+        }
         return updated;
       });
       toast.success(`${papel === "professor" ? "Professor" : "Admin do Laboratório"} cadastrado com sucesso!`);
@@ -261,7 +270,10 @@ const AdminProfessoresPage = () => {
                               onClick={() => {
                                 setLocalUsers(prev => {
                                   const updated = prev.map(usr => usr.id === u.id ? { ...usr, status: "ativo" as const } : usr);
-                                  if (!isSupabaseConfigured) saveMockUsuarios(updated as any);
+                                  if (!isSupabaseConfigured) {
+                                    saveMockUsuarios(updated as any);
+                                    console.log("AdminProfessoresPage: Status aprovado e salvo");
+                                  }
                                   return updated;
                                 });
                                 toast.success("Acesso aprovado!");
@@ -282,7 +294,10 @@ const AdminProfessoresPage = () => {
                               if (confirm(`Deseja excluir ${u.nome}?`)) {
                                 setLocalUsers(prev => {
                                   const updated = prev.filter(user => user.id !== u.id);
-                                  if (!isSupabaseConfigured) saveMockUsuarios(updated as any);
+                                  if (!isSupabaseConfigured) {
+                                    saveMockUsuarios(updated as any);
+                                    console.log("AdminProfessoresPage: Usuário excluído e salvo");
+                                  }
                                   return updated;
                                 });
                                 toast.success("Usuário excluído.");
@@ -327,7 +342,9 @@ const AdminProfessoresPage = () => {
                       onClick={() => {
                         setLocalUsers(prev => {
                           const updated = prev.map(usr => usr.id === u.id ? { ...usr, status: "ativo" as const } : usr);
-                          if (!isSupabaseConfigured) saveMockUsuarios(updated as any);
+                          if (!isSupabaseConfigured) {
+                            saveMockUsuarios(updated as any);
+                          }
                           return updated;
                         });
                         toast.success("Acesso aprovado!");
