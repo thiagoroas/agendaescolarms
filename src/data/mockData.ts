@@ -27,6 +27,8 @@ export interface Recurso {
   ativo: boolean;
 }
 
+export type ReservaStatus = "pendente" | "aprovada" | "recusada" | "cancelada" | "finalizada";
+
 export interface Reserva {
   id: string;
   escola_id: string;
@@ -40,6 +42,9 @@ export interface Reserva {
   aula: number;
   horario: string;
   observacao: string;
+  objetivo_pedagogico?: string;
+  status: ReservaStatus;
+  motivo_recusa?: string;
   criado_em: string;
 }
 
@@ -118,6 +123,6 @@ function getWeekDates(): string[] {
 const week = getWeekDates();
 
 export const reservas: Reserva[] = [
-  { id: "res-1", escola_id: "escola-1", recurso_id: "rec-1", professor_id: "user-carlos", nome_professor: "Carlos Souza", disciplina: "Programação Web", turma: "3º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Aula prática de HTML/CSS", criado_em: new Date().toISOString() },
-  { id: "res-7", escola_id: "escola-2", recurso_id: "rec-3", professor_id: "user-joao", nome_professor: "João Pedro", disciplina: "Robótica", turma: "2º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Montagem de Arduino", criado_em: new Date().toISOString() },
+  { id: "res-1", escola_id: "escola-1", recurso_id: "rec-1", professor_id: "user-prof-carlos", nome_professor: "Carlos Souza", disciplina: "Programação Web", turma: "3º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Aula prática de HTML/CSS", status: "aprovada", criado_em: new Date().toISOString() },
+  { id: "res-7", escola_id: "escola-2", recurso_id: "rec-3", professor_id: "user-joao", nome_professor: "João Pedro", disciplina: "Robótica", turma: "2º A", data: week[0], turno: "manha", aula: 1, horario: "07:30 – 08:20", observacao: "Montagem de Arduino", status: "aprovada", criado_em: new Date().toISOString() },
 ];
