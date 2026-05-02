@@ -49,71 +49,52 @@ export const escolas: Escola[] = [
 ];
 
 export const usuarios: (Usuario & { senha: string })[] = [
-  { 
-    id: "user-thiago", 
-    nome: "Thiago Rocha", 
-    email: "thiagomroas@gmail.com", 
-    senha: "admin123", 
-    escola_id: "escola-1", 
-    papel: "admin_plataforma", 
-    status: "ativo" 
+  {
+    id: "user-admin-thiago",
+    nome: "Thiago Roas",
+    email: "thiagomroas@gmail.com",
+    senha: "admin123",
+    escola_id: "escola-1",
+    papel: "admin_plataforma",
+    status: "ativo"
   },
-  { 
-    id: "user-admin-teste", 
-    nome: "Admin Plataforma Teste", 
-    email: "admin@escola.com", 
-    senha: "admin123", 
-    escola_id: "escola-1", 
-    papel: "admin_plataforma", 
-    status: "ativo" 
+  {
+    id: "user-admin-demo",
+    nome: "Admin Plataforma",
+    email: "admin@escola.com",
+    senha: "admin123",
+    escola_id: "escola-1",
+    papel: "admin_plataforma",
+    status: "ativo"
   },
-  { 
-    id: "user-lab-26", 
-    nome: "Admin Lab - 26 de Agosto", 
-    email: "lab@escola.com", 
-    senha: "lab123", 
-    escola_id: "escola-1", 
-    papel: "admin_lab", 
-    status: "ativo" 
+  {
+    id: "user-lab-26",
+    nome: "Admin Laboratório 26",
+    email: "lab@escola.com",
+    senha: "lab123",
+    escola_id: "escola-1",
+    papel: "admin_lab",
+    status: "ativo"
   },
-  { 
-    id: "user-carlos", 
-    nome: "Carlos - Professor", 
-    email: "carlos@escola.com", 
-    senha: "prof123", 
-    escola_id: "escola-1", 
-    papel: "professor", 
-    status: "ativo", 
-    disciplinas: ["Programação Web", "Redes"] 
+  {
+    id: "user-prof-carlos",
+    nome: "Carlos Souza",
+    email: "carlos@escola.com",
+    senha: "prof123",
+    escola_id: "escola-1",
+    papel: "professor",
+    status: "ativo",
+    disciplinas: ["Programação Web", "Redes"]
   },
-  { 
-    id: "user-roberto", 
-    nome: "Roberto - Pendente", 
-    email: "roberto@escola.com", 
-    senha: "prof123", 
-    escola_id: "escola-1", 
-    papel: "professor", 
-    status: "pendente" 
-  },
-  { 
-    id: "user-fernanda", 
-    nome: "Fernanda - Maria Eliza", 
-    email: "fernanda@escola.com", 
-    senha: "lab123", 
-    escola_id: "escola-2", 
-    papel: "admin_lab", 
-    status: "ativo" 
-  },
-  { 
-    id: "user-joao", 
-    nome: "João - Maria Eliza", 
-    email: "joao@escola.com", 
-    senha: "prof123", 
-    escola_id: "escola-2", 
-    papel: "professor", 
-    status: "ativo", 
-    disciplinas: ["Robótica", "Tecnologia"] 
-  },
+  {
+    id: "user-fernanda",
+    nome: "Fernanda - Maria Eliza",
+    email: "fernanda@escola.com",
+    senha: "lab123",
+    escola_id: "escola-2",
+    papel: "admin_lab",
+    status: "ativo"
+  }
 ];
 
 export const recursos: Recurso[] = [

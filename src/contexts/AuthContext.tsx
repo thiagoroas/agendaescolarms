@@ -105,50 +105,78 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, senha: string, remember: boolean): Promise<{ success: boolean; error?: string }> => {
     if (!isSupabaseConfigured) {
-      const trimmedEmail = email.trim().toLowerCase();
-      const trimmedPassword = senha.trim();
+      const normalizedEmail = email.trim().toLowerCase();
+      const normalizedPassword = senha.trim();
       
-      const foundUser = usuarios.find(u => u.email.toLowerCase() === trimmedEmail && u.senha === trimmedPassword);
+      const foundUser = usuarios.find(
+        (u) => u.email.trim().toLowerCase() === normalizedEmail
+      );
       
-      if (foundUser) {
-        if (foundUser.status === "pendente") {
-          return { success: false, error: "Seu acesso ainda está aguardando aprovação." };
-        }
-        if (foundUser.status === "bloqueado") {
-          return { success: false, error: "Seu acesso está bloqueado." };
-        }
-
-        const mockUser: User = {
-          id: foundUser.id,
-          email: foundUser.email,
-          aud: "authenticated",
-          role: "authenticated",
-          app_metadata: {},
-          user_metadata: { full_name: foundUser.nome },
-          created_at: new Date().toISOString()
-        } as User;
-
-        const mockProfile: Profile = {
-          id: foundUser.id,
-          full_name: foundUser.nome,
-          escola_id: foundUser.escola_id,
-          role: foundUser.papel as UserRole,
-          status: foundUser.status as "ativo" | "pendente" | "bloqueado",
-          disciplinas: foundUser.disciplinas
-        };
-
-        setUser(mockUser);
-        setProfile(mockProfile);
-        setSelectedEscolaIdState(foundUser.escola_id);
-        
-        localStorage.setItem("agenda_mock_user", JSON.stringify(mockUser));
-        localStorage.setItem("agenda_mock_profile", JSON.stringify(mockProfile));
-        localStorage.setItem("agenda_selected_escola_id", foundUser.escola_id);
-        
-        return { success: true };
+      if (!foundUser || foundUser.senha !== normalizedPassword) {
+        return { success: false, error: "E-mail ou senha incorretos." };
       }
+
+      if (foundUser.status === "pendente") {
+        return { success: false, error: "Seu acesso ainda está aguardando aprovação." };
+      }
+
+      if (foundUser.status === "bloqueado") {
+        return { success: false, error: "Seu acesso está bloqueado." };
+      }
+
+      const safeUser = {
+        id: foundUser.id,
+        nome: foundUser.nome,
+        email: foundUser.email,
+        escola_id: foundUser.escola_id,
+        papel: foundUser.papel,
+        status: foundUser.status,
+        disciplinas: foundUser.disciplinas || []
+      };
+
+      // Mock objects for state
+      const mockUser: User = {
+        id: safeUser.id,
+        email: safeUser.email,
+        aud: "authenticated",
+        role: "authenticated",
+        app_metadata: {},
+        user_metadata: { full_name: safeUser.nome },
+        created_at: new Date().toISOString()
+      } as User;
+
+      const mockProfile: Profile = {
+        id: safeUser.id,
+        full_name: safeUser.nome,
+        escola_id: safeUser.escola_id,
+        role: safeUser.papel as UserRole,
+        status: safeUser.status as "ativo" | "pendente" | "bloqueado",
+        disciplinas: safeUser.disciplinas
+      };
+
+      setUser(mockUser);
+      setProfile(mockProfile);
       
-      return { success: false, error: "E-mail ou senha incorretos." };
+      // Determine currentSchoolId logic
+      let currentSchoolId = safeUser.escola_id;
+      if (safeUser.papel === "admin_plataforma") {
+        currentSchoolId = localStorage.getItem("agenda_selected_escola_id") || "escola-1";
+      }
+      setSelectedEscolaIdState(currentSchoolId);
+
+      localStorage.setItem("agenda_mock_user", JSON.stringify(mockUser));
+      localStorage.setItem("agenda_mock_profile", JSON.stringify(mockProfile));
+      localStorage.setItem("agenda_selected_escola_id", currentSchoolId);
+      
+      if (remember) {
+        localStorage.setItem("agenda_remembered_email", normalizedEmail);
+        localStorage.setItem("agenda_remembered_password", normalizedPassword);
+      } else {
+        localStorage.removeItem("agenda_remembered_email");
+        localStorage.removeItem("agenda_remembered_password");
+      }
+
+      return { success: true };
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -176,6 +204,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem("agenda_mock_user");
     localStorage.removeItem("agenda_mock_profile");
     localStorage.removeItem("agenda_selected_escola_id");
+    localStorage.removeItem("agenda_remembered_email");
+    localStorage.removeItem("agenda_remembered_password");
   };
 
   return (
