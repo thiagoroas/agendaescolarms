@@ -197,7 +197,7 @@ const AgendaPage = () => {
           </div>
         </div>
         <div className="topbar-actions">
-          {!isMobile && <button className="btn btn-ghost" onClick={() => setCurrentDate(new Date())}>Hoje</button>}
+          <button className="btn btn-ghost" onClick={() => setCurrentDate(new Date())}>Hoje</button>
           
           <Popover>
             <PopoverTrigger asChild>
