@@ -26,10 +26,6 @@ const SupabaseConfigError = () => (
 const AppContent = () => {
   const { loading, user, profile } = useAuth();
 
-  if (!isSupabaseConfigured) {
-    return <SupabaseConfigError />;
-  }
-
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -58,7 +54,13 @@ const AppContent = () => {
   }
 
   return (
-    <Routes>
+    <>
+      {!isSupabaseConfigured && (
+        <div className="fixed top-0 left-0 right-0 z-[9999] bg-amber-500 text-white text-[10px] font-bold py-1 px-4 text-center pointer-events-none opacity-80 uppercase tracking-wider">
+          Modo Protótipo: Supabase não configurado
+        </div>
+      )}
+      <Routes>
       <Route path="/login" element={<LoginPage />} />
       
       <Route path="/agenda" element={
@@ -119,7 +121,8 @@ const AppContent = () => {
 
       <Route path="/" element={<Navigate to="/agenda" replace />} />
       <Route path="*" element={<Navigate to="/agenda" replace />} />
-    </Routes>
+      </Routes>
+    </>
   );
 };
 

@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { format, addDays, startOfWeek, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon, Info } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { isSupabaseConfigured } from "../lib/supabase";
 import { escolas, recursos, reservas, Reserva, Recurso } from "../data/mockData";
 import { horarios, diasSemana } from "../data/horarios";
 import { toast } from "sonner";
@@ -201,6 +202,15 @@ const AgendaPage = () => {
           </div>
         </div>
       </div>
+
+      {!isSupabaseConfigured && (
+        <div className="mx-4 mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3 shadow-sm">
+          <Info className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+          <div className="text-xs text-amber-800 leading-relaxed">
+            <span className="font-bold">Modo Protótipo Ativo:</span> As alterações feitas aqui (reservas, exclusões, etc.) são apenas visuais e não serão salvas permanentemente no banco de dados. Configure o Supabase no Lovable para habilitar o salvamento real.
+          </div>
+        </div>
+      )}
 
       {/* Calendar */}
       <div className="calendar-wrap">
