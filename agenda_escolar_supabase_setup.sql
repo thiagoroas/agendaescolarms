@@ -1,6 +1,6 @@
 -- ==========================================
 -- AGENDA ESCOLAR DIGITAL - SETUP SUPABASE COMPLETO
--- Versão 1.2 - Implantação Real (Revisada e Corrigida)
+-- Versão 1.3 - Implantação Real (Campos e Segurança Finalizados)
 -- ==========================================
 
 -- 1. EXTENSÕES
@@ -9,256 +9,282 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 2. TABELAS
 
--- ESCOLAS
-CREATE TABLE IF NOT EXISTS public.escolas (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    nome TEXT NOT NULL UNIQUE,
-    cidade TEXT,
-    uf CHAR(2),
-    ativo BOOLEAN DEFAULT true,
-    created_at TIMESTAMPTZ DEFAULT now()
+-- Escolas
+CREATE TABLE IF NOT EXISTS escolas (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    nome text NOT NULL UNIQUE,
+    cidade text NOT NULL,
+    estado text NOT NULL,
+    criado_em timestamptz DEFAULT now()
 );
 
--- PROFILES (Vínculo com Auth.Users)
-CREATE TABLE IF NOT EXISTS public.profiles (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
-    email TEXT NOT NULL UNIQUE,
-    nome TEXT,
-    escola_id UUID REFERENCES public.escolas(id),
-    papel TEXT NOT NULL DEFAULT 'professor' CHECK (papel IN ('admin_plataforma', 'admin_lab', 'professor')),
-    status TEXT NOT NULL DEFAULT 'pendente' CHECK (status IN ('ativo', 'pendente', 'suspenso')),
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
+-- Profiles (Usuários)
+CREATE TABLE IF NOT EXISTS profiles (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+    escola_id uuid REFERENCES escolas(id),
+    nome text NOT NULL,
+    email text UNIQUE NOT NULL,
+    papel text NOT NULL CHECK (papel IN ('admin_plataforma', 'admin_lab', 'professor')) DEFAULT 'professor',
+    status text NOT NULL CHECK (status IN ('ativo', 'pendente', 'bloqueado')) DEFAULT 'pendente',
+    disciplinas text[] DEFAULT '{}',
+    criado_em timestamptz DEFAULT now()
 );
 
--- RECURSOS (Laboratórios, Projetores, etc.)
-CREATE TABLE IF NOT EXISTS public.recursos (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    escola_id UUID NOT NULL REFERENCES public.escolas(id) ON DELETE CASCADE,
-    nome TEXT NOT NULL,
-    tipo TEXT NOT NULL, -- 'laboratorio', 'equipamento'
-    descricao TEXT,
-    ativo BOOLEAN DEFAULT true,
-    created_at TIMESTAMPTZ DEFAULT now()
+-- Recursos (Laboratórios, Projetores, etc.)
+CREATE TABLE IF NOT EXISTS recursos (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    escola_id uuid NOT NULL REFERENCES escolas(id) ON DELETE CASCADE,
+    nome text NOT NULL,
+    tipo text,
+    cor_fundo text,
+    cor_texto text,
+    cor_borda text,
+    ativo boolean DEFAULT true,
+    criado_em timestamptz DEFAULT now(),
+    UNIQUE (escola_id, nome)
 );
 
--- RESERVAS
-CREATE TABLE IF NOT EXISTS public.reservas (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    escola_id UUID NOT NULL REFERENCES public.escolas(id) ON DELETE CASCADE,
-    recurso_id UUID NOT NULL REFERENCES public.recursos(id) ON DELETE CASCADE,
-    professor_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    data DATE NOT NULL,
-    aula INT NOT NULL CHECK (aula BETWEEN 1 AND 8),
-    disciplina TEXT NOT NULL,
-    status TEXT NOT NULL CHECK (status IN ('confirmada', 'cancelada', 'finalizada', 'manutencao', 'bloqueada')),
-    observacoes TEXT,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
+-- Reservas
+CREATE TABLE IF NOT EXISTS reservas (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    escola_id uuid NOT NULL REFERENCES escolas(id) ON DELETE CASCADE,
+    recurso_id uuid NOT NULL REFERENCES recursos(id) ON DELETE CASCADE,
+    professor_id uuid REFERENCES profiles(id),
+    nome_professor text NOT NULL,
+    disciplina text NOT NULL,
+    turma text NOT NULL,
+    data date NOT NULL,
+    aula int NOT NULL CHECK (aula BETWEEN 1 AND 8),
+    horario text,
+    status text DEFAULT 'confirmada' CHECK (status IN ('confirmada','cancelada','finalizada','manutencao','bloqueada')),
+    objetivo_pedagogico text,
+    observacao text,
+    motivo_cancelamento text,
+    criado_por uuid REFERENCES profiles(id),
+    criado_em timestamptz DEFAULT now()
 );
 
--- AVISOS LABORATÓRIO
-CREATE TABLE IF NOT EXISTS public.avisos_laboratorio (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    escola_id UUID NOT NULL REFERENCES public.escolas(id) ON DELETE CASCADE,
-    recurso_id UUID REFERENCES public.recursos(id) ON DELETE SET NULL, -- Opcional
-    titulo TEXT NOT NULL,
-    conteudo TEXT NOT NULL,
-    tipo TEXT NOT NULL DEFAULT 'informativo' CHECK (tipo IN ('informativo', 'atencao', 'urgente')),
-    data_inicio DATE NOT NULL,
-    data_fim DATE NOT NULL,
-    exibir_dashboard BOOLEAN DEFAULT true,
-    exibir_agenda BOOLEAN DEFAULT true,
-    exigir_confirmacao BOOLEAN DEFAULT false,
-    criado_por UUID REFERENCES public.profiles(id),
-    created_at TIMESTAMPTZ DEFAULT now()
+-- Avisos do Laboratório
+CREATE TABLE IF NOT EXISTS avisos_laboratorio (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    escola_id uuid NOT NULL REFERENCES escolas(id) ON DELETE CASCADE,
+    recurso_id uuid REFERENCES recursos(id) ON DELETE SET NULL,
+    titulo text NOT NULL,
+    mensagem text NOT NULL,
+    tipo text CHECK (tipo IN ('informativo','atencao','urgente')),
+    ativo boolean DEFAULT true,
+    data_inicio date NOT NULL,
+    data_fim date NOT NULL,
+    hora_inicio time,
+    hora_fim time,
+    exibir_na_agenda boolean DEFAULT true,
+    exibir_no_modal_reserva boolean DEFAULT true,
+    exibir_no_dashboard boolean DEFAULT false,
+    exigir_confirmacao boolean DEFAULT false,
+    criado_por uuid REFERENCES profiles(id),
+    criado_em timestamptz DEFAULT now()
 );
 
--- LOGS DE AUDITORIA
-CREATE TABLE IF NOT EXISTS public.logs_auditoria (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    escola_id UUID REFERENCES public.escolas(id) ON DELETE SET NULL,
-    user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
-    acao TEXT NOT NULL,
-    tabela TEXT NOT NULL,
-    registro_id UUID,
-    dados_anteriores JSONB,
-    dados_novos JSONB,
-    created_at TIMESTAMPTZ DEFAULT now()
+-- Logs de Auditoria
+CREATE TABLE IF NOT EXISTS logs_auditoria (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    escola_id uuid REFERENCES escolas(id),
+    profile_id uuid REFERENCES profiles(id),
+    acao text NOT NULL,
+    detalhes jsonb,
+    ip_address text,
+    criado_em timestamptz DEFAULT now()
 );
 
--- 3. SEGURANÇA (RLS)
-ALTER TABLE public.escolas ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.recursos ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.reservas ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.avisos_laboratorio ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.logs_auditoria ENABLE ROW LEVEL SECURITY;
+-- 3. ÍNDICES
+CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON profiles(user_id);
+CREATE INDEX IF NOT EXISTS idx_profiles_escola_id ON profiles(escola_id);
+CREATE INDEX IF NOT EXISTS idx_recursos_escola_id ON recursos(escola_id);
+CREATE INDEX IF NOT EXISTS idx_reservas_escola_id ON reservas(escola_id);
+CREATE INDEX IF NOT EXISTS idx_reservas_recurso_id ON reservas(recurso_id);
+CREATE INDEX IF NOT EXISTS idx_reservas_professor_id ON reservas(professor_id);
+CREATE INDEX IF NOT EXISTS idx_reservas_data ON reservas(data);
+CREATE INDEX IF NOT EXISTS idx_avisos_escola_id ON avisos_laboratorio(escola_id);
+CREATE INDEX IF NOT EXISTS idx_avisos_recurso_id ON avisos_laboratorio(recurso_id);
+CREATE INDEX IF NOT EXISTS idx_logs_escola_id ON logs_auditoria(escola_id);
+CREATE INDEX IF NOT EXISTS idx_logs_profile_id ON logs_auditoria(profile_id);
 
--- 4. FUNÇÕES DE SUPORTE
-CREATE OR REPLACE FUNCTION public.is_admin_plataforma()
-RETURNS BOOLEAN AS $$
+-- Único Index Parcial para Evitar Conflitos (Regra de Ouro)
+-- Impede mesma escola, recurso, data e aula se a reserva estiver ativa/confirmada
+CREATE UNIQUE INDEX IF NOT EXISTS idx_conflito_reserva 
+ON reservas (escola_id, recurso_id, data, aula) 
+WHERE status IN ('confirmada', 'manutencao', 'bloqueada');
+
+-- 4. FUNÇÕES DE SEGURANÇA (SECURITY DEFINER)
+
+CREATE OR REPLACE FUNCTION is_admin_plataforma() 
+RETURNS boolean AS $$
 BEGIN
   RETURN EXISTS (
-    SELECT 1 FROM public.profiles 
-    WHERE user_id = auth.uid() AND papel = 'admin_plataforma' AND status = 'ativo'
+    SELECT 1 FROM profiles 
+    WHERE user_id = auth.uid() 
+    AND papel = 'admin_plataforma' 
+    AND status = 'ativo'
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
-CREATE OR REPLACE FUNCTION public.is_admin_lab()
-RETURNS BOOLEAN AS $$
+CREATE OR REPLACE FUNCTION is_admin_lab() 
+RETURNS boolean AS $$
 BEGIN
   RETURN EXISTS (
-    SELECT 1 FROM public.profiles 
-    WHERE user_id = auth.uid() AND papel = 'admin_lab' AND status = 'ativo'
+    SELECT 1 FROM profiles 
+    WHERE user_id = auth.uid() 
+    AND papel IN ('admin_lab', 'admin_plataforma') 
+    AND status = 'ativo'
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
-CREATE OR REPLACE FUNCTION public.my_escola_id()
-RETURNS UUID AS $$
+CREATE OR REPLACE FUNCTION my_escola_id() 
+RETURNS uuid AS $$
 BEGIN
-  RETURN (SELECT escola_id FROM public.profiles WHERE user_id = auth.uid());
+  RETURN (SELECT escola_id FROM profiles WHERE user_id = auth.uid() LIMIT 1);
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
-CREATE OR REPLACE FUNCTION public.my_profile_id()
-RETURNS UUID AS $$
+CREATE OR REPLACE FUNCTION my_profile_id() 
+RETURNS uuid AS $$
 BEGIN
-  RETURN (SELECT id FROM public.profiles WHERE user_id = auth.uid());
+  RETURN (SELECT id FROM profiles WHERE user_id = auth.uid() LIMIT 1);
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
--- 5. POLICIES
+-- 5. RLS (ROW LEVEL SECURITY)
 
--- ESCOLAS
-CREATE POLICY "Admin Plataforma vê todas as escolas" ON public.escolas FOR SELECT USING (is_admin_plataforma());
-CREATE POLICY "Usuário vê sua própria escola" ON public.escolas FOR SELECT USING (id = my_escola_id());
-CREATE POLICY "Admin Plataforma gerencia escolas" ON public.escolas FOR ALL USING (is_admin_plataforma());
+ALTER TABLE escolas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recursos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reservas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE avisos_laboratorio ENABLE ROW LEVEL SECURITY;
+ALTER TABLE logs_auditoria ENABLE ROW LEVEL SECURITY;
 
--- PROFILES
-CREATE POLICY "Admin Plataforma gerencia todos os profiles" ON public.profiles FOR ALL USING (is_admin_plataforma());
+-- Policies: ESCOLAS
+CREATE POLICY "Admin Plataforma pode tudo em escolas" ON escolas FOR ALL TO authenticated 
+USING (is_admin_plataforma()) WITH CHECK (is_admin_plataforma());
 
-CREATE POLICY "Admin Lab vê profiles da sua escola" ON public.profiles FOR SELECT 
-USING (escola_id = my_escola_id());
+CREATE POLICY "Qualquer logado vê escolas" ON escolas FOR SELECT TO authenticated USING (true);
 
-CREATE POLICY "Admin Lab gerencia professores da sua escola" ON public.profiles FOR ALL
-USING (escola_id = my_escola_id() AND is_admin_lab())
+-- Policies: PROFILES
+CREATE POLICY "Admin Plataforma pode tudo em profiles" ON profiles FOR ALL TO authenticated 
+USING (is_admin_plataforma()) WITH CHECK (is_admin_plataforma());
+
+CREATE POLICY "Admin Lab vê e edita professores da própria escola" ON profiles FOR ALL TO authenticated
+USING (
+  escola_id = my_escola_id() 
+  AND (papel = 'professor' OR user_id = auth.uid()) 
+  AND is_admin_lab()
+)
 WITH CHECK (
-    escola_id = my_escola_id() AND 
-    papel = 'professor' AND 
-    is_admin_lab()
+  escola_id = my_escola_id() 
+  AND papel = 'professor' 
+  AND is_admin_lab()
 );
 
-CREATE POLICY "Professor vê seu próprio profile" ON public.profiles FOR SELECT 
+CREATE POLICY "Usuário vê seu próprio profile" ON profiles FOR SELECT TO authenticated 
 USING (user_id = auth.uid());
 
-CREATE POLICY "Professor vê outros professores da escola" ON public.profiles FOR SELECT 
+CREATE POLICY "Usuários da mesma escola se veem" ON profiles FOR SELECT TO authenticated 
 USING (escola_id = my_escola_id());
 
--- RECURSOS
-CREATE POLICY "Admin Plataforma vê todos os recursos" ON public.recursos FOR SELECT USING (is_admin_plataforma());
-CREATE POLICY "Usuário vê recursos da sua escola" ON public.recursos FOR SELECT USING (escola_id = my_escola_id());
-CREATE POLICY "Admin Lab gerencia recursos da sua escola" ON public.recursos FOR ALL 
-USING (escola_id = my_escola_id() AND (is_admin_lab() OR is_admin_plataforma()))
-WITH CHECK (escola_id = my_escola_id());
+-- Policies: RECURSOS
+CREATE POLICY "Admin Plataforma pode tudo em recursos" ON recursos FOR ALL TO authenticated 
+USING (is_admin_plataforma()) WITH CHECK (is_admin_plataforma());
 
--- RESERVAS
-CREATE POLICY "Admin Plataforma vê todas as reservas" ON public.reservas FOR SELECT USING (is_admin_plataforma());
-CREATE POLICY "Usuário vê reservas da sua escola" ON public.reservas FOR SELECT USING (escola_id = my_escola_id());
+CREATE POLICY "Admin Lab gerencia recursos da escola" ON recursos FOR ALL TO authenticated
+USING (escola_id = my_escola_id() AND is_admin_lab())
+WITH CHECK (escola_id = my_escola_id() AND is_admin_lab());
 
-CREATE POLICY "Professor cria reservas na sua escola" ON public.reservas FOR INSERT 
+CREATE POLICY "Professores veem recursos da escola" ON recursos FOR SELECT TO authenticated 
+USING (escola_id = my_escola_id());
+
+-- Policies: RESERVAS
+CREATE POLICY "Admin Plataforma pode tudo em reservas" ON reservas FOR ALL TO authenticated 
+USING (is_admin_plataforma()) WITH CHECK (is_admin_plataforma());
+
+CREATE POLICY "Admin Lab gerencia reservas da escola" ON reservas FOR ALL TO authenticated
+USING (escola_id = my_escola_id() AND is_admin_lab())
+WITH CHECK (escola_id = my_escola_id() AND is_admin_lab());
+
+CREATE POLICY "Professor insere suas próprias reservas" ON reservas FOR INSERT TO authenticated
 WITH CHECK (
-    escola_id = my_escola_id() AND 
-    professor_id = my_profile_id() AND
-    status IN ('confirmada', 'cancelada')
+  escola_id = my_escola_id() 
+  AND professor_id = my_profile_id()
+  AND status = 'confirmada'
 );
 
-CREATE POLICY "Professor altera sua própria reserva" ON public.reservas FOR UPDATE
+CREATE POLICY "Professor edita suas próprias reservas" ON reservas FOR UPDATE TO authenticated
 USING (professor_id = my_profile_id())
 WITH CHECK (professor_id = my_profile_id());
 
-CREATE POLICY "Admin Lab gerencia todas as reservas da escola" ON public.reservas FOR ALL
-USING (escola_id = my_escola_id() AND (is_admin_lab() OR is_admin_plataforma()))
-WITH CHECK (escola_id = my_escola_id());
+CREATE POLICY "Usuários veem reservas da própria escola" ON reservas FOR SELECT TO authenticated 
+USING (escola_id = my_escola_id());
 
--- AVISOS
-CREATE POLICY "Usuário vê avisos da sua escola" ON public.avisos_laboratorio FOR SELECT 
-USING (escola_id = my_escola_id() OR is_admin_plataforma());
+-- Policies: AVISOS
+CREATE POLICY "Admin Plataforma pode tudo em avisos" ON avisos_laboratorio FOR ALL TO authenticated 
+USING (is_admin_plataforma()) WITH CHECK (is_admin_plataforma());
 
-CREATE POLICY "Admin Lab gerencia avisos da sua escola" ON public.avisos_laboratorio FOR ALL
-USING (escola_id = my_escola_id() AND (is_admin_lab() OR is_admin_plataforma()))
-WITH CHECK (escola_id = my_escola_id());
+CREATE POLICY "Admin Lab gerencia avisos da escola" ON avisos_laboratorio FOR ALL TO authenticated
+USING (escola_id = my_escola_id() AND is_admin_lab())
+WITH CHECK (escola_id = my_escola_id() AND is_admin_lab());
 
--- LOGS
-CREATE POLICY "Admin Plataforma vê todos os logs" ON public.logs_auditoria FOR SELECT USING (is_admin_plataforma());
-CREATE POLICY "Admin Lab vê logs da sua escola" ON public.logs_auditoria FOR SELECT USING (escola_id = my_escola_id());
-CREATE POLICY "Qualquer usuário pode inserir logs das suas ações" ON public.logs_auditoria FOR INSERT 
-WITH CHECK (user_id = my_profile_id());
+CREATE POLICY "Usuários veem avisos da escola" ON avisos_laboratorio FOR SELECT TO authenticated 
+USING (escola_id = my_escola_id() AND ativo = true);
 
--- 6. ÍNDICES
-CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON public.profiles(user_id);
-CREATE INDEX IF NOT EXISTS idx_profiles_escola_id ON public.profiles(escola_id);
-CREATE INDEX IF NOT EXISTS idx_recursos_escola_id ON public.recursos(escola_id);
-CREATE INDEX IF NOT EXISTS idx_reservas_escola_id ON public.reservas(escola_id);
-CREATE INDEX IF NOT EXISTS idx_reservas_recurso_id ON public.reservas(recurso_id);
-CREATE INDEX IF NOT EXISTS idx_reservas_professor_id ON public.reservas(professor_id);
-CREATE INDEX IF NOT EXISTS idx_reservas_data ON public.reservas(data);
-CREATE INDEX IF NOT EXISTS idx_avisos_escola_id ON public.avisos_laboratorio(escola_id);
-CREATE INDEX IF NOT EXISTS idx_avisos_recurso_id ON public.avisos_laboratorio(recurso_id);
-CREATE INDEX IF NOT EXISTS idx_logs_user_id ON public.logs_auditoria(user_id);
+-- Policies: LOGS
+CREATE POLICY "Admin Plataforma vê logs" ON logs_auditoria FOR SELECT TO authenticated USING (is_admin_plataforma());
+CREATE POLICY "Admin Lab vê logs da escola" ON logs_auditoria FOR SELECT TO authenticated USING (escola_id = my_escola_id() AND is_admin_lab());
+CREATE POLICY "Sistema insere logs" ON logs_auditoria FOR INSERT TO authenticated WITH CHECK (profile_id = my_profile_id());
 
--- Único índice parcial para evitar conflitos de reserva (mesma escola, mesmo recurso, mesma data, mesma aula, se ativa)
-CREATE UNIQUE INDEX IF NOT EXISTS idx_reservas_conflito_unico 
-ON public.reservas (escola_id, recurso_id, data, aula) 
-WHERE (status IN ('confirmada', 'manutencao', 'bloqueada'));
-
--- 7. TRIGGER: CRIAÇÃO AUTOMÁTICA DE PROFILE
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
+-- 6. TRIGGER: CRIAÇÃO AUTOMÁTICA DE PROFILE
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (user_id, email, nome, papel, status)
-  VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'nome', 'professor', 'pendente');
-  RETURN NEW;
+  INSERT INTO public.profiles (user_id, email, nome, papel, status, disciplinas)
+  VALUES (
+    new.id,
+    new.email,
+    COALESCE(new.raw_user_meta_data->>'nome', new.raw_user_meta_data->>'name', new.email),
+    'professor',
+    'pendente',
+    '{}'
+  );
+  RETURN new;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
--- 8. SEEDS INICIAIS (REAIS)
+-- 7. SEEDS (DADOS INICIAIS)
 
--- Escolas
-INSERT INTO public.escolas (nome, cidade, uf)
+-- Escolas Reais
+INSERT INTO escolas (id, nome, cidade, estado)
 VALUES 
-    ('E.E. 26 de Agosto — Campo Grande — MS', 'Campo Grande', 'MS'),
-    ('E.E. Maria Eliza Bocayuva Corrêa — Campo Grande — MS', 'Campo Grande', 'MS')
+  ('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', 'E.E. 26 de Agosto', 'Campo Grande', 'MS'),
+  ('e2e2e2e2-e2e2-e2e2-e2e2-e2e2e2e2e2e2', 'E.E. Maria Eliza Bocayuva Corrêa', 'Campo Grande', 'MS')
 ON CONFLICT (nome) DO NOTHING;
 
--- Recursos (Assumindo IDs baseados nos nomes inseridos)
-DO $$
-DECLARE
-    escola1_id UUID;
-    escola2_id UUID;
-BEGIN
-    SELECT id INTO escola1_id FROM public.escolas WHERE nome = 'E.E. 26 de Agosto — Campo Grande — MS';
-    SELECT id INTO escola2_id FROM public.escolas WHERE nome = 'E.E. Maria Eliza Bocayuva Corrêa — Campo Grande — MS';
+-- Recursos Reais
+INSERT INTO recursos (escola_id, nome, tipo, cor_fundo, cor_texto, cor_borda)
+VALUES 
+  ('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', 'Laboratório de Informática', 'sala', '#e3f2fd', '#1976d2', '#bbdefb'),
+  ('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1', 'Projetor', 'equipamento', '#f3e5f5', '#7b1fa2', '#e1bee7'),
+  ('e2e2e2e2-e2e2-e2e2-e2e2-e2e2e2e2e2e2', 'Laboratório de Informática', 'sala', '#e3f2fd', '#1976d2', '#bbdefb'),
+  ('e2e2e2e2-e2e2-e2e2-e2e2-e2e2e2e2e2e2', 'Projetor', 'equipamento', '#f3e5f5', '#7b1fa2', '#e1bee7')
+ON CONFLICT (escola_id, nome) DO NOTHING;
 
-    IF escola1_id IS NOT NULL THEN
-        INSERT INTO public.recursos (escola_id, nome, tipo) VALUES (escola1_id, 'Laboratório de Informática', 'laboratorio');
-        INSERT INTO public.recursos (escola_id, nome, tipo) VALUES (escola1_id, 'Projetor', 'equipamento');
-    END IF;
-
-    IF escola2_id IS NOT NULL THEN
-        INSERT INTO public.recursos (escola_id, nome, tipo) VALUES (escola2_id, 'Laboratório de Informática', 'laboratorio');
-        INSERT INTO public.recursos (escola_id, nome, tipo) VALUES (escola2_id, 'Projetor', 'equipamento');
-    END IF;
-END $$;
-
--- 9. COMANDO DE PROMOÇÃO DE ADMIN (COMENTADO)
--- Execute este comando APÓS o usuário thiagomroas@gmail.com se cadastrar no app
--- UPDATE public.profiles SET papel = 'admin_plataforma', status = 'ativo' WHERE email = 'thiagomroas@gmail.com';
+-- 8. COMANDO PARA PROMOVER ADMIN (EXECUTAR MANUALMENTE APÓS O LOGIN DO USUÁRIO)
+/*
+UPDATE profiles 
+SET papel = 'admin_plataforma', status = 'ativo' 
+WHERE email = 'thiagomroas@gmail.com';
+*/
