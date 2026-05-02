@@ -188,7 +188,7 @@ const AgendaPage = () => {
     const canDelete = 
       profile?.role === 'admin_plataforma' || 
       (profile?.role === 'admin_lab' && reservaParaExcluir.escola_id === profile.escola_id) ||
-      (profile?.role === 'professor' && reservaParaExcluir.professor_id === user?.id);
+      (profile?.role === 'professor' && reservaParaExcluir.profile_id === user?.id);
 
     if (!canDelete) {
       toast.error("Você não tem permissão para excluir esta reserva.");
@@ -450,7 +450,7 @@ const AgendaPage = () => {
                           <div className="event-actions">
                             {(profile?.role === 'admin_plataforma' || 
                               (profile?.role === 'admin_lab' && reserva.escola_id === profile.escola_id) ||
-                              (profile?.role === 'professor' && reserva.professor_id === user?.id)) && (
+                              (profile?.role === 'professor' && reserva.profile_id === user?.id)) && (
                               <span
                                 className="event-action-btn"
                                 role="button"
@@ -572,7 +572,7 @@ const AgendaPage = () => {
         onDelete={handleExcluirReserva}
         reserva={activeReserva?.reserva || null}
         recurso={activeReserva?.recurso || null}
-        canEdit={activeReserva?.reserva.professor_id === user?.id || profile?.role !== 'professor'}
+        canEdit={activeReserva?.reserva.profile_id === user?.id || profile?.role !== 'professor'}
       />
 
       <RelatorioReservasModal

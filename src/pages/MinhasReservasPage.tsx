@@ -20,7 +20,7 @@ const MinhasReservasPage = () => {
 
 
   const userReservas = reservas
-    .filter(r => r.professor_id === user?.id || (profile?.role !== 'professor' && r.escola_id === profile?.escola_id))
+    .filter(r => r.profile_id === user?.id || (profile?.role !== 'professor' && r.escola_id === profile?.escola_id))
     .sort((a, b) => b.data.localeCompare(a.data));
 
   const today = startOfDay(new Date());

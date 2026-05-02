@@ -104,7 +104,7 @@ const AprovacoesPage = () => {
       id: `mnt-${Date.now()}`,
       escola_id: currentEscolaId || "",
       recurso_id: manutencaoData.recursoId,
-      professor_id: "admin",
+      profile_id: "admin",
       nome_professor: "Manutenção",
       disciplina: "Bloqueio",
       turma: "N/A",

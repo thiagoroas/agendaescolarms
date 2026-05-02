@@ -97,12 +97,12 @@ export const useReservas = (escolaId?: string) => {
       try {
         const { error: supabaseError } = await supabase
           .from("reservas")
-          .update({ status: "cancelada", motivo_recusa: motivo })
+          .update({ status: "cancelada", motivo_cancelamento: motivo })
           .eq("id", id);
 
         if (supabaseError) throw supabaseError;
 
-        setReservas(prev => prev.map(r => r.id === id ? { ...r, status: "cancelada" as const, motivo_recusa: motivo } : r));
+        setReservas(prev => prev.map(r => r.id === id ? { ...r, status: "cancelada" as const, motivo_cancelamento: motivo } : r));
         toast.success("Reserva cancelada com sucesso!");
         return true;
       } catch (err: any) {
@@ -112,9 +112,9 @@ export const useReservas = (escolaId?: string) => {
       }
     } else {
       const allMock = getMockReservas();
-      const updated = allMock.map(r => r.id === id ? { ...r, status: "cancelada" as const, motivo_recusa: motivo } : r);
+      const updated = allMock.map(r => r.id === id ? { ...r, status: "cancelada" as const, motivo_cancelamento: motivo } : r);
       saveMockReservas(updated);
-      setReservas(prev => prev.map(r => r.id === id ? { ...r, status: "cancelada" as const, motivo_recusa: motivo } : r));
+      setReservas(prev => prev.map(r => r.id === id ? { ...r, status: "cancelada" as const, motivo_cancelamento: motivo } : r));
       toast.success("Reserva cancelada com sucesso!");
       return true;
     }
