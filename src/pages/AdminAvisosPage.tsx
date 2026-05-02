@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { getMockAvisos, saveMockAvisos, createMockAviso, updateMockAviso, deleteMockAviso, getMockRecursos } from "../data/storage";
+import { useRecursos } from "@/hooks/useRecursos";
 import { AvisoLaboratorio, Recurso } from "../data/mockData";
 import { Button } from "@/components/ui/button";
 import { Plus, Bell, Edit2, Trash2, Power, PowerOff, Filter, Calendar as CalendarIcon, Clock, CheckCircle2, AlertTriangle, Info } from "lucide-react";
