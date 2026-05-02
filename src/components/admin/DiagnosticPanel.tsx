@@ -13,43 +13,52 @@ export const DiagnosticPanel = () => {
   const [tokenSent, setTokenSent] = useState<boolean>(false);
 
   useEffect(() => {
-    const checkEdgeFunction = async () => {
-      if (!isSupabaseConfigured || !user) {
-        setEdgeFunctionStatus("unauthorized");
-        return;
-      }
+  const checkEdgeFunction = async () => {
+    if (!isSupabaseConfigured || !user) {
+      setEdgeFunctionStatus("unauthorized");
+      return;
+    }
 
-      try {
-        // Try to call with an invalid action just to see if it responds (CORS check and connectivity)
-        const { data, error } = await supabase.functions.invoke('manage-user', {
-          body: { action: 'ping' } 
-        });
+    setEdgeFunctionStatus("checking");
+    setEdgeError(null);
+    setLastResponse(null);
+    
+    try {
+      // Check if session has access token
+      const { data: sessionData } = await supabase.auth.getSession();
+      setTokenSent(!!sessionData.session?.access_token);
 
-        // We expect an error "Invalid action" but status 400 or 200 means it's reachable
-        if (error) {
-          if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")) {
-            setEdgeFunctionStatus("error");
-            setEdgeError("Não foi possível alcançar a Edge Function (Network Error/Not Deployed)");
-          } else {
-            // If we got a response from the function (even an error message like "Invalid action")
-            setEdgeFunctionStatus("ok");
-          }
-        } else if (data?.error) {
-           // Function responded with an error object
-           setEdgeFunctionStatus("ok");
+      const { data, error } = await supabase.functions.invoke('manage-user', {
+        body: { action: 'ping' } 
+      });
+
+      setLastResponse(data || error);
+
+      if (error) {
+        if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")) {
+          setEdgeFunctionStatus("error");
+          setEdgeError("Não foi possível alcançar a Edge Function (Network Error/Not Deployed)");
         } else {
+          // If we got a response from the function (even an error message like "Invalid action")
           setEdgeFunctionStatus("ok");
         }
-      } catch (err: any) {
-        setEdgeFunctionStatus("error");
-        setEdgeError(err.message || "Erro desconhecido");
+      } else if (data?.error) {
+        setEdgeFunctionStatus("ok");
+      } else {
+        setEdgeFunctionStatus("ok");
       }
-    };
+    } catch (err: any) {
+      setEdgeFunctionStatus("error");
+      setEdgeError(err.message || "Erro desconhecido");
+      setLastResponse(err);
+    }
+  };
 
-    if (isSupabaseConfigured && user && profile?.role === "admin_plataforma") {
+  useEffect(() => {
+    if (isSupabaseConfigured && user && profile?.role === "admin_plataforma" && edgeFunctionStatus === "idle") {
       checkEdgeFunction();
     }
-  }, [user, profile]);
+  }, [user, profile, edgeFunctionStatus]);
 
   if (profile?.role !== "admin_plataforma") return null;
 
