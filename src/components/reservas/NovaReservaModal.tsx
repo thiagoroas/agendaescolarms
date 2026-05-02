@@ -299,6 +299,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           escola_id: profile?.escola_id || "",
           recurso_id: formData.recursoId,
           professor_id: formData.professorId,
+          criado_por: user?.id || "",
           nome_professor: selectedProfessor?.nome || profile?.full_name || "",
           disciplina: formData.disciplina,
           turma: formData.turma,
