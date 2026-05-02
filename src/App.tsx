@@ -29,6 +29,8 @@ const SupabaseConfigError = () => (
 
 const AppContent = () => {
   const { loading, profileLoading, user, profile } = useAuth();
+  
+  console.log("[AppContent] render state:", { loading, profileLoading, hasUser: !!user, hasProfile: !!profile });
 
   // 1. Loading inicial de Auth
   if (loading) {
