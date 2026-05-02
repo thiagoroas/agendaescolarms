@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { usuarios, Usuario } from "../data/mockData";
+import { usuarios as initialUsuarios, Usuario } from "../data/mockData";
+import { getMockUsuarios, saveMockUsuarios } from "../data/storage";
 import { Button } from "@/components/ui/button";
 import { Plus, UserPlus, UserCheck, Search, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +26,7 @@ const AdminProfessoresPage = () => {
   const [papel, setPapel] = useState<"professor" | "admin_lab">("professor");
 
   useEffect(() => {
-    setLocalUsers(usuarios);
+    setLocalUsers(getMockUsuarios());
   }, []);
 
   const schoolUsers = localUsers.filter(u => 
@@ -51,7 +52,13 @@ const AdminProfessoresPage = () => {
       status: "ativo"
     };
 
-    setLocalUsers(prev => [novoUsuario, ...prev]);
+    setLocalUsers(prev => {
+      const updated = [novoUsuario, ...prev];
+      if (!isSupabaseConfigured) {
+        saveMockUsuarios(updated as any);
+      }
+      return updated;
+    });
     
     setNome("");
     setEmail("");
@@ -98,7 +105,7 @@ const AdminProfessoresPage = () => {
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3 shadow-sm">
           <Info className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
           <div className="text-xs text-amber-800 leading-relaxed">
-            <span className="font-bold">Modo Protótipo Ativo:</span> O cadastro de novos usuários é temporário e será perdido ao atualizar a página. Configure o Supabase para persistência real.
+            <span className="font-bold">Modo Protótipo Ativo:</span> O cadastro de novos usuários é salvo localmente no seu navegador. Configure o Supabase para persistência real.
           </div>
         </div>
       )}
@@ -141,7 +148,13 @@ const AdminProfessoresPage = () => {
                       className="text-red-600 hover:bg-red-50 border-red-100"
                       onClick={() => {
                         if (confirm("Tem certeza que deseja excluir este professor? Essa ação não poderá ser desfeita.")) {
-                          setLocalUsers(prev => prev.filter(user => user.id !== u.id));
+                          setLocalUsers(prev => {
+                            const updated = prev.filter(user => user.id !== u.id);
+                            if (!isSupabaseConfigured) {
+                              saveMockUsuarios(updated as any);
+                            }
+                            return updated;
+                          });
                           toast.success("Professor excluído com sucesso.");
                         }
                       }}

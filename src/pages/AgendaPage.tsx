@@ -2,9 +2,11 @@ import React, { useState, useMemo, useEffect } from "react";
 import { format, addDays, startOfWeek, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { escolas, recursos, reservas, Reserva, Recurso } from "../data/mockData";
+import { escolas as initialEscolas, recursos as initialRecursos, reservas as initialReservas, Reserva, Recurso } from "../data/mockData";
+import { getMockEscolas, getMockRecursos, getMockReservas, resetMockData } from "../data/storage";
 import { horarios, diasSemana } from "../data/horarios";
 import { toast } from "sonner";
 import NovaReservaModal from "../components/reservas/NovaReservaModal";
@@ -44,6 +46,16 @@ const AgendaPage = () => {
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobile, setIsMobile] = useState(false);
+  const [reservasState, setReservasState] = useState<Reserva[]>([]);
+  const [recursosState, setRecursosState] = useState<Recurso[]>([]);
+  const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
+  
+  useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setReservasState(getMockReservas());
+      setRecursosState(getMockRecursos());
+    }
+  }, [isModalNovaOpen]); // Refresh when modal closes (might have added something)
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -51,22 +63,23 @@ const AgendaPage = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
   const [isModalDetalhesOpen, setIsModalDetalhesOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{date: string, aula: number, turno: "manha" | "tarde"} | null>(null);
   const [activeReserva, setActiveReserva] = useState<{reserva: Reserva, recurso: Recurso} | null>(null);
 
   const reservasHoje = useMemo(() => {
     const todayStr = format(new Date(), "yyyy-MM-dd");
-    return reservas.filter(r => 
+    const list = isSupabaseConfigured ? initialReservas : reservasState;
+    return list.filter(r => 
       r.escola_id === (selectedEscolaId || profile?.escola_id) && 
       r.data === todayStr
     );
-  }, [selectedEscolaId, profile?.escola_id]);
+  }, [selectedEscolaId, profile?.escola_id, reservasState]);
 
-  const escola = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
-  const schoolRecursos = recursos.filter(r => r.escola_id === (selectedEscolaId || profile?.escola_id));
+  const schoolEscolas = isSupabaseConfigured ? initialEscolas : getMockEscolas();
+  const escola = schoolEscolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
+  const schoolRecursosList = isSupabaseConfigured ? initialRecursos : recursosState;
+  const schoolRecursos = schoolRecursosList.filter(r => r.escola_id === (selectedEscolaId || profile?.escola_id));
 
   const monday = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(monday, i));
@@ -77,7 +90,8 @@ const AgendaPage = () => {
 
   const getReservaForSlot = (date: Date, aula: number) => {
     const dateStr = format(date, "yyyy-MM-dd");
-    return reservas.find(r =>
+    const list = isSupabaseConfigured ? initialReservas : reservasState;
+    return list.find(r =>
       r.data === dateStr &&
       r.aula === aula &&
       r.escola_id === (selectedEscolaId || profile?.escola_id) &&
@@ -92,7 +106,8 @@ const AgendaPage = () => {
   const filteredReservationsCount = useMemo(() => {
     const mondayStr = format(monday, "yyyy-MM-dd");
     const fridayStr = format(weekDates[4], "yyyy-MM-dd");
-    return reservas.filter(r =>
+    const list = isSupabaseConfigured ? initialReservas : reservasState;
+    return list.filter(r =>
       r.escola_id === (selectedEscolaId || profile?.escola_id) &&
       r.data >= mondayStr &&
       r.data <= fridayStr &&
@@ -107,7 +122,7 @@ const AgendaPage = () => {
   const handleSlotClick = (date: Date, h: typeof horarios[0]) => {
     const res = getReservaForSlot(date, h.aula);
     if (res) {
-      const rec = recursos.find(r => r.id === res.recurso_id);
+      const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
       setActiveReserva({ reserva: res, recurso: rec! });
       setIsModalDetalhesOpen(true);
     } else {
@@ -204,11 +219,23 @@ const AgendaPage = () => {
       </div>
 
       {!isSupabaseConfigured && (
-        <div className="mx-4 mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3 shadow-sm">
-          <Info className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
-          <div className="text-xs text-amber-800 leading-relaxed">
-            <span className="font-bold">Modo Protótipo Ativo:</span> As alterações feitas aqui (reservas, exclusões, etc.) são apenas visuais e não serão salvas permanentemente no banco de dados. Configure o Supabase no Lovable para habilitar o salvamento real.
+        <div className="mx-4 mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+            <div className="text-xs text-amber-800 leading-relaxed">
+              <span className="font-bold">Modo Protótipo Ativo:</span> As alterações feitas aqui (reservas, exclusões, etc.) são salvas localmente no seu navegador.
+            </div>
           </div>
+          {profile?.role === "admin_plataforma" && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-7 text-[10px] font-bold border-amber-200 text-amber-700 hover:bg-amber-100"
+              onClick={resetMockData}
+            >
+              Resetar dados demo
+            </Button>
+          )}
         </div>
       )}
 
@@ -246,7 +273,7 @@ const AgendaPage = () => {
                   }
 
                   const reserva = getReservaForSlot(date, h.aula);
-                  const recurso = recursos.find(r => r.id === reserva?.recurso_id);
+                  const recurso = schoolRecursosList.find(r => r.id === reserva?.recurso_id);
 
                   return (
                     <div
@@ -317,7 +344,7 @@ const AgendaPage = () => {
 
             {horarios.map((h, hIdx) => {
               const reserva = getReservaForSlot(currentDate, h.aula);
-              const recurso = recursos.find(r => r.id === reserva?.recurso_id);
+              const recurso = schoolRecursosList.find(r => r.id === reserva?.recurso_id);
 
               return (
                 <div key={hIdx} className={`mobile-slot ${h.isIntervalo ? 'is-break' : ''}`}>
