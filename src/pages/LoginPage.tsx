@@ -209,7 +209,7 @@ const LoginPage = () => {
       </div>
 
       {!isSupabaseConfigured && (
-        <div className="fixed bottom-4 right-4 max-w-sm rounded-xl bg-white p-4 shadow-xl border border-blue-100 animate-in fade-in slide-in-from-bottom-4 duration-500 max-h-[80vh] overflow-y-auto">
+        <div className="md:fixed md:bottom-4 md:right-4 w-full max-w-md md:max-w-sm rounded-xl bg-white p-4 shadow-xl border border-blue-100 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-4 mx-auto md:mx-0">
           <div className="mb-3">
             <h3 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] text-white">?</span>
