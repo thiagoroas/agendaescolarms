@@ -1,6 +1,7 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { getMockReservas, getMockRecursos, getMockEscolas } from "../data/storage";
+import { Reserva, Recurso, Escola } from "../data/mockData";
 import { format, parseISO, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { 
@@ -25,11 +26,17 @@ import { useNavigate } from "react-router-dom";
 const DashboardPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
   const navigate = useNavigate();
+  const [todasReservas, setTodasReservas] = useState<Reserva[]>([]);
+  const [todosRecursos, setTodosRecursos] = useState<Recurso[]>([]);
+  const [todasEscolas, setTodasEscolas] = useState<Escola[]>([]);
+
+  useEffect(() => {
+    setTodasReservas(getMockReservas());
+    setTodosRecursos(getMockRecursos());
+    setTodasEscolas(getMockEscolas());
+  }, []);
   
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
-  const todasReservas = getMockReservas();
-  const todosRecursos = getMockRecursos();
-  const todasEscolas = getMockEscolas();
   
   const escolaAtiva = todasEscolas.find(e => e.id === currentEscolaId);
   const recursosEscola = todosRecursos.filter(r => r.escola_id === currentEscolaId);

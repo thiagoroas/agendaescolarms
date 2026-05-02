@@ -1,25 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { reservas, recursos, Reserva } from "../data/mockData";
+import { getMockReservas, saveMockReservas, getMockRecursos } from "../data/storage";
+import { Reserva, Recurso } from "../data/mockData";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Clock, MapPin, Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { format, isAfter, parseISO } from "date-fns";
+import { format, isAfter, parseISO, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const MinhasReservasPage = () => {
   const { user, profile } = useAuth();
-  
+  const [reservas, setReservas] = useState<Reserva[]>([]);
+  const [recursos, setRecursos] = useState<Recurso[]>([]);
+
+  useEffect(() => {
+    setReservas(getMockReservas());
+    setRecursos(getMockRecursos());
+  }, []);
+
   const userReservas = reservas
     .filter(r => r.professor_id === user?.id || (profile?.role !== 'professor' && r.escola_id === profile?.escola_id))
     .sort((a, b) => b.data.localeCompare(a.data));
 
-  const upcoming = userReservas.filter(r => !isAfter(new Date(), parseISO(r.data)));
-  const past = userReservas.filter(r => isAfter(new Date(), parseISO(r.data)));
+  const today = startOfDay(new Date());
+  const upcoming = userReservas.filter(r => !isAfter(today, startOfDay(parseISO(r.data))));
+  const past = userReservas.filter(r => isAfter(today, startOfDay(parseISO(r.data))));
 
   const ReservaCard = ({ r }: { r: Reserva }) => {
     const rec = recursos.find(rec => rec.id === r.recurso_id);

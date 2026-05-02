@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { getMockReservas, saveMockReservas, getMockRecursos, getMockUsuarios } from "../data/storage";
+import { getMockReservas, saveMockReservas, getMockRecursos } from "../data/storage";
+import { Reserva, Recurso } from "../data/mockData";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { 
@@ -31,10 +32,15 @@ const AprovacoesPage = () => {
   const [isRecusaModalOpen, setIsRecusaModalOpen] = useState(false);
   const [reservaParaRecusar, setReservaParaRecusar] = useState<string | null>(null);
   const [motivoRecusa, setMotivoRecusa] = useState("");
+  const [reservas, setReservas] = useState<Reserva[]>([]);
+  const [recursos, setRecursos] = useState<Recurso[]>([]);
   
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
-  const reservas = getMockReservas();
-  const recursos = getMockRecursos();
+
+  useEffect(() => {
+    setReservas(getMockReservas());
+    setRecursos(getMockRecursos());
+  }, []);
   
   const pendencias = useMemo(() => {
     return reservas
@@ -51,9 +57,9 @@ const AprovacoesPage = () => {
     const novasReservas = reservas.map(r => 
       r.id === id ? { ...r, status: "aprovada" as any } : r
     );
+    setReservas(novasReservas);
     saveMockReservas(novasReservas);
     toast.success("Reserva aprovada com sucesso!");
-    window.location.reload(); // Refresh to update view in prototype mode
   };
 
   const handleRecusarClick = (id: string) => {
@@ -71,10 +77,10 @@ const AprovacoesPage = () => {
     const novasReservas = reservas.map(r => 
       r.id === reservaParaRecusar ? { ...r, status: "recusada" as any, motivo_recusa: motivoRecusa } : r
     );
+    setReservas(novasReservas);
     saveMockReservas(novasReservas);
     toast.success("Reserva recusada.");
     setIsRecusaModalOpen(false);
-    window.location.reload();
   };
 
   return (
