@@ -114,15 +114,15 @@ export const DiagnosticPanel = () => {
         <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-slate-400" />
-            <span className="text-xs font-medium">Autenticação Real</span>
+            <span className="text-xs font-medium">Sessão Ativa</span>
           </div>
           {user ? (
             <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
-              <CheckCircle2 className="h-3 w-3" /> Logado
+              <CheckCircle2 className="h-3 w-3" /> Sim
             </Badge>
           ) : (
             <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 gap-1">
-              Offline
+              Não
             </Badge>
           )}
         </div>
@@ -143,7 +143,17 @@ export const DiagnosticPanel = () => {
           )}
         </div>
 
-        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100 md:col-span-2">
+        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
+          <div className="flex items-center gap-2">
+            <Lock className="h-4 w-4 text-slate-400" />
+            <span className="text-xs font-medium">Auth Token Sent</span>
+          </div>
+          <Badge variant="outline" className={tokenSent ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
+            {tokenSent ? "Sim" : "Não"}
+          </Badge>
+        </div>
+
+        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
           <div className="flex items-center gap-2">
             <Server className="h-4 w-4 text-slate-400" />
             <span className="text-xs font-medium">Edge Function (manage-user)</span>
@@ -177,15 +187,18 @@ export const DiagnosticPanel = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
-          <div className="flex items-center gap-2">
-            <Lock className="h-4 w-4 text-slate-400" />
-            <span className="text-xs font-medium">Auth Token Sent</span>
+        {!isSupabaseConfigured && (
+          <div className="md:col-span-2 lg:col-span-3 p-3 bg-amber-50 border border-amber-200 rounded-md text-[11px] text-amber-800">
+            <p className="font-bold mb-1 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" /> VITE_SUPABASE_URL não detectada
+            </p>
+            <p>Para usar o Supabase real, configure as variáveis de ambiente no painel do <strong>Lovable</strong> (Settings &gt; Supabase &gt; Connect) ou adicione manualmente em <strong>Secrets</strong> com os nomes:</p>
+            <ul className="list-disc ml-4 mt-1 font-mono">
+              <li>VITE_SUPABASE_URL</li>
+              <li>VITE_SUPABASE_ANON_KEY</li>
+            </ul>
           </div>
-          <Badge variant="outline" className={tokenSent ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
-            {tokenSent ? "Sim" : "Não"}
-          </Badge>
-        </div>
+        )}
       </CardContent>
 
       {(edgeError || lastResponse) && (
