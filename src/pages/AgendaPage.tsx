@@ -129,7 +129,7 @@ const AgendaPage = () => {
         r.turma.toLowerCase().includes(searchQuery.toLowerCase())
       )
     ).length;
-  }, [currentDate, selectedRecurso, searchQuery, profile?.escola_id, selectedEscolaId, reservasState]);
+  }, [monday, weekDates, selectedRecurso, searchQuery, profile?.escola_id, selectedEscolaId, reservasState]);
 
   const handleSlotClick = (date: Date, h: typeof horarios[0]) => {
     const res = getReservaForSlot(date, h.aula);
