@@ -126,6 +126,14 @@ const AppContent = () => {
           </AppLayout>
         </ProtectedRoute>
       } />
+      
+      <Route path="/admin/avisos" element={
+        <ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}>
+          <AppLayout>
+            <AdminAvisosPage />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
 
       <Route path="/admin/escolas" element={
         <ProtectedRoute allowedRoles={["admin_plataforma"]}>
@@ -145,6 +153,7 @@ const AppContent = () => {
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import AprovacoesPage from "./pages/AprovacoesPage";
+import AdminAvisosPage from "./pages/AdminAvisosPage";
 import AgendaPage from "./pages/AgendaPage";
 import MinhasReservasPage from "./pages/MinhasReservasPage";
 import PerfilPage from "./pages/PerfilPage";
