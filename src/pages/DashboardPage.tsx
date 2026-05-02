@@ -81,10 +81,13 @@ const DashboardPage = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "confirmada":
       case "aprovada": return "bg-green-500";
       case "pendente": return "bg-amber-500";
       case "recusada": return "bg-red-500";
       case "cancelada": return "bg-slate-400";
+      case "manutencao":
+      case "bloqueada": return "bg-slate-600";
       default: return "bg-blue-500";
     }
   };
