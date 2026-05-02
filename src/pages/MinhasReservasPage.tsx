@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { getMockReservas, saveMockReservas, getMockRecursos } from "../data/storage";
+import { useReservas } from "@/hooks/useReservas";
+import { useRecursos } from "@/hooks/useRecursos";
 import { Reserva, Recurso } from "../data/mockData";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,13 +15,9 @@ import { cn } from "@/lib/utils";
 
 const MinhasReservasPage = () => {
   const { user, profile } = useAuth();
-  const [reservas, setReservas] = useState<Reserva[]>([]);
-  const [recursos, setRecursos] = useState<Recurso[]>([]);
+  const { reservas, cancelReserva } = useReservas();
+  const { recursos } = useRecursos();
 
-  useEffect(() => {
-    setReservas(getMockReservas());
-    setRecursos(getMockRecursos());
-  }, []);
 
   const userReservas = reservas
     .filter(r => r.professor_id === user?.id || (profile?.role !== 'professor' && r.escola_id === profile?.escola_id))
@@ -83,12 +80,9 @@ const MinhasReservasPage = () => {
               variant="outline" 
               size="sm" 
               className="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700" 
-              onClick={() => {
+              onClick={async () => {
                 if (window.confirm("Deseja realmente cancelar esta reserva?")) {
-                  const novasReservas = reservas.filter(res => res.id !== r.id);
-                  setReservas(novasReservas);
-                  saveMockReservas(novasReservas);
-                  toast.success("Reserva cancelada com sucesso");
+                  await cancelReserva(r.id);
                 }
               }}
             >

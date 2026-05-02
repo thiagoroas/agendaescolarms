@@ -6,15 +6,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { reservas as initialReservas, Reserva, Recurso, AvisoLaboratorio } from "../data/mockData";
+import { Reserva, Recurso, AvisoLaboratorio } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
 import { useRecursos } from "@/hooks/useRecursos";
-import { getMockEscolas, getMockReservas, resetMockData, getMockAvisos, getMockRecursos } from "../data/storage";
+import { useReservas } from "@/hooks/useReservas";
+import { getMockEscolas, resetMockData, getMockAvisos, getMockRecursos, getMockReservas } from "../data/storage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { horarios, diasSemana } from "../data/horarios";
 import { toast } from "sonner";
-import { saveMockReservas } from "../data/storage";
 import NovaReservaModal from "../components/reservas/NovaReservaModal";
 import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
 import RelatorioReservasModal from "../components/reservas/RelatorioReservasModal";
@@ -46,7 +46,6 @@ const tipoSwatch = (tipo: string) => {
   }
 };
 
-
 const initialsOf = (name: string) =>
   name.split(" ").filter(Boolean).slice(0, 2).map(n => n[0]?.toUpperCase()).join("");
 
@@ -65,7 +64,7 @@ const AgendaPage = () => {
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobile, setIsMobile] = useState(false);
-  const [reservasState, setReservasState] = useState<Reserva[]>([]);
+  const { reservas: reservasState, cancelReserva, refresh: refreshReservas } = useReservas();
   const { recursos: schoolRecursos, loading: loadingRecursos } = useRecursos();
   const [avisosState, setAvisosState] = useState<AvisoLaboratorio[]>([]);
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
@@ -74,11 +73,9 @@ const AgendaPage = () => {
   
   useEffect(() => {
     if (!isSupabaseConfigured) {
-      setReservasState(getMockReservas());
       setAvisosState(getMockAvisos());
     }
-  }, [isModalNovaOpen]); // Refresh when modal closes (might have added something)
-
+  }, [isModalNovaOpen]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -90,17 +87,18 @@ const AgendaPage = () => {
   const [selectedSlot, setSelectedSlot] = useState<{date: string, aula: number, turno: "manha" | "tarde"} | null>(null);
   const [activeReserva, setActiveReserva] = useState<{reserva: Reserva, recurso: Recurso} | null>(null);
 
+  const currentSchoolId = selectedEscolaId || profile?.escola_id;
+
   const reservasHoje = useMemo(() => {
     const todayStr = format(new Date(), "yyyy-MM-dd");
-    const list = isSupabaseConfigured ? initialReservas : reservasState;
-    return list.filter(r => 
-      r.escola_id === (selectedEscolaId || profile?.escola_id) && 
+    return reservasState.filter(r => 
+      r.escola_id === currentSchoolId && 
       r.data === todayStr
     );
-  }, [selectedEscolaId, profile?.escola_id, reservasState]);
+  }, [currentSchoolId, reservasState]);
 
   const schoolEscolas = allEscolas;
-  const escola = schoolEscolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
+  const escola = schoolEscolas.find(e => e.id === currentSchoolId);
   const schoolRecursosList = schoolRecursos;
 
 
@@ -118,11 +116,10 @@ const AgendaPage = () => {
   const getReservaForSlot = (date: Date, aula: number) => {
     if (!date) return null;
     const dateStr = format(date, "yyyy-MM-dd");
-    const list = isSupabaseConfigured ? initialReservas : reservasState;
-    return list.find(r =>
+    return reservasState.find(r =>
       r.data === dateStr &&
       r.aula === aula &&
-      r.escola_id === (selectedEscolaId || profile?.escola_id) &&
+      r.escola_id === currentSchoolId &&
       (r.status === "confirmada" || r.status === "aprovada" || r.status === "pendente" || r.status === "manutencao" || r.status === "bloqueada") &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
       (!searchQuery ||
@@ -136,9 +133,8 @@ const AgendaPage = () => {
     const mondayStr = format(monday, "yyyy-MM-dd");
     const fridayStr = format(weekDates[4], "yyyy-MM-dd");
     
-    const list = isSupabaseConfigured ? initialReservas : reservasState;
-    return list.filter(r =>
-      r.escola_id === (selectedEscolaId || profile?.escola_id) &&
+    return reservasState.filter(r =>
+      r.escola_id === currentSchoolId &&
       r.data >= mondayStr &&
       r.data <= fridayStr &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
@@ -147,9 +143,7 @@ const AgendaPage = () => {
         r.turma.toLowerCase().includes(searchQuery.toLowerCase())
       )
     ).length;
-  }, [monday, weekDates, selectedRecurso, searchQuery, profile?.escola_id, selectedEscolaId, reservasState]);
-
-  const currentSchoolId = selectedEscolaId || profile?.escola_id;
+  }, [monday, weekDates, selectedRecurso, searchQuery, currentSchoolId, reservasState]);
 
   const avisosAtivos = useMemo(() => {
     const agora = new Date();
@@ -189,8 +183,8 @@ const AgendaPage = () => {
     }
   };
 
-  const handleExcluirReserva = (reservaId: string) => {
-    const reservaParaExcluir = (isSupabaseConfigured ? initialReservas : reservasState).find(r => r.id === reservaId);
+  const handleExcluirReserva = async (reservaId: string) => {
+    const reservaParaExcluir = reservasState.find(r => r.id === reservaId);
     if (!reservaParaExcluir) return;
 
     // Verificar permissões
@@ -205,18 +199,8 @@ const AgendaPage = () => {
     }
 
     if (window.confirm("Tem certeza que deseja cancelar esta reserva?")) {
-      const novasReservas = (isSupabaseConfigured ? initialReservas : reservasState).filter(r => r.id !== reservaId);
-      
-      if (!isSupabaseConfigured) {
-        setReservasState(novasReservas);
-        saveMockReservas(novasReservas);
-      } else {
-        // No modo Supabase real, isso seria uma chamada de API e depois um refresh
-        toast.info("Em modo Supabase real, a reserva seria removida do banco.");
-      }
-      
+      await cancelReserva(reservaId);
       setIsModalDetalhesOpen(false);
-      toast.success("Reserva cancelada com sucesso.");
     }
   };
 
@@ -597,10 +581,10 @@ const AgendaPage = () => {
       <RelatorioReservasModal
         isOpen={isModalRelatorioOpen}
         onClose={() => setIsModalRelatorioOpen(false)}
-        reservas={isSupabaseConfigured ? initialReservas : reservasState}
+        reservas={reservasState}
         recursos={schoolRecursosList}
         escolas={schoolEscolas}
-        selectedEscolaId={selectedEscolaId || profile?.escola_id}
+        selectedEscolaId={currentSchoolId}
       />
     </div>
   );

@@ -8,14 +8,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { useAuth } from "../../contexts/AuthContext";
-import { usuarios as initialUsuarios, Usuario, reservas as initialReservas, AvisoLaboratorio } from "../../data/mockData";
+import { usuarios as initialUsuarios, Usuario, Reserva, AvisoLaboratorio } from "../../data/mockData";
 import { getMockUsuarios, getMockReservas, saveMockReservas, getMockAvisos, getMockRecursos } from "../../data/storage";
 import { useRecursos } from "@/hooks/useRecursos";
+import { useReservas } from "@/hooks/useReservas";
 import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 import { horarios } from "../../data/horarios";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Info } from "lucide-react";
 
@@ -40,6 +42,7 @@ const TURMAS_OPCOES = [
 const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProps) => {
   const { user, profile } = useAuth();
   const { recursos: availableRecursos } = useRecursos();
+  const { createReserva } = useReservas();
 
   const [formData, setFormData] = useState({
     professorId: "",
@@ -206,7 +209,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     u.escola_id === profile?.escola_id && u.papel === 'professor' && u.status === 'ativo'
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.professorId) { toast.error("Selecione o professor responsável"); return; }
     if (!formData.disciplina) { toast.error("Informe a disciplina"); return; }
@@ -215,7 +218,6 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     if (!formData.recursoId) { toast.error("Selecione um recurso"); return; }
     if (formData.aulas.length === 0) { toast.error("Selecione pelo menos uma aula"); return; }
     
-    // Objetivo pedagógico é obrigatório para professor
     if (profile?.role === 'professor' && !formData.objetivo_pedagogico) {
       toast.error("Informe o objetivo pedagógico da aula");
       return;
@@ -226,27 +228,13 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
       return;
     }
 
-    const payload = { 
-      ...formData, 
-      professor_id: formData.professorId,
-      nome_professor: selectedProfessor?.nome || profile?.full_name, 
-      escola_id: profile?.escola_id,
-      data: formData.data,
-      recurso_id: formData.recursoId,
-      disciplina: formData.disciplina,
-      turma: formData.turma
-    };
+    const avisoConfirmado = avisosAtivos.find(a => a.exigir_confirmacao);
     
-    if (!isSupabaseConfigured) {
-      const currentReservas = getMockReservas();
-      const newReservas = [...currentReservas];
-      
-      formData.aulas.forEach(aula => {
+    try {
+      for (const aula of formData.aulas) {
         const h = allHorarios.find(hour => hour.aula === aula);
-        const avisoConfirmado = avisosAtivos.find(a => a.exigir_confirmacao);
         
-        const newReserva = {
-          id: `res-${Date.now()}-${aula}`,
+        await createReserva({
           escola_id: profile?.escola_id || "",
           recurso_id: formData.recursoId,
           professor_id: formData.professorId,
@@ -259,23 +247,15 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           horario: h ? `${h.inicio} – ${h.fim}` : "",
           objetivo_pedagogico: formData.objetivo_pedagogico,
           observacao: formData.observacao,
-          status: "confirmada" as any,
-          criado_em: new Date().toISOString(),
+          status: "confirmada",
           aviso_confirmado_id: avisoConfirmado?.id,
           aviso_confirmado_em: avisoConfirmado ? new Date().toISOString() : undefined
-        };
-        newReservas.push(newReserva);
-      });
-      
-      saveMockReservas(newReservas);
-      console.log("Mock reservas salvas no localStorage");
-    } else {
-      console.log("Reserva enviada para Supabase:", payload);
-      // Aqui entraria a lógica de insert no Supabase se estivesse 100% real
+        });
+      }
+      onClose();
+    } catch (err) {
+      console.error("Erro ao criar reserva:", err);
     }
-    
-    toast.success("Reserva realizada com sucesso!");
-    onClose();
   };
 
   const formattedDate = formData.data ? format(parseISO(formData.data), "EEEE · d 'de' MMMM 'de' yyyy", { locale: ptBR }) : "";
