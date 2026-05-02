@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { useAvisos } from "@/hooks/useAvisos";
 import { format, addDays, startOfWeek, isSameDay, parseISO, isWithinInterval, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon, Info, FileText, CheckCircle, XCircle, LayoutDashboard, ClipboardList, CalendarDays, AlertTriangle, ChevronDown } from "lucide-react";
@@ -10,7 +11,7 @@ import { Reserva, Recurso, AvisoLaboratorio } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
 import { useRecursos } from "@/hooks/useRecursos";
 import { useReservas } from "@/hooks/useReservas";
-import { getMockEscolas, resetMockData, getMockAvisos, getMockRecursos, getMockReservas } from "../data/storage";
+import { getMockEscolas, resetMockData, getMockRecursos, getMockReservas } from "../data/storage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { horarios, diasSemana } from "../data/horarios";
@@ -66,16 +67,12 @@ const AgendaPage = () => {
   const [isMobile, setIsMobile] = useState(false);
   const { reservas: reservasState, cancelReserva, refresh: refreshReservas } = useReservas();
   const { recursos: schoolRecursos, loading: loadingRecursos } = useRecursos();
-  const [avisosState, setAvisosState] = useState<AvisoLaboratorio[]>([]);
+  const { avisos: avisosState, loading: loadingAvisos } = useAvisos();
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
   const [isModalRelatorioOpen, setIsModalRelatorioOpen] = useState(false);
   const [showAllAvisos, setShowAllAvisos] = useState(false);
   
-  useEffect(() => {
-    if (!isSupabaseConfigured) {
-      setAvisosState(getMockAvisos());
-    }
-  }, [isModalNovaOpen]);
+  // Avisos are now loaded via useAvisos hook
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
