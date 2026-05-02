@@ -9,6 +9,10 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import AppLayout from "./components/layout/AppLayout";
 import { isSupabaseConfigured } from "@/lib/supabase";
 
+if (import.meta.env.DEV) {
+  console.log("isSupabaseConfigured", isSupabaseConfigured);
+}
+
 const SupabaseConfigError = () => (
   <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
     <div className="max-w-md p-8 border rounded-lg shadow-sm bg-card">
