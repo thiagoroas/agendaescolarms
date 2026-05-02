@@ -151,7 +151,7 @@ const PerfilPage = () => {
         // Update context
         updateProfile({
           full_name: fullName,
-          disciplinas: profile?.role === "professor" ? disciplinas.split(",").map(d => d.trim()).filter(d => d !== "") : profile?.disciplinas
+          disciplinas: profile?.role === "professor" ? disciplinas.split(",").map(d => d.trim()).filter(d => d !== "") : (profile?.disciplinas || [])
         });
 
         // Update remembered password if it exists
