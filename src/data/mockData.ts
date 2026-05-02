@@ -29,7 +29,7 @@ export interface Recurso {
   ativo: boolean;
 }
 
-export type ReservaStatus = "pendente" | "aprovada" | "recusada" | "cancelada" | "finalizada";
+export type ReservaStatus = "confirmada" | "cancelada" | "finalizada" | "manutencao" | "bloqueada" | "pendente" | "aprovada" | "recusada";
 
 export interface Reserva {
   id: string;
