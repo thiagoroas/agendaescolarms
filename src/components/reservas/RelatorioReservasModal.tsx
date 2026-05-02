@@ -5,6 +5,7 @@ import { Reserva, Recurso, Escola } from "@/data/mockData";
 import { horarios } from "@/data/horarios";
 import { X, Printer, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from "@/lib/utils";
 
 interface RelatorioReservasModalProps {
   isOpen: boolean;
@@ -88,7 +89,9 @@ const RelatorioReservasModal: React.FC<RelatorioReservasModalProps> = ({
                   <th className="py-3 px-2 text-left text-[10px] font-bold uppercase tracking-wider text-slate-500">Professor</th>
                   <th className="py-3 px-2 text-left text-[10px] font-bold uppercase tracking-wider text-slate-500">Disciplina</th>
                   <th className="py-3 px-2 text-left text-[10px] font-bold uppercase tracking-wider text-slate-500">Turma</th>
+                  <th className="py-3 px-2 text-left text-[10px] font-bold uppercase tracking-wider text-slate-500">Objetivo Pedagógico</th>
                   <th className="py-3 px-2 text-left text-[10px] font-bold uppercase tracking-wider text-slate-500">Observação</th>
+                  <th className="py-3 px-2 text-left text-[10px] font-bold uppercase tracking-wider text-slate-500">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -118,8 +121,22 @@ const RelatorioReservasModal: React.FC<RelatorioReservasModalProps> = ({
                         <td className="py-3 px-2 text-xs text-slate-600 font-medium">
                           {reserva.turma}
                         </td>
+                        <td className="py-3 px-2 text-xs text-slate-500 italic max-w-[150px] truncate" title={reserva.objetivo_pedagogico}>
+                          {reserva.objetivo_pedagogico || '-'}
+                        </td>
                         <td className="py-3 px-2 text-xs text-slate-500 italic max-w-[150px] truncate" title={reserva.observacao}>
                           {reserva.observacao || '-'}
+                        </td>
+                        <td className="py-3 px-2 text-xs">
+                          <span className={cn(
+                            "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase",
+                            reserva.status === "aprovada" ? "bg-green-100 text-green-700" :
+                            reserva.status === "pendente" ? "bg-amber-100 text-amber-700" :
+                            reserva.status === "recusada" ? "bg-red-100 text-red-700" :
+                            "bg-slate-100 text-slate-700"
+                          )}>
+                            {reserva.status}
+                          </span>
                         </td>
                       </tr>
                     );
