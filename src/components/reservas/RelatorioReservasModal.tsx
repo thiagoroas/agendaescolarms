@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Reserva, Recurso, Escola } from '../data/mockData';
-import { horarios } from '../data/horarios';
+import { Reserva, Recurso, Escola } from "@/data/mockData";
+import { horarios } from "@/data/horarios";
 import { X, Printer, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
