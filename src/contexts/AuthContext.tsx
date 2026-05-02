@@ -20,6 +20,7 @@ interface AuthContextType {
   profile: Profile | null;
   selectedEscolaId: string | null;
   loading: boolean;
+  profileLoading: boolean; // Novo: separa loading de profile
   login: (email: string, senha: string, remember: boolean) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   setSelectedEscolaId: (id: string) => void;
