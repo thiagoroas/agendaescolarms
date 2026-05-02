@@ -7,8 +7,10 @@ import { AlertCircle, CheckCircle2, Server, Shield, User, Globe } from "lucide-r
 
 export const DiagnosticPanel = () => {
   const { user, profile } = useAuth();
-  const [edgeFunctionStatus, setEdgeFunctionStatus] = useState<"checking" | "ok" | "error" | "unauthorized">("checking");
+  const [edgeFunctionStatus, setEdgeFunctionStatus] = useState<"idle" | "checking" | "ok" | "error" | "unauthorized">("idle");
   const [edgeError, setEdgeError] = useState<string | null>(null);
+  const [lastResponse, setLastResponse] = useState<any>(null);
+  const [tokenSent, setTokenSent] = useState<boolean>(false);
 
   useEffect(() => {
     const checkEdgeFunction = async () => {
