@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { escolas, Escola } from "../data/mockData";
+import { escolas as initialEscolas, Escola } from "../data/mockData";
+import { getMockEscolas, saveMockEscolas } from "../data/storage";
+import { isSupabaseConfigured } from "../lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Plus, Building2, MapPin, Search, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +27,7 @@ const AdminEscolasPage = () => {
   const [telefone, setTelefone] = useState("");
 
   useEffect(() => {
-    setLocalEscolas(escolas);
+    setLocalEscolas(getMockEscolas());
   }, []);
 
   const filteredEscolas = localEscolas.filter(e => 
@@ -47,7 +49,13 @@ const AdminEscolasPage = () => {
       status: "ativa" as const,
     };
 
-    setLocalEscolas(prev => [novaEscola, ...prev]);
+    setLocalEscolas(prev => {
+      const updated = [novaEscola, ...prev];
+      if (!isSupabaseConfigured) {
+        saveMockEscolas(updated);
+      }
+      return updated;
+    });
     
     // Reset
     setNome("");

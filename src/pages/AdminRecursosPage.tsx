@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { recursos, Recurso } from "../data/mockData";
+import { recursos as initialRecursos, Recurso } from "../data/mockData";
+import { getMockRecursos, saveMockRecursos } from "../data/storage";
 import { Button } from "@/components/ui/button";
 import { Plus, Monitor, Laptop, Projector, Settings2, School, Users, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,7 @@ const AdminRecursosPage = () => {
   const [corPersonalizada, setCorPersonalizada] = useState<string | null>(null);
 
   useEffect(() => {
-    setLocalRecursos(recursos);
+    setLocalRecursos(getMockRecursos());
   }, []);
 
   const schoolRecursos = localRecursos.filter(r => r.escola_id === profile?.escola_id);
@@ -78,7 +79,13 @@ const AdminRecursosPage = () => {
       ativo: true,
     };
 
-    setLocalRecursos(prev => [...prev, novoRecurso]);
+    setLocalRecursos(prev => {
+      const updated = [...prev, novoRecurso];
+      if (!isSupabaseConfigured) {
+        saveMockRecursos(updated);
+      }
+      return updated;
+    });
     setNome("");
     setTipo("outro");
     setCorPersonalizada(null);
@@ -103,7 +110,7 @@ const AdminRecursosPage = () => {
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-3xl flex items-start gap-3 shadow-sm">
           <Info className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
           <div className="text-xs text-amber-800 leading-relaxed">
-            <span className="font-bold">Modo Protótipo Ativo:</span> O cadastro e alteração de recursos são simulados. As mudanças não serão salvas permanentemente até que o Supabase seja configurado.
+            <span className="font-bold">Modo Protótipo Ativo:</span> O cadastro e alteração de recursos são salvos localmente no seu navegador. As mudanças serão mantidas entre recarregamentos de página.
           </div>
         </div>
       )}
