@@ -66,39 +66,93 @@ const AdminProfessoresPage = () => {
     return matchesSearch;
   });
 
+  const openModal = (u?: Usuario) => {
+    if (u) {
+      setEditingUserId(u.id);
+      setNome(u.nome);
+      setEmail(u.email);
+      setSenha(""); // Don't show password for editing
+      setConfirmarSenha("");
+      setPapel(u.papel as any);
+      setEscolaId(u.escola_id);
+      setDisciplinas(u.disciplinas?.join(", ") || "");
+      setStatus(u.status);
+    } else {
+      setEditingUserId(null);
+      setNome("");
+      setEmail("");
+      setSenha("");
+      setConfirmarSenha("");
+      setPapel(activeTab === "professores" ? "professor" : "admin_lab");
+      setEscolaId(isAdminLab ? (profile?.escola_id || "") : (selectedEscolaId || ""));
+      setDisciplinas("");
+      setStatus("ativo");
+    }
+    setIsModalOpen(true);
+  };
+
   const handleSalvarUsuario = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!nome.trim() || nome.trim().length < 3) { toast.error("Nome inválido (mínimo 3 caracteres)"); return; }
     if (!email.trim() || !email.includes("@")) { toast.error("E-mail inválido"); return; }
-    if (senha.length < 6) { toast.error("A senha deve ter no mínimo 6 caracteres"); return; }
-    if (senha !== confirmarSenha) { toast.error("As senhas não coincidem"); return; }
-
-    const novoUsuario: Usuario = {
-      id: "user-" + Date.now(),
-      nome: nome.trim(),
-      email: email.trim(),
-      escola_id: (selectedEscolaId || profile?.escola_id) || "",
-      papel: papel,
-      status: "ativo"
-    };
-
-    setLocalUsers(prev => {
-      const updated = [novoUsuario, ...prev];
-      if (!isSupabaseConfigured) {
-        saveMockUsuarios(updated as any);
-      }
-      return updated;
-    });
     
-    setNome("");
-    setEmail("");
-    setSenha("");
-    setConfirmarSenha("");
-    setPapel("professor");
+    // Only require password on creation
+    if (!editingUserId) {
+      if (senha.length < 6) { toast.error("A senha deve ter no mínimo 6 caracteres"); return; }
+      if (senha !== confirmarSenha) { toast.error("As senhas não coincidem"); return; }
+    } else if (senha && senha.length < 6) {
+      toast.error("A nova senha deve ter no mínimo 6 caracteres"); return;
+    }
+
+    if (!escolaId) {
+      toast.error("Vínculo com escola é obrigatório");
+      return;
+    }
+
+    const disciplinasArray = disciplinas.split(",").map(d => d.trim()).filter(d => d !== "");
+
+    if (editingUserId) {
+      setLocalUsers(prev => {
+        const updated = prev.map(u => {
+          if (u.id === editingUserId) {
+            return {
+              ...u,
+              nome: nome.trim(),
+              email: email.trim(),
+              escola_id: escolaId,
+              papel: papel,
+              status: status,
+              disciplinas: papel === "professor" ? disciplinasArray : undefined,
+              ...(senha ? { senha } : {})
+            };
+          }
+          return u;
+        });
+        if (!isSupabaseConfigured) saveMockUsuarios(updated as any);
+        return updated;
+      });
+      toast.success("Usuário atualizado com sucesso!");
+    } else {
+      const novoUsuario: Usuario = {
+        id: "user-" + Date.now(),
+        nome: nome.trim(),
+        email: email.trim(),
+        escola_id: escolaId,
+        papel: papel,
+        status: "ativo",
+        disciplinas: papel === "professor" ? disciplinasArray : undefined
+      };
+
+      setLocalUsers(prev => {
+        const updated = [{ ...novoUsuario, senha }, ...prev];
+        if (!isSupabaseConfigured) saveMockUsuarios(updated as any);
+        return updated;
+      });
+      toast.success(`${papel === "professor" ? "Professor" : "Admin do Laboratório"} cadastrado com sucesso!`);
+    }
+    
     setIsModalOpen(false);
-    
-    toast.success(`${papel === "professor" ? "Professor" : "Admin do Laboratório"} cadastrado com sucesso!`);
   };
 
   const getStatusBadge = (status: Usuario["status"]) => {
