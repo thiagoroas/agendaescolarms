@@ -135,27 +135,69 @@ export const DiagnosticPanel = () => {
             <Server className="h-4 w-4 text-slate-400" />
             <span className="text-xs font-medium">Edge Function (manage-user)</span>
           </div>
-          {edgeFunctionStatus === "checking" && (
-            <span className="text-xs text-slate-400 animate-pulse">Testando conectividade...</span>
-          )}
-          {edgeFunctionStatus === "ok" && (
-            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
-              <CheckCircle2 className="h-3 w-3" /> Acessível
-            </Badge>
-          )}
-          {edgeFunctionStatus === "error" && (
-            <div className="flex flex-col items-end">
-              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 gap-1">
-                <AlertCircle className="h-3 w-3" /> Erro/Não Deployada
+          <div className="flex items-center gap-2">
+            {edgeFunctionStatus === "checking" && (
+              <span className="text-xs text-slate-400 animate-pulse">Testando...</span>
+            )}
+            {edgeFunctionStatus === "ok" && (
+              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
+                <CheckCircle2 className="h-3 w-3" /> Acessível
               </Badge>
-              {edgeError && <span className="text-[10px] text-red-500 mt-1">{edgeError}</span>}
-            </div>
-          )}
-          {edgeFunctionStatus === "unauthorized" && (
-            <span className="text-xs text-slate-400">Requer Login Supabase</span>
-          )}
+            )}
+            {edgeFunctionStatus === "error" && (
+              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 gap-1">
+                <AlertCircle className="h-3 w-3" /> Erro
+              </Badge>
+            )}
+            {edgeFunctionStatus === "unauthorized" && (
+              <span className="text-xs text-slate-400">Requer Login</span>
+            )}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 w-7 p-0" 
+              onClick={() => checkEdgeFunction()}
+              disabled={edgeFunctionStatus === "checking"}
+            >
+              <RefreshCcw className={`h-3 w-3 ${edgeFunctionStatus === "checking" ? "animate-spin" : ""}`} />
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
+          <div className="flex items-center gap-2">
+            <Lock className="h-4 w-4 text-slate-400" />
+            <span className="text-xs font-medium">Auth Token Sent</span>
+          </div>
+          <Badge variant="outline" className={tokenSent ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
+            {tokenSent ? "Sim" : "Não"}
+          </Badge>
         </div>
       </CardContent>
+
+      {(edgeError || lastResponse) && (
+        <CardFooter className="flex flex-col items-start bg-slate-50 border-t border-blue-100 p-4 gap-3">
+          {edgeError && (
+            <div className="w-full p-2 bg-red-50 border border-red-100 rounded text-[10px] text-red-700 font-mono">
+              <strong>Erro:</strong> {edgeError}
+            </div>
+          )}
+          
+          {lastResponse && (
+            <div className="w-full">
+              <span className="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Última Resposta (JSON):</span>
+              <pre className="p-2 bg-slate-900 text-slate-300 rounded text-[10px] font-mono overflow-auto max-h-32 w-full">
+                {JSON.stringify(lastResponse, null, 2)}
+              </pre>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 text-[10px] text-blue-700 bg-blue-100/50 p-2 rounded w-full">
+            <Terminal className="h-3 w-3 shrink-0" />
+            <span>Se aparecer erro, faça deploy com: <strong>supabase functions deploy manage-user</strong></span>
+          </div>
+        </CardFooter>
+      )}
     </Card>
   );
 };
