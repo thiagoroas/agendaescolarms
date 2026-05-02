@@ -59,6 +59,19 @@ serve(async (req) => {
 
     const { action, userData } = await req.json()
 
+    // --- PING ACTION (Diagnosis) ---
+    if (action === 'ping') {
+      return new Response(JSON.stringify({ 
+        ok: true, 
+        user: requester.email, 
+        role: requesterProfile.papel,
+        status: requesterProfile.status
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      })
+    }
+
     // --- CREATE ACTION ---
     if (action === 'create') {
       const { email, password, nome, papel, escola_id, status, disciplinas } = userData

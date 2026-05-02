@@ -12,6 +12,7 @@ export const DiagnosticPanel = () => {
   const [edgeError, setEdgeError] = useState<string | null>(null);
   const [lastResponse, setLastResponse] = useState<any>(null);
   const [tokenSent, setTokenSent] = useState<boolean>(false);
+  const [hasAccessToken, setHasAccessToken] = useState<boolean>(false);
 
   const checkEdgeFunction = async () => {
     // Mesmo que isSupabaseConfigured seja falso, se tivermos um user e um token, tentamos
@@ -25,17 +26,19 @@ export const DiagnosticPanel = () => {
     setEdgeError(null);
     setLastResponse(null);
     setTokenSent(false);
+    setHasAccessToken(false);
     
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       const session = sessionData.session;
       
       if (!session?.access_token) {
         setEdgeFunctionStatus("unauthorized");
-        setEdgeError("Sessão ativa não encontrada ou token expirado.");
+        setEdgeError(sessionError?.message || "Sessão existe visualmente, mas access_token não foi encontrado.");
         return;
       }
 
+      setHasAccessToken(true);
       setTokenSent(true);
 
       // Chamada explícita com o token para garantir o envio
@@ -85,50 +88,72 @@ export const DiagnosticPanel = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
-          <div className="flex items-center gap-2">
-            <Server className="h-4 w-4 text-slate-400" />
-            <span className="text-xs font-medium">Supabase Configurado</span>
-          </div>
-          {isSupabaseConfigured ? (
-            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
-              <CheckCircle2 className="h-3 w-3" /> Sim
-            </Badge>
-          ) : user && profile && !localStorage.getItem("agenda_mock_user") ? (
-            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
-              <CheckCircle2 className="h-3 w-3" /> Detectado via Sessão
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1">
-              <AlertCircle className="h-3 w-3" /> Não (Fallback Local)
-            </Badge>
-          )}
-        </div>
-
+        {/* Bloco A: Variáveis Vite */}
         <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-slate-400" />
             <span className="text-xs font-medium">VITE_SUPABASE_URL</span>
           </div>
-          <span className="text-[10px] text-slate-500 font-mono truncate max-w-[120px]">
-            {import.meta.env.VITE_SUPABASE_URL ? "Configurada ✓" : "Ausente ✗"}
-          </span>
+          <Badge variant="outline" className={import.meta.env.VITE_SUPABASE_URL ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
+            {import.meta.env.VITE_SUPABASE_URL ? "Presente" : "Ausente"}
+          </Badge>
         </div>
 
+        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-slate-400" />
+            <span className="text-xs font-medium">VITE_SUPABASE_ANON_KEY</span>
+          </div>
+          <Badge variant="outline" className={import.meta.env.VITE_SUPABASE_ANON_KEY ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
+            {import.meta.env.VITE_SUPABASE_ANON_KEY ? "Presente" : "Ausente"}
+          </Badge>
+        </div>
+
+        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
+          <div className="flex items-center gap-2">
+            <Server className="h-4 w-4 text-slate-400" />
+            <span className="text-xs font-medium">Modo Supabase</span>
+          </div>
+          {isSupabaseConfigured ? (
+            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
+              <CheckCircle2 className="h-3 w-3" /> Real
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1">
+              <AlertCircle className="h-3 w-3" /> Local/Demo
+            </Badge>
+          )}
+        </div>
+
+        {/* Bloco B: Sessão Real */}
         <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-slate-400" />
             <span className="text-xs font-medium">Sessão Ativa</span>
           </div>
-          {user ? (
-            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
-              <CheckCircle2 className="h-3 w-3" /> Sim
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 gap-1">
-              Não
-            </Badge>
-          )}
+          <Badge variant="outline" className={user ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
+            {user ? "Sim" : "Não"}
+          </Badge>
+        </div>
+
+        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
+          <div className="flex items-center gap-2">
+            <Lock className="h-4 w-4 text-slate-400" />
+            <span className="text-xs font-medium">Access Token</span>
+          </div>
+          <Badge variant="outline" className={hasAccessToken ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
+            {hasAccessToken ? "Presente" : "Ausente"}
+          </Badge>
+        </div>
+
+        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-slate-400" />
+            <span className="text-xs font-medium">Auth Token Sent</span>
+          </div>
+          <Badge variant="outline" className={tokenSent ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
+            {tokenSent ? "Sim" : "Não"}
+          </Badge>
         </div>
 
         <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
@@ -149,18 +174,8 @@ export const DiagnosticPanel = () => {
 
         <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
           <div className="flex items-center gap-2">
-            <Lock className="h-4 w-4 text-slate-400" />
-            <span className="text-xs font-medium">Auth Token Sent</span>
-          </div>
-          <Badge variant="outline" className={tokenSent ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}>
-            {tokenSent ? "Sim" : "Não"}
-          </Badge>
-        </div>
-
-        <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
-          <div className="flex items-center gap-2">
             <Server className="h-4 w-4 text-slate-400" />
-            <span className="text-xs font-medium">Edge Function (manage-user)</span>
+            <span className="text-xs font-medium">Edge manage-user</span>
           </div>
           <div className="flex items-center gap-2">
             {edgeFunctionStatus === "checking" && (
