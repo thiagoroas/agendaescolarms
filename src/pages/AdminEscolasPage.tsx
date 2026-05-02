@@ -197,7 +197,9 @@ const AdminEscolasPage = () => {
 
             <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Salvar Escola</Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                {editingEscola ? "Salvar Alterações" : "Salvar Escola"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
