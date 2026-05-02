@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { isSupabaseConfigured } from "../lib/supabase";
 import { usuarios, Usuario } from "../data/mockData";
 import { Button } from "@/components/ui/button";
-import { Plus, UserPlus, UserCheck, Search } from "lucide-react";
+import { Plus, UserPlus, UserCheck, Search, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -92,6 +93,15 @@ const AdminProfessoresPage = () => {
           onChange={e => setSearchTerm(e.target.value)}
         />
       </div>
+
+      {!isSupabaseConfigured && (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3 shadow-sm">
+          <Info className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+          <div className="text-xs text-amber-800 leading-relaxed">
+            <span className="font-bold">Modo Protótipo Ativo:</span> O cadastro de novos usuários é temporário e será perdido ao atualizar a página. Configure o Supabase para persistência real.
+          </div>
+        </div>
+      )}
 
       <div className="rounded-xl border bg-white shadow-sm overflow-hidden hidden md:block">
         <Table>

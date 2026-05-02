@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { isSupabaseConfigured } from "../lib/supabase";
 import { recursos, Recurso } from "../data/mockData";
 import { Button } from "@/components/ui/button";
-import { Plus, Monitor, Laptop, Projector, Settings2, School, Users } from "lucide-react";
+import { Plus, Monitor, Laptop, Projector, Settings2, School, Users, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -97,6 +98,15 @@ const AdminRecursosPage = () => {
           Novo Recurso
         </Button>
       </header>
+
+      {!isSupabaseConfigured && (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-3xl flex items-start gap-3 shadow-sm">
+          <Info className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+          <div className="text-xs text-amber-800 leading-relaxed">
+            <span className="font-bold">Modo Protótipo Ativo:</span> O cadastro e alteração de recursos são simulados. As mudanças não serão salvas permanentemente até que o Supabase seja configurado.
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {schoolRecursos.map((r) => (
