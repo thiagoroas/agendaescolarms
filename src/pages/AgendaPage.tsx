@@ -48,6 +48,7 @@ const AgendaPage = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [reservasState, setReservasState] = useState<Reserva[]>([]);
   const [recursosState, setRecursosState] = useState<Recurso[]>([]);
+  const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
   
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -62,8 +63,6 @@ const AgendaPage = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
   const [isModalDetalhesOpen, setIsModalDetalhesOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{date: string, aula: number, turno: "manha" | "tarde"} | null>(null);
   const [activeReserva, setActiveReserva] = useState<{reserva: Reserva, recurso: Recurso} | null>(null);
