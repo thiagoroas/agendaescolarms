@@ -110,6 +110,7 @@ const AgendaPage = () => {
   };
 
   const getReservaForSlot = (date: Date, aula: number) => {
+    if (!date) return null;
     const dateStr = format(date, "yyyy-MM-dd");
     const list = isSupabaseConfigured ? initialReservas : reservasState;
     return list.find(r =>
@@ -216,7 +217,7 @@ const AgendaPage = () => {
   const weekLabel = `${format(monday, "d 'de' MMM", { locale: ptBR })} – ${format(weekDates[4], "d 'de' MMM", { locale: ptBR })}`;
 
   return (
-    <div className="agenda-proto">
+    <div className="agenda-proto overflow-y-auto pb-24 md:pb-8">
       {/* Topbar */}
       <div className="topbar">
         <div className="flex-1">
