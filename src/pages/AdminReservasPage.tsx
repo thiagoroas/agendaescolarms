@@ -15,15 +15,14 @@ import { cn } from "@/lib/utils";
 
 const AdminReservasPage = () => {
   const { profile, selectedEscolaId } = useAuth();
+  const { escolas, loading: loadingEscolas } = useEscolas();
   const [searchTerm, setSearchTerm] = useState("");
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [recursos, setRecursos] = useState<Recurso[]>([]);
-  const [escolas, setEscolas] = useState<Escola[]>([]);
 
   useEffect(() => {
     setReservas(getMockReservas());
     setRecursos(getMockRecursos());
-    setEscolas(getMockEscolas());
   }, []);
 
   const schoolReservas = reservas
