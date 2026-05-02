@@ -23,12 +23,9 @@ interface NovaReservaModalProps {
 
 const TURMAS_OPCOES = [
   {
-    label: "Ensino Fundamental",
-    options: ["5º Ano", "6º Ano", "7º Ano", "8º Ano", "9º Ano"]
-  },
-  {
-    label: "Ensino Médio",
+    label: "Turmas",
     options: [
+      "5º Ano", "6º Ano", "7º Ano", "8º Ano", "9º Ano",
       "1º Ano A", "1º Ano B", "1º Ano C",
       "2º Ano A", "2º Ano B", "2º Ano C",
       "3º Ano A", "3º Ano B", "3º Ano C"
