@@ -44,6 +44,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     data: "",
     recursoId: "",
     aulas: [] as number[],
+    objetivo_pedagogico: "",
     observacao: ""
   });
 
@@ -129,6 +130,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
         data: initialData?.date || "",
         recursoId: "",
         aulas: initialData?.aula ? [initialData.aula] : [],
+        objetivo_pedagogico: "",
         observacao: ""
       });
       setSelectedProfessor(initialProfessor);
@@ -177,6 +179,12 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     if (!formData.recursoId) { toast.error("Selecione um recurso"); return; }
     if (formData.aulas.length === 0) { toast.error("Selecione pelo menos uma aula"); return; }
     
+    // Objetivo pedagógico é obrigatório para professor
+    if (profile?.role === 'professor' && !formData.objetivo_pedagogico) {
+      toast.error("Informe o objetivo pedagógico da aula");
+      return;
+    }
+    
     if (conflictingAulas.length > 0) {
       toast.error(`Este recurso já está reservado nesta data para a(s) aula(s): ${conflictingAulas.join(', ')}.`);
       return;
@@ -211,7 +219,9 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           turno: (aula <= 4 ? "manha" : "tarde") as "manha" | "tarde",
           aula: aula,
           horario: h ? `${h.inicio} – ${h.fim}` : "",
+          objetivo_pedagogico: formData.objetivo_pedagogico,
           observacao: formData.observacao,
+          status: (profile?.role === 'professor' ? "pendente" : "aprovada") as any,
           criado_em: new Date().toISOString()
         };
         newReservas.push(newReserva);
@@ -380,6 +390,19 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="space-y-2 pt-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Objetivo Pedagógico {profile?.role === 'professor' && <span className="text-red-500">*</span>}
+            </Label>
+            <Input 
+              required={profile?.role === 'professor'}
+              value={formData.objetivo_pedagogico} 
+              onChange={e => setFormData({...formData, objetivo_pedagogico: e.target.value})} 
+              placeholder="Ex: Aula prática de pesquisa, desenvolvimento de atividade em grupo..." 
+              className="rounded-xl bg-slate-50 border-slate-100 focus:bg-white transition-all font-medium h-10" 
+            />
           </div>
 
           <div className="space-y-2 pt-2">
