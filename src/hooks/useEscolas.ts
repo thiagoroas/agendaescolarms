@@ -195,7 +195,14 @@ export const useEscolas = () => {
   };
 
   const toggleEscolaStatus = async (id: string, currentStatus: "ativa" | "inativa") => {
-    const newStatus = currentStatus === "ativa" ? "inativa" : "ativa";
+    if (newStatus === "inativa" && selectedEscolaId === id) {
+      const remainingEscolas = escolas.filter(e => e.id !== id && e.status === "ativa");
+      if (remainingEscolas.length > 0) {
+        setSelectedEscolaId(remainingEscolas[0].id);
+      } else {
+        setSelectedEscolaId(null);
+      }
+    }
     return updateEscola(id, { status: newStatus });
   };
 
