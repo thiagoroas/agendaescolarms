@@ -254,7 +254,7 @@ const AdminReservasPage = () => {
                     }
                   }}
                 >
-                  Excluir
+                  Cancelar
                 </Button>
               </div>
             </div>
