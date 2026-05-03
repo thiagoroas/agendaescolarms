@@ -164,21 +164,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
+    setLoading(true);
+    console.log("[AUTH] iniciando logout completo");
     try {
-      await supabase.auth.signOut();
+      // Sign out global para invalidar todas as sessões
+      await supabase.auth.signOut({ scope: "global" });
     } catch (err) {
       console.error("[AUTH] logout error", err);
     }
+
+    // Limpar estados locais
     setUser(null);
     setProfile(null);
     setError(null);
-    setLoading(false);
     
-    // Limpar apenas chaves Supabase
+    // Limpar storage de forma agressiva
     Object.keys(localStorage)
       .filter(k => k.startsWith("sb-"))
       .forEach(k => localStorage.removeItem(k));
       
+    sessionStorage.clear();
+    
+    console.log("[AUTH] logout finalizado, redirecionando");
+    setLoading(false);
     window.location.href = "/login";
   };
 
