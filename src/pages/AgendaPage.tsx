@@ -568,7 +568,7 @@ const AgendaPage = () => {
                         </div>
                         <div className="flex items-center gap-3 mt-auto">
                           <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md">{reserva.turma}</span>
-                          <span className="text-[11px] font-medium text-slate-500">• {recurso.nome}</span>
+                          <span className="text-[11px] font-medium text-slate-500 truncate">• {recurso.nome}</span>
                         </div>
                       </button>
                     ) : (
