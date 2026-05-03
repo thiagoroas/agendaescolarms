@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as Cale
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../contexts/AuthContext";
-import { isSupabaseConfigured } from "../lib/supabase";
+import { isSupabaseConfigured, isValidUUID } from "../lib/supabase";
 import { Reserva, Recurso, AvisoLaboratorio } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
 import { useRecursos } from "@/hooks/useRecursos";
@@ -97,6 +97,8 @@ const AgendaPage = () => {
   const currentSchoolId = selectedEscolaId || profile?.escola_id;
 
   const reservasHoje = useMemo(() => {
+    if (isSupabaseConfigured && !isValidUUID(currentSchoolId)) return [];
+    
     const todayStr = format(new Date(), "yyyy-MM-dd");
     return reservasState.filter(r => 
       r.escola_id === currentSchoolId && 
@@ -123,6 +125,9 @@ const AgendaPage = () => {
   const getReservaForSlot = (date: Date, aula: number) => {
     if (!date) return null;
     const dateStr = format(date, "yyyy-MM-dd");
+
+    if (isSupabaseConfigured && !isValidUUID(currentSchoolId)) return null;
+
     return reservasState.find(r =>
       r.data === dateStr &&
       r.aula === aula &&

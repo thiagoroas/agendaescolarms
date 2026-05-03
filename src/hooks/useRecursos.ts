@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUUID } from "@/lib/supabase";
 import { Recurso } from "@/data/mockData";
 import { getMockRecursos, saveMockRecursos } from "@/data/storage";
 import { toast } from "sonner";
@@ -16,8 +16,12 @@ export const useRecursos = (escolaId?: string) => {
 
   const fetchRecursos = async () => {
     // Só busca se auth finalizou e temos uma escola definida
-    if (authLoading || !targetEscolaId) {
-      if (!authLoading) setLoading(false);
+    if (authLoading) return;
+
+    if (!targetEscolaId || (isSupabaseConfigured && !isValidUUID(targetEscolaId))) {
+      console.log("[RECURSOS] EscolaId inválido ou ausente, ignorando fetch:", targetEscolaId);
+      setRecursos([]);
+      setLoading(false);
       return;
     }
 

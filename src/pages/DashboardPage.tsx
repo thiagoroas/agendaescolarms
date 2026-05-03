@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { isSupabaseConfigured } from "../lib/supabase";
+import { isSupabaseConfigured, isValidUUID } from "../lib/supabase";
 import { getMockEscolas } from "../data/storage";
 import { useRecursos } from "@/hooks/useRecursos";
 import { useReservas } from "@/hooks/useReservas";
@@ -74,11 +74,15 @@ const DashboardPage = () => {
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
   
   const escolaAtiva = todasEscolas.find(e => e.id === currentEscolaId);
-  const recursosEscola = todosRecursos.filter(r => r.escola_id === currentEscolaId);
+  const recursosEscola = useMemo(() => {
+    if (isSupabaseConfigured && !isValidUUID(currentEscolaId)) return [];
+    return todosRecursos.filter(r => r.escola_id === currentEscolaId);
+  }, [todosRecursos, currentEscolaId]);
   
   const hojeStr = format(new Date(), "yyyy-MM-dd");
   
   const reservasEscola = useMemo(() => {
+    if (isSupabaseConfigured && !isValidUUID(currentEscolaId)) return [];
     return todasReservas.filter(r => r.escola_id === currentEscolaId);
   }, [todasReservas, currentEscolaId]);
 

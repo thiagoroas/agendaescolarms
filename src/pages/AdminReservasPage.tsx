@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useEscolas } from "@/hooks/useEscolas";
 import { useReservas } from "@/hooks/useReservas";
@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { isValidUUID, isSupabaseConfigured } from "@/lib/supabase";
 
 const AdminReservasPage = () => {
   const { profile, selectedEscolaId } = useAuth();
@@ -22,14 +23,22 @@ const AdminReservasPage = () => {
   const { recursos } = useRecursos();
 
 
-  const schoolReservas = reservas
-    .filter(r => r.escola_id === (selectedEscolaId || profile?.escola_id))
-    .filter(r => 
-      r.nome_professor.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      r.disciplina.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.turma.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => b.data.localeCompare(a.data));
+  const currentEscolaId = selectedEscolaId || profile?.escola_id;
+
+  const schoolReservas = useMemo(() => {
+    if (isSupabaseConfigured && !isValidUUID(currentEscolaId)) {
+      return [];
+    }
+    
+    return reservas
+      .filter(r => r.escola_id === currentEscolaId)
+      .filter(r => 
+        r.nome_professor.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        r.disciplina.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.turma.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .sort((a, b) => b.data.localeCompare(a.data));
+  }, [reservas, currentEscolaId, searchTerm]);
 
   return (
     <div className="space-y-6">

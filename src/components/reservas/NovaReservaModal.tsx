@@ -13,7 +13,7 @@ import { Usuario, Reserva } from "../../data/mockData";
 import { getMockUsuarios, getMockReservas } from "../../data/storage";
 import { useRecursos } from "@/hooks/useRecursos";
 import { useReservas } from "@/hooks/useReservas";
-import { supabase, isSupabaseConfigured } from "../../lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUUID } from "../../lib/supabase";
 import { horarios } from "../../data/horarios";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -102,8 +102,15 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
   useEffect(() => {
     const fetchExistingReservations = async () => {
-      if (!isOpen || !formData.data || !formData.recursoId) return;
+      const targetEscolaId = profile?.escola_id;
+      if (!isOpen || !formData.data || !formData.recursoId || !targetEscolaId) return;
       
+      // Validação de UUID
+      if (isSupabaseConfigured && (!isValidUUID(targetEscolaId) || !isValidUUID(formData.recursoId))) {
+        console.warn("[NovaReservaModal] UUID inválido para consulta de conflitos:", { targetEscolaId, recursoId: formData.recursoId });
+        return;
+      }
+
       setIsCheckingConflicts(true);
       try {
         if (isSupabaseConfigured) {
@@ -112,7 +119,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             .select('*')
             .eq('data', formData.data)
             .eq('recurso_id', formData.recursoId)
-            .eq('escola_id', profile?.escola_id)
+            .eq('escola_id', targetEscolaId)
             .neq('status', 'cancelada');
           
           if (error) throw error;
@@ -161,7 +168,11 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
         ? localStorage.getItem('agenda_selected_escola_id') || profile?.escola_id
         : profile?.escola_id;
 
-      if (!targetEscolaId) return;
+      if (!targetEscolaId || (isSupabaseConfigured && !isValidUUID(targetEscolaId))) {
+        console.warn("[NovaReservaModal] EscolaId inválido para buscar professores:", targetEscolaId);
+        setProfessoresDaEscola([]);
+        return;
+      }
 
       setIsLoadingProfessores(true);
       try {
