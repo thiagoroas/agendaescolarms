@@ -110,10 +110,7 @@ const DashboardPage = () => {
 
   const proximasReservas = useMemo(() => {
     let list = reservasEscola.filter(r => {
-      const rDate = parseISO(r.data);
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
-      return rDate >= hoje;
+      return r.data > hojeStr;
     });
     
     if (profile?.role === "professor") {
@@ -121,7 +118,7 @@ const DashboardPage = () => {
     }
     
     return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, 5);
-  }, [reservasEscola, profile?.role, user?.id]);
+  }, [reservasEscola, hojeStr, profile?.role, user?.id]);
 
   const alertas = useMemo(() => {
     return reservasEscola.filter(r => r.status === "manutencao" || r.status === "bloqueada");
@@ -191,7 +188,7 @@ const DashboardPage = () => {
               <Badge className="bg-blue-600 text-white border-none font-black">{reservasHoje.length}</Badge>
             </div>
             <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Reservas de Hoje</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1">Agendamentos</h3>
+            <h3 className="text-xl font-black text-slate-900 mt-1">Agenda Hoje</h3>
           </CardContent>
         </Card>
 
@@ -311,7 +308,7 @@ const DashboardPage = () => {
                           <User size={12} className="text-slate-300" /> {res.nome_professor} · {res.turma}
                         </p>
                         <p className="text-xs font-bold text-slate-400 flex items-center gap-1.5 mt-1">
-                          <Monitor size={12} className="text-slate-200" /> {rec?.nome} · Aula {res.aula}
+                          <Monitor size={12} className="text-slate-200" /> {rec?.nome} · {res.aula}ª Aula {res.horario ? `(${res.horario})` : ""}
                         </p>
                       </div>
                       
