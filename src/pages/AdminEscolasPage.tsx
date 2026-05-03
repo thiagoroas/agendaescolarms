@@ -237,7 +237,18 @@ const AdminEscolasPage = () => {
               <Label htmlFor="telefone">Telefone (Opcional)</Label>
               <Input id="telefone" value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="(00) 0000-0000" />
             </div>
-
+            {!editingEscola && (
+              <div className="flex items-center space-x-2 pt-2">
+                <Checkbox 
+                  id="createResources" 
+                  checked={createDefaultResources} 
+                  onCheckedChange={(checked) => setCreateDefaultResources(!!checked)}
+                />
+                <Label htmlFor="createResources" className="text-xs cursor-pointer">
+                  Criar recursos padrão: Laboratório de Informática e Projetor
+                </Label>
+              </div>
+            )}
             <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
