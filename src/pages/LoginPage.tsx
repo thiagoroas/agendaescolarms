@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -42,6 +42,13 @@ const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+
+    // Se houver uma sessão antiga/conflitante, deslogar antes de tentar novo login
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      console.log("[LOGIN] Sessão antiga detectada, limpando antes de novo login...");
+      await supabase.auth.signOut();
+    }
 
     const result = await login(email, password, remember);
     

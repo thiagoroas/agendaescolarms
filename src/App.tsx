@@ -91,17 +91,20 @@ const AppContent = () => {
   }
 
   // 3. Se está logado mas não tem perfil (e não é modo demo)
-  if (!profile && isSupabaseConfigured) {
-    return (
       <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
         <h1 className="mb-2 text-2xl font-bold text-destructive">Perfil não encontrado</h1>
-        <p className="text-muted-foreground">Não encontramos dados de perfil vinculados a este e-mail ({user.email}).</p>
-        <button onClick={() => logout()} className="mt-6 px-4 py-2 bg-primary text-white rounded-md">
+        <div className="space-y-2 mb-6">
+          <p className="text-muted-foreground max-w-md">Não encontramos dados de perfil vinculados a este e-mail.</p>
+          <div className="text-xs text-muted-foreground bg-muted p-3 rounded-lg text-left overflow-auto max-w-md">
+            <p><strong>E-mail autenticado:</strong> {user.email}</p>
+            <p><strong>ID do usuário:</strong> {user.id}</p>
+            <p className="mt-2 text-amber-600 font-medium">⚠️ Existe usuário no Auth, mas não existe profile vinculado ao mesmo ID.</p>
+          </div>
+        </div>
+        <button onClick={() => logout()} className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:opacity-90 transition-opacity shadow-lg shadow-primary/20">
           Sair e tentar outro e-mail
         </button>
       </div>
-    );
-  }
 
   // 4. Se o perfil está pendente ou bloqueado
   if (profile?.status === "pendente") {
