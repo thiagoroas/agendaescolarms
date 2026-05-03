@@ -211,11 +211,12 @@ export const useEscolas = () => {
     if (isSupabaseConfigured) {
       try {
         // Verificar vínculos no Supabase
-        const [usersCheck, resourcesCheck, reservationsCheck, announcementsCheck] = await Promise.all([
+        const [usersCheck, resourcesCheck, reservationsCheck, announcementsCheck, schedulesCheck] = await Promise.all([
           supabase.from("profiles").select("id", { count: 'exact', head: true }).eq("escola_id", id),
           supabase.from("recursos").select("id", { count: 'exact', head: true }).eq("escola_id", id),
           supabase.from("reservas").select("id", { count: 'exact', head: true }).eq("escola_id", id),
-          supabase.from("avisos_laboratorio").select("id", { count: 'exact', head: true }).eq("escola_id", id)
+          supabase.from("avisos_laboratorio").select("id", { count: 'exact', head: true }).eq("escola_id", id),
+          supabase.from("horarios_escola").select("id", { count: 'exact', head: true }).eq("escola_id", id)
         ]);
 
         if (usersCheck.count && usersCheck.count > 0 || 
