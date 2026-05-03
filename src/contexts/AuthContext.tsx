@@ -139,26 +139,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
+    const revalidateSession = async () => {
+      // Se já temos usuário e profile, fazemos um refresh silencioso
+      if (user && profile) {
+        console.log("[AUTH] revalidating session (silent)");
+        await loadSessionAndProfile(true);
+      } else {
+        // Se não temos, carregamos normalmente
+        console.log("[AUTH] revalidating session (normal)");
+        await loadSessionAndProfile();
+      }
+    };
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        console.log("[AUTH] visibility visible");
-        // Se já temos usuário e profile, fazemos um refresh silencioso
-        if (user && profile) {
-          loadSessionAndProfile(true);
-        } else {
-          // Se não temos, carregamos normalmente (com loading se necessário)
-          loadSessionAndProfile();
-        }
+        console.log("[AUTH] visibility visible - Chrome mobile trigger");
+        revalidateSession();
+      }
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      console.log("[AUTH] pageshow event", { persisted: event.persisted });
+      if (event.persisted) {
+        console.log("[AUTH] page restored from bfcache - revalidating session");
+        revalidateSession();
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pageshow", handlePageShow);
 
     return () => {
       subscription.unsubscribe();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pageshow", handlePageShow);
     };
-  }, []);
+  }, [user, profile]);
 
   const login = async (email: string, senha: string, remember: boolean): Promise<{ success: boolean; error?: string }> => {
     setError(null);
