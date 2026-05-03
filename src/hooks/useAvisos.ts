@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUUID } from "@/lib/supabase";
 import { AvisoLaboratorio } from "@/data/mockData";
 import { getMockAvisos, createMockAviso, updateMockAviso, deleteMockAviso } from "@/data/storage";
 import { toast } from "sonner";
