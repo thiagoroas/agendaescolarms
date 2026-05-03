@@ -14,7 +14,7 @@ import { getMockUsuarios, getMockReservas } from "../../data/storage";
 import { useRecursos } from "@/hooks/useRecursos";
 import { useReservas } from "@/hooks/useReservas";
 import { supabase, isSupabaseConfigured, isValidUUID } from "../../lib/supabase";
-import { horarios } from "../../data/horarios";
+import { useHorarios } from "@/hooks/useHorarios";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -52,6 +52,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
   const { recursos: availableRecursos } = useRecursos();
   const { createReserva } = useReservas();
   const { avisos: avisosState, loading: loadingAvisos } = useAvisos();
+  const { horarios: escolaHorarios, loading: loadingHorarios } = useHorarios();
 
   const [formData, setFormData] = useState({
     professorId: "",
@@ -279,7 +280,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     }
   }, [formData.professorId, profile?.role, professoresDaEscola]);
 
-  const allHorarios = horarios.filter(h => !h.isIntervalo);
+  const allHorarios = escolaHorarios.filter(h => h.tipo === 'aula' && h.ativo);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -304,7 +305,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     
     try {
       for (const aula of formData.aulas) {
-        const h = allHorarios.find(hour => hour.aula === aula);
+        const h = allHorarios.find(hour => hour.ordem === aula);
         
         await createReserva({
           escola_id: profile?.escola_id || "",
@@ -315,9 +316,9 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           disciplina: formData.disciplina,
           turma: formData.turma,
           data: formData.data,
-          turno: (aula <= 4 ? "manha" : "tarde") as "manha" | "tarde",
+          turno: h ? (h.turno as "manha" | "tarde") : (aula <= 4 ? "manha" : "tarde"),
           aula: aula,
-          horario: h ? `${h.inicio} – ${h.fim}` : "",
+          horario: h ? `${h.hora_inicio.substring(0, 5)} – ${h.hora_fim.substring(0, 5)}` : "",
           objetivo_pedagogico: formData.objetivo_pedagogico,
           observacao: formData.observacao,
           status: "confirmada",
