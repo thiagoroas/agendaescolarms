@@ -79,13 +79,26 @@ export const DiagnosticPanel = () => {
   if (profile?.role !== "admin_plataforma") return null;
 
   return (
-    <Card className="border-blue-200 bg-blue-50/50 mb-6">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2 text-blue-800">
-          <Shield className="h-4 w-4" />
-          Painel de Diagnóstico (Apenas Admin Plataforma)
-        </CardTitle>
-      </CardHeader>
+    <div className="mb-6">
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 text-xs font-bold text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100 mb-2"
+      >
+        <Shield className="h-3 w-3" />
+        {isOpen ? "Ocultar diagnóstico técnico" : "Mostrar diagnóstico técnico"}
+        {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+      </Button>
+
+      {isOpen && (
+        <Card className="border-blue-200 bg-blue-50/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2 text-blue-800">
+              <Shield className="h-4 w-4" />
+              Painel de Diagnóstico (Apenas Admin Plataforma)
+            </CardTitle>
+          </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Bloco A: Variáveis Vite */}
         <div className="flex items-center justify-between p-2 bg-white rounded border border-blue-100">
