@@ -316,7 +316,9 @@ const PerfilPage = () => {
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                       <Building className="h-3 w-3" /> Escola Vinculada
                     </p>
-                    <p className="text-slate-900 font-semibold text-lg">{escola?.nome || "Não informada"}</p>
+                    <p className="text-slate-900 font-semibold text-lg">
+                      {profile?.role === "admin_plataforma" ? "Acesso global à plataforma" : (escola?.nome || "Não informada")}
+                    </p>
                   </div>
 
                   <div className="space-y-1.5">
