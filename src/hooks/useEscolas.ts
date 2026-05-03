@@ -219,11 +219,12 @@ export const useEscolas = () => {
           supabase.from("horarios_escola").select("id", { count: 'exact', head: true }).eq("escola_id", id)
         ]);
 
-        if (usersCheck.count && usersCheck.count > 0 || 
-            resourcesCheck.count && resourcesCheck.count > 0 || 
-            reservationsCheck.count && reservationsCheck.count > 0 || 
-            announcementsCheck.count && announcementsCheck.count > 0) {
-          toast.error("Não é possível excluir esta escola porque existem usuários, recursos, reservas ou avisos vinculados. Inative a escola ou remova os vínculos primeiro.");
+        if ((usersCheck.count && usersCheck.count > 0) || 
+            (resourcesCheck.count && resourcesCheck.count > 0) || 
+            (reservationsCheck.count && reservationsCheck.count > 0) || 
+            (announcementsCheck.count && announcementsCheck.count > 0) ||
+            (schedulesCheck.count && schedulesCheck.count > 0)) {
+          toast.error("Esta escola possui dados vinculados (professores, recursos, reservas, avisos ou horários). Para preservar o histórico, inative a escola em vez de excluir.");
           return false;
         }
 
