@@ -27,11 +27,15 @@ serve(async (req) => {
     // Get the session of the requester
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
+      console.error('No authorization header provided')
       throw new Error('No authorization header')
     }
 
-    const { data: { user: requester }, error: authError } = await supabaseClient.auth.getUser(authHeader.replace('Bearer ', ''))
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user: requester }, error: authError } = await supabaseClient.auth.getUser(token)
+    
     if (authError || !requester) {
+      console.error('Auth error or user not found:', authError)
       throw new Error('Invalid token')
     }
 
