@@ -58,6 +58,8 @@ const AppContent = () => {
   const location = useLocation();
   const [showEmergencyButton, setShowEmergencyButton] = React.useState(false);
 
+  console.log("[LOOP DEBUG] render App");
+
   React.useEffect(() => {
     let timer: NodeJS.Timeout;
     if (loading) {
