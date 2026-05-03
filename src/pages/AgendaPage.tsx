@@ -14,7 +14,8 @@ import { useReservas } from "@/hooks/useReservas";
 import { getMockEscolas, resetMockData, getMockRecursos, getMockReservas } from "../data/storage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { horarios, diasSemana } from "../data/horarios";
+import { useHorarios, HorarioEscola } from "@/hooks/useHorarios";
+import { diasSemana } from "../data/horarios";
 import { toast } from "sonner";
 import NovaReservaModal from "../components/reservas/NovaReservaModal";
 import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
@@ -68,6 +69,7 @@ const AgendaPage = () => {
   const { reservas: reservasState, cancelReserva, refresh: refreshReservas, error: errorReservas } = useReservas();
   const { recursos: schoolRecursos, loading: loadingRecursos, error: errorRecursos } = useRecursos();
   const { avisos: avisosState, loading: loadingAvisos, error: errorAvisos } = useAvisos();
+  const { horarios: escolaHorarios, loading: loadingHorarios } = useHorarios();
   const hasShownErrorToastRef = React.useRef(false);
 
   useEffect(() => {
@@ -179,8 +181,8 @@ const AgendaPage = () => {
     });
   }, [avisosState, currentSchoolId]);
 
-  const handleSlotClick = (date: Date, h: typeof horarios[0]) => {
-    const res = getReservaForSlot(date, h.aula);
+  const handleSlotClick = (date: Date, h: HorarioEscola) => {
+    const res = getReservaForSlot(date, h.ordem);
     if (res) {
       const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
       setActiveReserva({ reserva: res, recurso: rec! });
@@ -188,8 +190,8 @@ const AgendaPage = () => {
     } else {
       setSelectedSlot({
         date: format(date, "yyyy-MM-dd"),
-        aula: h.aula,
-        turno: h.turno
+        aula: h.ordem,
+        turno: h.turno as "manha" | "tarde"
       });
       setIsModalNovaOpen(true);
     }
