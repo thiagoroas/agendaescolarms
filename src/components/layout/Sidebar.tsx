@@ -13,47 +13,18 @@ import {
   LayoutDashboard,
   CheckCircle,
   ChevronDown,
-  Building,
-  Bell
+  Building
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useNavigation } from "@/hooks/useNavigation";
 
 const Sidebar = () => {
   const { profile, logout, selectedEscolaId, setSelectedEscolaId } = useAuth();
   const { escolas, loading } = useEscolas();
+  const { sections } = useNavigation();
   const escola = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
-
-  const handleEscolaChange = (id: string) => {
-    const novaEscola = escolas.find(e => e.id === id);
-    setSelectedEscolaId(id);
-    if (novaEscola) {
-      toast.success(`Escola ativa alterada para ${novaEscola.nome}`);
-    }
-  };
-
-  const menuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-    { icon: Calendar, label: "Agenda", path: "/agenda" },
-    { icon: BookOpen, label: "Minhas Reservas", path: "/minhas-reservas" },
-    { icon: User, label: "Perfil", path: "/perfil" },
-  ];
-
-  const adminItems = [
-    { icon: CheckCircle, label: "Central do Laboratório", path: "/admin/aprovacoes", roles: ["admin_lab", "admin_plataforma"] },
-    { icon: Bell, label: "Avisos", path: "/admin/avisos", roles: ["admin_lab", "admin_plataforma"] },
-    { icon: Users, label: "Professores", path: "/admin/professores", roles: ["admin_lab", "admin_plataforma"] },
-    { icon: Monitor, label: "Recursos", path: "/admin/recursos", roles: ["admin_lab", "admin_plataforma"] },
-    { icon: ClipboardList, label: "Todas as Reservas", path: "/admin/reservas", roles: ["admin_lab", "admin_plataforma"] },
-  ];
-
-  const platformItems = [
-    { icon: Building2, label: "Escolas", path: "/admin/escolas", roles: ["admin_plataforma"] },
-  ];
-
-  const filteredAdmin = adminItems.filter(i => i.roles.includes(profile?.role || ""));
-  const filteredPlatform = platformItems.filter(i => i.roles?.includes(profile?.role || ""));
 
   return (
     <aside className="fixed left-0 top-0 hidden h-full w-[264px] flex-col border-r bg-white md:flex z-40">
