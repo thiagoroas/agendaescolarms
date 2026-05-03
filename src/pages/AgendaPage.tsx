@@ -492,9 +492,9 @@ const AgendaPage = () => {
                             </div>
                           </div>
                           <div className="event-meta">
-                            <span>{reserva.turma}</span>
-                            <span>•</span>
-                            <span>{recurso.nome}</span>
+                            <span className="truncate flex-1" title={reserva.turma}>{reserva.turma}</span>
+                            <span className="shrink-0">•</span>
+                            <span className="truncate flex-1 font-bold" title={recurso.nome}>{recurso.nome}</span>
                           </div>
                           <div className="event-actions">
                             {(profile?.role === 'admin_plataforma' || 
