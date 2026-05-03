@@ -595,7 +595,10 @@ const AgendaPage = () => {
         onDelete={handleExcluirReserva}
         reserva={activeReserva?.reserva || null}
         recurso={activeReserva?.recurso || null}
-        canEdit={activeReserva?.reserva.profile_id === user?.id || profile?.role !== 'professor'}
+        canEdit={
+          (activeReserva?.reserva.profile_id === user?.id || profile?.role !== 'professor') &&
+          !(profile?.role === 'professor' && (activeReserva?.reserva.status === 'manutencao' || activeReserva?.reserva.status === 'bloqueada'))
+        }
       />
 
       <RelatorioReservasModal
