@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const MinhasReservasPage = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, selectedEscolaId } = useAuth();
   const { reservas, cancelReserva } = useReservas();
   const { recursos } = useRecursos();
 
