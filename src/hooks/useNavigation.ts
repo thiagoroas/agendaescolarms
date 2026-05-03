@@ -33,7 +33,11 @@ export const useNavigation = () => {
   const mainItems: MenuItem[] = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
     { icon: Calendar, label: "Agenda", path: "/agenda" },
-    { icon: BookOpen, label: "Minhas Reservas", path: "/minhas-reservas" },
+    { 
+      icon: BookOpen, 
+      label: role === "professor" ? "Minhas Reservas" : "Gerenciar Reservas", 
+      path: "/minhas-reservas" 
+    },
     { icon: User, label: "Perfil", path: "/perfil" },
   ];
 
