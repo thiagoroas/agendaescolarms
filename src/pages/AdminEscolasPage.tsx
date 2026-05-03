@@ -30,7 +30,7 @@ const AdminEscolasPage = () => {
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
   const [endereco, setEndereco] = useState("");
-  const [telefone, setTelefone] = useState("");
+  const [createDefaultResources, setCreateDefaultResources] = useState(false);
 
   const filteredEscolas = escolas
     .filter(e => 
