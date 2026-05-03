@@ -413,23 +413,23 @@ const AgendaPage = () => {
               })}
             </div>
 
-            {horarios.map((h, hIdx) => (
-              <div key={hIdx} className={`cal-row ${h.isIntervalo ? 'break' : ''}`}>
+            {escolaHorarios.map((h, hIdx) => (
+              <div key={hIdx} className={`cal-row ${h.tipo === 'intervalo' ? 'break' : ''}`}>
                 <div className="cal-time">
-                  <div className="cal-time-label">{h.label}</div>
-                  {!h.isIntervalo && <div className="cal-time-range">{h.inicio}</div>}
+                  <div className="cal-time-label">{h.nome}</div>
+                  {h.tipo !== 'intervalo' && <div className="cal-time-range">{h.hora_inicio.substring(0, 5)}</div>}
                 </div>
 
                 {weekDates.map((date, dIdx) => {
-                  if (h.isIntervalo) {
+                  if (h.tipo === 'intervalo') {
                     return (
                       <div key={dIdx} className="cal-cell break-cell">
-                        {dIdx === 2 && <div className="break-label">Intervalo</div>}
+                        {dIdx === 2 && <div className="break-label">{h.nome}</div>}
                       </div>
                     );
                   }
 
-                  const reserva = getReservaForSlot(date, h.aula);
+                  const reserva = getReservaForSlot(date, h.ordem);
                   const recurso = schoolRecursosList.find(r => r.id === reserva?.recurso_id);
 
                   return (
@@ -510,19 +510,19 @@ const AgendaPage = () => {
               </button>
             </div>
 
-            {horarios.map((h, hIdx) => {
-              const reserva = getReservaForSlot(currentDate, h.aula);
+            {escolaHorarios.map((h, hIdx) => {
+              const reserva = getReservaForSlot(currentDate, h.ordem);
               const recurso = schoolRecursosList.find(r => r.id === reserva?.recurso_id);
 
               return (
-                <div key={hIdx} className={`mobile-slot ${h.isIntervalo ? 'is-break' : ''}`}>
+                <div key={hIdx} className={`mobile-slot ${h.tipo === 'intervalo' ? 'is-break' : ''}`}>
                   <div className="mobile-slot-time">
-                    <span className="mobile-slot-label">{h.label.replace("Aula ", "A")}</span>
-                    <span className="mobile-slot-hour">{h.inicio}</span>
+                    <span className="mobile-slot-label">{h.nome.replace("Aula ", "A")}</span>
+                    <span className="mobile-slot-hour">{h.hora_inicio.substring(0, 5)}</span>
                   </div>
                   <div className="mobile-slot-content">
-                    {h.isIntervalo ? (
-                      <span className="break-label text-[10px] font-black uppercase text-slate-300 tracking-[0.2em]">Intervalo</span>
+                    {h.tipo === 'intervalo' ? (
+                      <span className="break-label text-[10px] font-black uppercase text-slate-300 tracking-[0.2em]">{h.nome}</span>
                     ) : reserva && recurso ? (
                       <button 
                         className={`mobile-card-event ${tipoColor(recurso.tipo)}`}
