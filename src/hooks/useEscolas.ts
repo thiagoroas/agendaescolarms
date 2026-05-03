@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase, isSupabaseConfigured, isValidUUID } from "@/lib/supabase";
 import { Escola } from "@/data/mockData";
-import { getMockEscolas, saveMockEscolas } from "@/data/storage";
+import { getMockEscolas, saveMockEscolas, getMockUsuarios, getMockRecursos, getMockReservas, getMockAvisos } from "@/data/storage";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
