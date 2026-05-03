@@ -8,23 +8,34 @@ import { useAvisos } from "@/hooks/useAvisos";
 import { Escola } from "../data/mockData";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-// ... (imports remain the same)
 import { 
   Calendar, 
   Clock, 
+  Plus, 
+  FileText,
+  User,
   Monitor,
   LayoutDashboard,
   Bell,
   Info,
   AlertTriangle,
-  Plus,
-  Trash2,
-  User,
-  FileText
+  ChevronRight,
+  Trash2
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { resetMockData } from "../data/storage";
