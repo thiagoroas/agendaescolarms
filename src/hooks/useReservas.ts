@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUUID } from "@/lib/supabase";
 import { Reserva } from "@/data/mockData";
 import { getMockReservas, saveMockReservas } from "@/data/storage";
 import { toast } from "sonner";
