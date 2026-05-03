@@ -15,8 +15,12 @@ export const useAvisos = (escolaId?: string) => {
 
   const fetchAvisos = async () => {
     // Só busca se auth finalizou e temos uma escola definida
-    if (authLoading || !targetEscolaId) {
-      if (!authLoading) setLoading(false);
+    if (authLoading) return;
+
+    if (!targetEscolaId || (isSupabaseConfigured && !isValidUUID(targetEscolaId))) {
+      console.log("[AVISOS] EscolaId inválido ou ausente, ignorando fetch:", targetEscolaId);
+      setAvisos([]);
+      setLoading(false);
       return;
     }
 
