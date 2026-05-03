@@ -213,6 +213,7 @@ const DashboardPage = () => {
                profile?.role === "admin_lab" ? "Agendamentos da escola hoje" : 
                "Agendamentos da escola ativa hoje"}
             </h3>
+            <p className="text-[10px] font-bold text-blue-400 mt-1">Apenas reservas de hoje</p>
           </CardContent>
         </Card>
 
