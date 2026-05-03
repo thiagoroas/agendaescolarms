@@ -117,7 +117,8 @@ const DashboardPage = () => {
   const proximasReservas = useMemo(() => {
     let list = reservasEscola.filter(r => 
       r.data >= hojeStr && 
-      !["cancelada", "manutencao", "bloqueada"].includes(r.status)
+      r.status !== "cancelada" && 
+      !["manutencao", "bloqueada"].includes(r.status)
     );
     
     // Para o Dashboard, se for hoje, só mostrar se for uma aula futura? 
