@@ -106,22 +106,34 @@ const DashboardPage = () => {
       !["cancelada", "manutencao", "bloqueada"].includes(r.status)
     );
     if (profile?.role === "professor") {
-      list = list.filter(r => r.profile_id === user?.id);
+      list = list.filter(r => r.profile_id === user?.id && (r.status === "confirmada" || r.status === "aprovada"));
+    } else {
+      // Para admin lab e admin plataforma, incluímos pendentes também para que vejam o que precisam aprovar
+      list = list.filter(r => !["cancelada", "manutencao", "bloqueada"].includes(r.status));
     }
     return list.sort((a, b) => a.aula - b.aula);
   }, [reservasEscola, hojeStr, profile?.role, user?.id]);
 
   const proximasReservas = useMemo(() => {
     let list = reservasEscola.filter(r => 
-      r.data > hojeStr && 
+      r.data >= hojeStr && 
       !["cancelada", "manutencao", "bloqueada"].includes(r.status)
     );
     
+    // Para o Dashboard, se for hoje, só mostrar se for uma aula futura? 
+    // O pedido diz: "Dashboard/Início do Professor: [...] card 'Próximas reservas' ou seção compacta mostrando no máximo as 3 próximas reservas confirmadas"
+    // E "não mostrar reservas de hoje em próximas se já estão no card de hoje"
+    // Na verdade, o dashboard atual separa reservasHoje e proximasReservas.
+    // Vamos filtrar as de hoje da lista de próximas para evitar duplicidade visual se estiverem no mesmo dashboard.
+    
+    list = list.filter(r => r.data > hojeStr);
+
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
     }
     
-    return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, 10);
+    const limit = profile?.role === "professor" ? 3 : 5;
+    return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, limit);
   }, [reservasEscola, hojeStr, profile?.role, user?.id]);
 
   const alertas = useMemo(() => {
@@ -179,7 +191,7 @@ const DashboardPage = () => {
             if (profile?.role === "professor") {
               navigate("/minhas-reservas");
             } else {
-              navigate("/agenda");
+              navigate("/admin/reservas");
             }
           }}
           aria-label="Ver agendamentos de hoje"
@@ -191,9 +203,9 @@ const DashboardPage = () => {
               </div>
               <Badge className="bg-blue-600 text-white border-none font-black">{reservasHoje.length}</Badge>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Reservas de Hoje</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Agendamentos</p>
             <h3 className="text-xl font-black text-slate-900 mt-1">
-              {profile?.role === "professor" ? "Minha Agenda Hoje" : "Agenda da Escola Hoje"}
+              {profile?.role === "professor" ? "Meus Agendamentos Hoje" : "Agenda da Escola Hoje"}
             </h3>
           </CardContent>
         </Card>
@@ -273,7 +285,7 @@ const DashboardPage = () => {
           <div className="flex items-center justify-between px-2">
             <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
               <Clock className="text-blue-600" size={20} />
-              Próximas Reservas (Futuras)
+              Próximas Reservas
             </h2>
             <Button 
               variant="ghost" 
@@ -318,8 +330,8 @@ const DashboardPage = () => {
                         </p>
                       </div>
                       
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600" onClick={() => navigate("/agenda")}>
-                        <Plus className="h-5 w-5" />
+                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600" onClick={() => navigate(profile?.role === "professor" ? "/minhas-reservas" : "/admin/reservas")}>
+                        <ChevronRight className="h-5 w-5" />
                       </Button>
                     </CardContent>
                   </Card>

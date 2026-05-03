@@ -20,27 +20,42 @@ const MinhasReservasPage = () => {
 
 
   const userReservas = reservas
-    .filter(r => r.profile_id === user?.id || (profile?.role !== 'professor' && r.escola_id === profile?.escola_id))
-    .sort((a, b) => b.data.localeCompare(a.data));
+    .filter(r => r.profile_id === user?.id || (profile?.role !== 'professor' && r.escola_id === profile?.escola_id));
 
   const today = startOfDay(new Date());
-  const upcoming = userReservas.filter(r => !isAfter(today, startOfDay(parseISO(r.data))));
-  const past = userReservas.filter(r => isAfter(today, startOfDay(parseISO(r.data))));
+  
+  const upcoming = userReservas
+    .filter(r => r.status !== 'cancelada' && !isAfter(today, startOfDay(parseISO(r.data))))
+    .sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula);
+    
+  const past = userReservas
+    .filter(r => r.status !== 'cancelada' && isAfter(today, startOfDay(parseISO(r.data))))
+    .sort((a, b) => b.data.localeCompare(a.data));
+
+  const canceled = userReservas
+    .filter(r => r.status === 'cancelada')
+    .sort((a, b) => b.data.localeCompare(a.data));
 
   const ReservaCard = ({ r }: { r: Reserva }) => {
     const rec = recursos.find(rec => rec.id === r.recurso_id);
+    const isCanceled = r.status === 'cancelada';
+    
     return (
-      <Card key={r.id} className="border-slate-200 shadow-sm overflow-hidden hover:border-blue-200 transition-colors">
+      <Card key={r.id} className={cn(
+        "border-slate-200 shadow-sm overflow-hidden transition-all",
+        isCanceled ? "opacity-75 grayscale-[0.5] border-red-100 bg-red-50/10" : "hover:border-blue-200"
+      )}>
         <CardContent className="p-4">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="font-bold text-slate-900">{r.disciplina}</h3>
+              <h3 className={cn("font-bold text-slate-900", isCanceled && "text-slate-500")}>{r.disciplina}</h3>
               <p className="text-sm text-slate-500">{r.turma}</p>
             </div>
             <div className="flex flex-col items-end gap-2">
               <Badge 
-                style={{ backgroundColor: rec?.cor_fundo, color: rec?.cor_texto, borderColor: rec?.cor_borda }}
-                variant="outline"
+                style={isCanceled ? {} : { backgroundColor: rec?.cor_fundo, color: rec?.cor_texto, borderColor: rec?.cor_borda }}
+                variant={isCanceled ? "outline" : "outline"}
+                className={cn(isCanceled && "bg-slate-100 text-slate-400 border-slate-200")}
               >
                 {rec?.nome}
               </Badge>
@@ -52,7 +67,8 @@ const MinhasReservasPage = () => {
                 } className={cn(
                   "text-[9px] font-black uppercase tracking-widest",
                   r.status === "pendente" && "bg-amber-50 text-amber-700 border-amber-200",
-                  (r.status === "manutencao" || r.status === "bloqueada") && "bg-slate-100 text-slate-700 border-slate-300"
+                  (r.status === "manutencao" || r.status === "bloqueada") && "bg-slate-100 text-slate-700 border-slate-300",
+                  r.status === "cancelada" && "bg-red-100 text-red-700 border-red-200"
                 )}>
                   {r.status}
                 </Badge>
@@ -71,25 +87,33 @@ const MinhasReservasPage = () => {
             </div>
           </div>
 
-          <div className="flex gap-2 mt-4 pt-4 border-t">
-            <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.info("Funcionalidade de edição em breve.")}>
-              <Edit className="mr-2 h-4 w-4" />
-              Editar
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700" 
-              onClick={async () => {
-                if (window.confirm("Deseja realmente cancelar esta reserva?")) {
-                  await cancelReserva(r.id);
-                }
-              }}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Cancelar
-            </Button>
-          </div>
+          {!isCanceled && (
+            <div className="flex gap-2 mt-4 pt-4 border-t">
+              <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.info("Funcionalidade de edição em breve.")}>
+                <Edit className="mr-2 h-4 w-4" />
+                Editar
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700" 
+                onClick={async () => {
+                  if (window.confirm("Deseja realmente cancelar esta reserva?")) {
+                    await cancelReserva(r.id);
+                  }
+                }}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Cancelar
+              </Button>
+            </div>
+          )}
+          
+          {isCanceled && (
+            <div className="mt-4 pt-4 border-t flex justify-center">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Reserva Cancelada</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -110,6 +134,7 @@ const MinhasReservasPage = () => {
         <TabsList className="bg-slate-100 p-1 w-full sm:w-auto">
           <TabsTrigger value="upcoming" className="flex-1 sm:flex-none">Próximas</TabsTrigger>
           <TabsTrigger value="past" className="flex-1 sm:flex-none">Passadas</TabsTrigger>
+          <TabsTrigger value="canceled" className="flex-1 sm:flex-none">Canceladas</TabsTrigger>
         </TabsList>
         <TabsContent value="upcoming" className="mt-6">
           {upcoming.length > 0 ? (
@@ -123,9 +148,26 @@ const MinhasReservasPage = () => {
           )}
         </TabsContent>
         <TabsContent value="past" className="mt-6">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {past.map(r => <ReservaCard key={r.id} r={r} />)}
-          </div>
+          {past.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {past.map(r => <ReservaCard key={r.id} r={r} />)}
+            </div>
+          ) : (
+            <div className="text-center py-12 border-2 border-dashed rounded-xl">
+              <p className="text-slate-400">Nenhuma reserva passada encontrada.</p>
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="canceled" className="mt-6">
+          {canceled.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {canceled.map(r => <ReservaCard key={r.id} r={r} />)}
+            </div>
+          ) : (
+            <div className="text-center py-12 border-2 border-dashed rounded-xl">
+              <p className="text-slate-400">Nenhuma reserva cancelada encontrada.</p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
