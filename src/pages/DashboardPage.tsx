@@ -209,7 +209,9 @@ const DashboardPage = () => {
             </div>
             <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Agendamentos</p>
             <h3 className="text-xl font-black text-slate-900 mt-1">
-              {profile?.role === "professor" ? "Meus Agendamentos Hoje" : "Agenda da Escola Hoje"}
+              {profile?.role === "professor" ? "Meus agendamentos hoje" : 
+               profile?.role === "admin_lab" ? "Agendamentos da escola hoje" : 
+               "Agendamentos da escola ativa hoje"}
             </h3>
           </CardContent>
         </Card>
