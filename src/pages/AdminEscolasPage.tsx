@@ -32,10 +32,17 @@ const AdminEscolasPage = () => {
   const [endereco, setEndereco] = useState("");
   const [telefone, setTelefone] = useState("");
 
-  const filteredEscolas = escolas.filter(e => 
-    e.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    e.cidade.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEscolas = escolas
+    .filter(e => 
+      e.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      e.cidade.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      // Ativas primeiro
+      if (a.status === "ativa" && b.status === "inativa") return -1;
+      if (a.status === "inativa" && b.status === "ativa") return 1;
+      return a.nome.localeCompare(b.nome);
+    });
 
   const handleOpenModal = (escola?: Escola) => {
     if (escola) {
