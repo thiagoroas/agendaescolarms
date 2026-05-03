@@ -27,11 +27,15 @@ const AdminReservasPage = () => {
 
   // Update URL when filter changes
   useEffect(() => {
+    const currentStatus = searchParams.get("status");
     if (statusFilter !== "todas") {
-      setSearchParams({ status: statusFilter });
+      if (currentStatus !== statusFilter) {
+        setSearchParams({ status: statusFilter });
+      }
     } else {
-      searchParams.delete("status");
-      setSearchParams(searchParams);
+      if (currentStatus) {
+        setSearchParams({});
+      }
     }
   }, [statusFilter, setSearchParams, searchParams]);
   const { recursos } = useRecursos();
