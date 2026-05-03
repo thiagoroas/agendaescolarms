@@ -14,7 +14,333 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      avisos_laboratorio: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          criado_por: string | null
+          data_fim: string
+          data_inicio: string
+          escola_id: string | null
+          exibir_na_agenda: boolean | null
+          exibir_no_dashboard: boolean | null
+          exibir_no_modal_reserva: boolean | null
+          exigir_confirmacao: boolean | null
+          hora_fim: string | null
+          hora_inicio: string | null
+          id: string
+          mensagem: string
+          recurso_id: string | null
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          criado_por?: string | null
+          data_fim: string
+          data_inicio: string
+          escola_id?: string | null
+          exibir_na_agenda?: boolean | null
+          exibir_no_dashboard?: boolean | null
+          exibir_no_modal_reserva?: boolean | null
+          exigir_confirmacao?: boolean | null
+          hora_fim?: string | null
+          hora_inicio?: string | null
+          id?: string
+          mensagem: string
+          recurso_id?: string | null
+          tipo?: string
+          titulo: string
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          criado_por?: string | null
+          data_fim?: string
+          data_inicio?: string
+          escola_id?: string | null
+          exibir_na_agenda?: boolean | null
+          exibir_no_dashboard?: boolean | null
+          exibir_no_modal_reserva?: boolean | null
+          exigir_confirmacao?: boolean | null
+          hora_fim?: string | null
+          hora_inicio?: string | null
+          id?: string
+          mensagem?: string
+          recurso_id?: string | null
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avisos_laboratorio_escola_id_fkey"
+            columns: ["escola_id"]
+            isOneToOne: false
+            referencedRelation: "escolas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avisos_laboratorio_recurso_id_fkey"
+            columns: ["recurso_id"]
+            isOneToOne: false
+            referencedRelation: "recursos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escolas: {
+        Row: {
+          cidade: string | null
+          configuracoes: Json | null
+          created_at: string | null
+          estado: string | null
+          id: string
+          logo_url: string | null
+          nome: string
+          status: string | null
+        }
+        Insert: {
+          cidade?: string | null
+          configuracoes?: Json | null
+          created_at?: string | null
+          estado?: string | null
+          id?: string
+          logo_url?: string | null
+          nome: string
+          status?: string | null
+        }
+        Update: {
+          cidade?: string | null
+          configuracoes?: Json | null
+          created_at?: string | null
+          estado?: string | null
+          id?: string
+          logo_url?: string | null
+          nome?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
+      logs_auditoria: {
+        Row: {
+          acao: string
+          created_at: string | null
+          dados_anteriores: Json | null
+          dados_novos: Json | null
+          escola_id: string | null
+          id: string
+          profile_id: string | null
+          registro_id: string | null
+          tabela: string
+        }
+        Insert: {
+          acao: string
+          created_at?: string | null
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          escola_id?: string | null
+          id?: string
+          profile_id?: string | null
+          registro_id?: string | null
+          tabela: string
+        }
+        Update: {
+          acao?: string
+          created_at?: string | null
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          escola_id?: string | null
+          id?: string
+          profile_id?: string | null
+          registro_id?: string | null
+          tabela?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logs_auditoria_escola_id_fkey"
+            columns: ["escola_id"]
+            isOneToOne: false
+            referencedRelation: "escolas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          disciplinas: string[] | null
+          email: string
+          escola_id: string | null
+          id: string
+          nome: string
+          papel: string
+          status: string
+          telefone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          disciplinas?: string[] | null
+          email: string
+          escola_id?: string | null
+          id: string
+          nome: string
+          papel?: string
+          status?: string
+          telefone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          disciplinas?: string[] | null
+          email?: string
+          escola_id?: string | null
+          id?: string
+          nome?: string
+          papel?: string
+          status?: string
+          telefone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_escola_id_fkey"
+            columns: ["escola_id"]
+            isOneToOne: false
+            referencedRelation: "escolas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recursos: {
+        Row: {
+          ativo: boolean | null
+          capacidade: number | null
+          cor_borda: string | null
+          cor_fundo: string | null
+          cor_texto: string | null
+          created_at: string | null
+          descricao: string | null
+          escola_id: string | null
+          id: string
+          nome: string
+          tipo: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          capacidade?: number | null
+          cor_borda?: string | null
+          cor_fundo?: string | null
+          cor_texto?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          escola_id?: string | null
+          id?: string
+          nome: string
+          tipo: string
+        }
+        Update: {
+          ativo?: boolean | null
+          capacidade?: number | null
+          cor_borda?: string | null
+          cor_fundo?: string | null
+          cor_texto?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          escola_id?: string | null
+          id?: string
+          nome?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recursos_escola_id_fkey"
+            columns: ["escola_id"]
+            isOneToOne: false
+            referencedRelation: "escolas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reservas: {
+        Row: {
+          aula: number
+          created_at: string | null
+          criado_por: string | null
+          data: string
+          disciplina: string
+          escola_id: string | null
+          horario: string | null
+          id: string
+          motivo_cancelamento: string | null
+          nome_professor: string
+          objetivo_pedagogico: string | null
+          observacao: string | null
+          profile_id: string | null
+          recurso_id: string | null
+          status: string
+          turma: string
+          updated_at: string | null
+        }
+        Insert: {
+          aula: number
+          created_at?: string | null
+          criado_por?: string | null
+          data: string
+          disciplina: string
+          escola_id?: string | null
+          horario?: string | null
+          id?: string
+          motivo_cancelamento?: string | null
+          nome_professor: string
+          objetivo_pedagogico?: string | null
+          observacao?: string | null
+          profile_id?: string | null
+          recurso_id?: string | null
+          status?: string
+          turma: string
+          updated_at?: string | null
+        }
+        Update: {
+          aula?: number
+          created_at?: string | null
+          criado_por?: string | null
+          data?: string
+          disciplina?: string
+          escola_id?: string | null
+          horario?: string | null
+          id?: string
+          motivo_cancelamento?: string | null
+          nome_professor?: string
+          objetivo_pedagogico?: string | null
+          observacao?: string | null
+          profile_id?: string | null
+          recurso_id?: string | null
+          status?: string
+          turma?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservas_escola_id_fkey"
+            columns: ["escola_id"]
+            isOneToOne: false
+            referencedRelation: "escolas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservas_recurso_id_fkey"
+            columns: ["recurso_id"]
+            isOneToOne: false
+            referencedRelation: "recursos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
