@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const useReservas = (escolaId?: string) => {
-  const { profile, selectedEscolaId } = useAuth();
+  const { profile, selectedEscolaId, loading: authLoading } = useAuth();
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,9 +14,9 @@ export const useReservas = (escolaId?: string) => {
   const targetEscolaId = escolaId || selectedEscolaId || profile?.escola_id;
 
   const fetchReservas = async () => {
-    if (!targetEscolaId) {
-      setReservas([]);
-      setLoading(false);
+    // Só busca se auth finalizou e temos uma escola definida
+    if (authLoading || !targetEscolaId) {
+      if (!authLoading) setLoading(false);
       return;
     }
 
@@ -25,6 +25,7 @@ export const useReservas = (escolaId?: string) => {
 
     if (isSupabaseConfigured) {
       try {
+        console.log("[RESERVAS] escolaId usado:", targetEscolaId);
         const { data, error: supabaseError } = await supabase
           .from("reservas")
           .select("*")
@@ -34,9 +35,12 @@ export const useReservas = (escolaId?: string) => {
 
         setReservas(data as Reserva[]);
       } catch (err: any) {
-        console.error("Error fetching reservas:", err.message);
+        console.error("[RESERVAS] Error fetching reservas:", err.message, err);
         setError(err.message);
-        toast.error("Erro ao carregar reservas");
+        
+        toast.error("Erro ao carregar reservas", {
+          id: "erro-carregar-reservas"
+        });
       } finally {
         setLoading(false);
       }
@@ -49,7 +53,7 @@ export const useReservas = (escolaId?: string) => {
 
   useEffect(() => {
     fetchReservas();
-  }, [targetEscolaId]);
+  }, [targetEscolaId, authLoading]);
 
   const createReserva = async (data: Omit<Reserva, "id" | "criado_em">) => {
     if (isSupabaseConfigured) {

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const useAvisos = (escolaId?: string) => {
-  const { profile, selectedEscolaId } = useAuth();
+  const { profile, selectedEscolaId, loading: authLoading } = useAuth();
   const [avisos, setAvisos] = useState<AvisoLaboratorio[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,9 +14,9 @@ export const useAvisos = (escolaId?: string) => {
   const targetEscolaId = escolaId || selectedEscolaId || profile?.escola_id;
 
   const fetchAvisos = async () => {
-    if (!targetEscolaId) {
-      setAvisos([]);
-      setLoading(false);
+    // Só busca se auth finalizou e temos uma escola definida
+    if (authLoading || !targetEscolaId) {
+      if (!authLoading) setLoading(false);
       return;
     }
 
@@ -25,6 +25,7 @@ export const useAvisos = (escolaId?: string) => {
 
     if (isSupabaseConfigured) {
       try {
+        console.log("[AVISOS] escolaId usado:", targetEscolaId);
         const { data, error: supabaseError } = await supabase
           .from("avisos_laboratorio")
           .select("*")
@@ -35,9 +36,13 @@ export const useAvisos = (escolaId?: string) => {
 
         setAvisos(data as AvisoLaboratorio[]);
       } catch (err: any) {
-        console.error("Error fetching avisos:", err.message);
+        console.error("[AVISOS] Error fetching avisos:", err.message, err);
         setError(err.message);
-        toast.error("Erro ao carregar avisos");
+        
+        // Evitar múltiplos toasts usando um ID fixo
+        toast.error("Erro ao carregar avisos", {
+          id: "erro-carregar-avisos"
+        });
       } finally {
         setLoading(false);
       }
@@ -50,7 +55,7 @@ export const useAvisos = (escolaId?: string) => {
 
   useEffect(() => {
     fetchAvisos();
-  }, [targetEscolaId]);
+  }, [targetEscolaId, authLoading]);
 
   const createAviso = async (data: Omit<AvisoLaboratorio, "id" | "criado_em">) => {
     if (isSupabaseConfigured) {
