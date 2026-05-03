@@ -319,6 +319,8 @@ export type Database = {
       reservas: {
         Row: {
           aula: number
+          aviso_confirmado_em: string | null
+          aviso_confirmado_id: string | null
           created_at: string | null
           criado_por: string | null
           data: string
@@ -338,6 +340,8 @@ export type Database = {
         }
         Insert: {
           aula: number
+          aviso_confirmado_em?: string | null
+          aviso_confirmado_id?: string | null
           created_at?: string | null
           criado_por?: string | null
           data: string
@@ -357,6 +361,8 @@ export type Database = {
         }
         Update: {
           aula?: number
+          aviso_confirmado_em?: string | null
+          aviso_confirmado_id?: string | null
           created_at?: string | null
           criado_por?: string | null
           data?: string
