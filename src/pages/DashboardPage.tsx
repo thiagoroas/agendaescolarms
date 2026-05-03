@@ -241,8 +241,8 @@ const DashboardPage = () => {
           className="rounded-3xl border-none shadow-sm bg-amber-50/50 hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-amber-100 transition-all group cursor-pointer"
           onClick={() => {
             if (profile?.role === "professor") {
-              // Professor vê na agenda (poderíamos passar um parâmetro para destacar bloqueios)
-              navigate("/agenda"); 
+              // Professor vê na agenda filtrando por bloqueios
+              navigate("/agenda?q=manutenção"); 
             } else {
               // Admin vê na central de reservas filtrada
               navigate("/admin/reservas?status=manutencao");
