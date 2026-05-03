@@ -101,7 +101,10 @@ const DashboardPage = () => {
   }, [avisos, currentEscolaId]);
 
   const reservasHoje = useMemo(() => {
-    let list = reservasEscola.filter(r => r.data === hojeStr);
+    let list = reservasEscola.filter(r => 
+      r.data === hojeStr && 
+      !["cancelada", "manutencao", "bloqueada"].includes(r.status)
+    );
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
     }
@@ -109,15 +112,16 @@ const DashboardPage = () => {
   }, [reservasEscola, hojeStr, profile?.role, user?.id]);
 
   const proximasReservas = useMemo(() => {
-    let list = reservasEscola.filter(r => {
-      return r.data > hojeStr;
-    });
+    let list = reservasEscola.filter(r => 
+      r.data > hojeStr && 
+      !["cancelada", "manutencao", "bloqueada"].includes(r.status)
+    );
     
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
     }
     
-    return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, 5);
+    return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, 10);
   }, [reservasEscola, hojeStr, profile?.role, user?.id]);
 
   const alertas = useMemo(() => {
@@ -125,7 +129,7 @@ const DashboardPage = () => {
   }, [reservasEscola]);
 
   const recursosEmUsoHoje = useMemo(() => {
-    const ids = new Set(reservasHoje.filter(r => r.status === "confirmada" || r.status === "aprovada").map(r => r.recurso_id));
+    const ids = new Set(reservasHoje.map(r => r.recurso_id));
     return recursosEscola.filter(r => ids.has(r.id));
   }, [reservasHoje, recursosEscola]);
 
