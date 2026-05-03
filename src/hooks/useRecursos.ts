@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const useRecursos = (escolaId?: string) => {
-  const { profile, selectedEscolaId } = useAuth();
+  const { profile, selectedEscolaId, loading: authLoading } = useAuth();
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -15,9 +15,9 @@ export const useRecursos = (escolaId?: string) => {
   const targetEscolaId = escolaId || selectedEscolaId || profile?.escola_id;
 
   const fetchRecursos = async () => {
-    if (!targetEscolaId) {
-      setRecursos([]);
-      setLoading(false);
+    // Só busca se auth finalizou e temos uma escola definida
+    if (authLoading || !targetEscolaId) {
+      if (!authLoading) setLoading(false);
       return;
     }
 
@@ -26,6 +26,7 @@ export const useRecursos = (escolaId?: string) => {
 
     if (isSupabaseConfigured) {
       try {
+        console.log("[RECURSOS] escolaId usado:", targetEscolaId);
         let query = supabase
           .from("recursos")
           .select("*")
@@ -54,9 +55,12 @@ export const useRecursos = (escolaId?: string) => {
 
         setRecursos(mappedRecursos);
       } catch (err: any) {
-        console.error("Error fetching resources:", err.message);
+        console.error("[RECURSOS] Error fetching resources:", err.message, err);
         setError(err.message);
-        toast.error("Erro ao carregar recursos");
+        
+        toast.error("Erro ao carregar recursos", {
+          id: "erro-carregar-recursos"
+        });
       } finally {
         setLoading(false);
       }
@@ -75,7 +79,7 @@ export const useRecursos = (escolaId?: string) => {
 
   useEffect(() => {
     fetchRecursos();
-  }, [targetEscolaId, profile?.role]);
+  }, [targetEscolaId, profile?.role, authLoading]);
 
   const createRecurso = async (data: Omit<Recurso, "id">) => {
     if (isSupabaseConfigured) {
