@@ -43,6 +43,13 @@ const LoginPage = () => {
     setIsLoading(true);
     setError("");
 
+    // Se houver uma sessão antiga/conflitante, deslogar antes de tentar novo login
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      console.log("[LOGIN] Sessão antiga detectada, limpando antes de novo login...");
+      await supabase.auth.signOut();
+    }
+
     const result = await login(email, password, remember);
     
     if (result.success) {
