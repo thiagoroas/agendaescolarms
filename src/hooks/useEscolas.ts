@@ -1,9 +1,27 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase, isSupabaseConfigured, isValidUUID } from "@/lib/supabase";
-import { Escola } from "@/data/mockData";
-import { getMockEscolas, saveMockEscolas, getMockUsuarios, getMockRecursos, getMockReservas, getMockAvisos } from "@/data/storage";
+import { Escola, Recurso } from "@/data/mockData";
+import { getMockEscolas, saveMockEscolas, getMockUsuarios, getMockRecursos, saveMockRecursos, getMockReservas, getMockAvisos } from "@/data/storage";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+
+const FALLBACK_HORARIOS = [
+  { nome: "1ª Aula", turno: "manha", ordem: 1, hora_inicio: "07:30", hora_fim: "08:20", tipo: "aula", ativo: true },
+  { nome: "2ª Aula", turno: "manha", ordem: 2, hora_inicio: "08:20", hora_fim: "09:10", tipo: "aula", ativo: true },
+  { nome: "Intervalo", turno: "manha", ordem: 3, hora_inicio: "09:10", hora_fim: "09:30", tipo: "intervalo", ativo: true },
+  { nome: "3ª Aula", turno: "manha", ordem: 4, hora_inicio: "09:30", hora_fim: "10:20", tipo: "aula", ativo: true },
+  { nome: "4ª Aula", turno: "manha", ordem: 5, hora_inicio: "10:20", hora_fim: "11:10", tipo: "aula", ativo: true },
+  { nome: "5ª Aula", turno: "tarde", ordem: 6, hora_inicio: "13:00", hora_fim: "13:50", tipo: "aula", ativo: true },
+  { nome: "6ª Aula", turno: "tarde", ordem: 7, hora_inicio: "13:50", hora_fim: "14:40", tipo: "aula", ativo: true },
+  { nome: "Intervalo", turno: "tarde", ordem: 8, hora_inicio: "14:40", hora_fim: "15:00", tipo: "intervalo", ativo: true },
+  { nome: "7ª Aula", turno: "tarde", ordem: 9, hora_inicio: "15:00", hora_fim: "15:50", tipo: "aula", ativo: true },
+  { nome: "8ª Aula", turno: "tarde", ordem: 10, hora_inicio: "15:50", hora_fim: "16:40", tipo: "aula", ativo: true },
+];
+
+const DEFAULT_RESOURCES = [
+  { nome: "Laboratório de Informática", tipo: "laboratorio", cor_fundo: "#DBEAFE", cor_texto: "#1E40AF", cor_borda: "#93C5FD", ativo: true },
+  { nome: "Projetor", tipo: "projetor", cor_fundo: "#D1FAE5", cor_texto: "#065F46", cor_borda: "#6EE7B7", ativo: true },
+];
 
 export const useEscolas = () => {
   const { profile, selectedEscolaId, setSelectedEscolaId, loading: authLoading } = useAuth();
