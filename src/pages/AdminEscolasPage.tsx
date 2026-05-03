@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const AdminEscolasPage = () => {
   const { profile } = useAuth();
@@ -31,11 +32,19 @@ const AdminEscolasPage = () => {
   const [estado, setEstado] = useState("");
   const [endereco, setEndereco] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [createDefaultResources, setCreateDefaultResources] = useState(false);
 
-  const filteredEscolas = escolas.filter(e => 
-    e.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    e.cidade.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEscolas = escolas
+    .filter(e => 
+      e.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      e.cidade.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      // Ativas primeiro
+      if (a.status === "ativa" && b.status === "inativa") return -1;
+      if (a.status === "inativa" && b.status === "ativa") return 1;
+      return a.nome.localeCompare(b.nome);
+    });
 
   const handleOpenModal = (escola?: Escola) => {
     if (escola) {
@@ -72,7 +81,7 @@ const AdminEscolasPage = () => {
         nome: nome.trim(),
         cidade: cidade.trim(),
         estado
-      });
+      }, createDefaultResources);
       if (result) setIsModalOpen(false);
     }
   };
@@ -228,7 +237,18 @@ const AdminEscolasPage = () => {
               <Label htmlFor="telefone">Telefone (Opcional)</Label>
               <Input id="telefone" value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="(00) 0000-0000" />
             </div>
-
+            {!editingEscola && (
+              <div className="flex items-center space-x-2 pt-2">
+                <Checkbox 
+                  id="createResources" 
+                  checked={createDefaultResources} 
+                  onCheckedChange={(checked) => setCreateDefaultResources(!!checked)}
+                />
+                <Label htmlFor="createResources" className="text-xs cursor-pointer">
+                  Criar recursos padrão: Laboratório de Informática e Projetor
+                </Label>
+              </div>
+            )}
             <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
