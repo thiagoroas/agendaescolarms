@@ -154,10 +154,8 @@ const PerfilPage = () => {
           disciplinas: profile?.role === "professor" ? disciplinas.split(",").map(d => d.trim()).filter(d => d !== "") : (profile?.disciplinas || [])
         });
 
-        // Update remembered password if it exists
-        if (localStorage.getItem("agenda_remembered_password")) {
-          localStorage.setItem("agenda_remembered_password", trimmedNewPassword);
-        }
+        // Remove any legacy remembered password (no longer stored in plaintext)
+        localStorage.removeItem("agenda_remembered_password");
 
         // Update session storage for user and profile
         const savedUser = localStorage.getItem("agenda_mock_user");
