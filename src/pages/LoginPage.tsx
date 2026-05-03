@@ -26,13 +26,14 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Only restore the email — never persist passwords in plaintext
     const savedEmail = localStorage.getItem("agenda_remembered_email");
-    const savedPassword = localStorage.getItem("agenda_remembered_password");
-    if (savedEmail && savedPassword) {
+    if (savedEmail) {
       setEmail(savedEmail);
-      setPassword(savedPassword);
       setRemember(true);
     }
+    // Cleanup any legacy plaintext password from previous versions
+    localStorage.removeItem("agenda_remembered_password");
   }, []);
 
   // Redirecionamento removido para garantir que a página renderize mesmo se houver usuário
