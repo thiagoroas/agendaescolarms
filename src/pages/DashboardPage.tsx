@@ -216,14 +216,8 @@ const DashboardPage = () => {
 
         <Card 
           className="rounded-3xl border-none shadow-sm bg-emerald-50/50 hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-emerald-100 transition-all group cursor-pointer"
-          onClick={() => {
-            if (profile?.role === "professor") {
-              navigate("/agenda");
-            } else {
-              navigate("/admin/recursos");
-            }
-          }}
-          aria-label="Ver recursos e equipamentos"
+          onClick={() => navigate("/agenda")}
+          aria-label="Ver recursos em uso hoje"
         >
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -232,8 +226,9 @@ const DashboardPage = () => {
               </div>
               <Badge className="bg-emerald-600 text-white border-none font-black">{recursosEmUsoHoje.length}</Badge>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Recursos em Uso</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1">Equipamentos</h3>
+            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Recursos em uso hoje</p>
+            <h3 className="text-xl font-black text-slate-900 mt-1">Hoje</h3>
+            <p className="text-[10px] font-bold text-slate-400 mt-1">Ver uso na agenda</p>
           </CardContent>
         </Card>
 
@@ -270,19 +265,29 @@ const DashboardPage = () => {
             if (profile?.role === "professor") {
               navigate("/minhas-reservas");
             } else {
-              navigate("/admin/reservas");
+              navigate("/admin/recursos");
             }
           }}
-          aria-label="Ver relatórios de reservas"
+          aria-label={profile?.role === "professor" ? "Ver meus relatórios" : "Ver recursos cadastrados"}
         >
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
-                <FileText size={20} />
+                {profile?.role === "professor" ? <FileText size={20} /> : <Monitor size={20} />}
               </div>
+              {profile?.role !== "professor" && (
+                <Badge className="bg-indigo-600 text-white border-none font-black">{recursosEscola.length}</Badge>
+              )}
             </div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Meus Relatórios</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1">Consultar</h3>
+            <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">
+              {profile?.role === "professor" ? "Meus Relatórios" : "Recursos Cadastrados"}
+            </p>
+            <h3 className="text-xl font-black text-slate-900 mt-1">
+              {profile?.role === "professor" ? "Consultar" : "Gestão"}
+            </h3>
+            {profile?.role !== "professor" && (
+              <p className="text-[10px] font-bold text-slate-400 mt-1">Gerenciar equipamentos</p>
+            )}
           </CardContent>
         </Card>
       </div>
