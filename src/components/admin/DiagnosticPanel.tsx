@@ -264,7 +264,8 @@ export const DiagnosticPanel = () => {
             <span>Se aparecer erro, faça deploy com: <strong>supabase functions deploy manage-user</strong></span>
           </div>
         </CardFooter>
-      </Card>
+          )}
+        </Card>
       )}
     </div>
   );
