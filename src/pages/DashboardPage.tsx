@@ -170,9 +170,9 @@ const DashboardPage = () => {
             <LayoutDashboard size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Hoje na Escola</h1>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Resumo do dia</h1>
             <p className="text-sm font-medium text-slate-500 truncate max-w-[200px] sm:max-w-none">
-              {escolaAtiva?.nome || "Carregando..."} · {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
+              {escolaAtiva?.nome ? `${escolaAtiva.nome} · ` : "Visão geral · "}{format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
             </p>
           </div>
         </div>
@@ -209,7 +209,9 @@ const DashboardPage = () => {
             </div>
             <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Agendamentos</p>
             <h3 className="text-xl font-black text-slate-900 mt-1">
-              {profile?.role === "professor" ? "Meus Agendamentos Hoje" : "Agenda da Escola Hoje"}
+              {profile?.role === "professor" ? "Meus agendamentos hoje" : 
+               profile?.role === "admin_lab" ? "Agendamentos da escola hoje" : 
+               "Agendamentos da escola ativa hoje"}
             </h3>
           </CardContent>
         </Card>
@@ -253,9 +255,9 @@ const DashboardPage = () => {
               <Badge className="bg-slate-600 text-white border-none font-black">{alertas.length}</Badge>
             </div>
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              {alertas.some(a => a.data === hojeStr) ? "Bloqueios Ativos" : "Próximos Bloqueios"}
+              BLOQUEIOS E MANUTENÇÃO
             </p>
-            <h3 className="text-xl font-black text-slate-900 mt-1">Manutenção</h3>
+            <h3 className="text-xl font-black text-slate-900 mt-1">Próximos bloqueios</h3>
           </CardContent>
         </Card>
 
