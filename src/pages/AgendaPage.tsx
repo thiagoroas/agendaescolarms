@@ -54,6 +54,7 @@ const initialsOf = (name: string) =>
 
 const AgendaPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
+  const [searchParams] = useSearchParams();
   const { escolas: allEscolas, loading: loadingEscolas } = useEscolas();
   const [currentDate, setCurrentDate] = useState(() => {
     const today = new Date();
@@ -65,7 +66,7 @@ const AgendaPage = () => {
     return today;
   });
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [isMobile, setIsMobile] = useState(false);
   const { reservas: reservasState, cancelReserva, refresh: refreshReservas, error: errorReservas } = useReservas();
   const { recursos: schoolRecursos, loading: loadingRecursos, error: errorRecursos } = useRecursos();
