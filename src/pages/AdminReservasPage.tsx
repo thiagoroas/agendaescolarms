@@ -176,13 +176,14 @@ const AdminReservasPage = () => {
                         {rec?.nome}
                       </Badge>
                       <Badge variant="outline" className={cn(
-                        "text-[9px] font-black uppercase tracking-widest w-fit",
-                        r.status === "aprovada" ? "bg-green-50 text-green-700 border-green-200" :
-                        r.status === "pendente" ? "bg-amber-50 text-amber-700 border-amber-200" :
-                        r.status === "recusada" ? "bg-red-50 text-red-700 border-red-200" :
-                        "bg-slate-50 text-slate-700 border-slate-200"
+                        "text-[9px] font-black uppercase tracking-widest w-fit border-none shadow-sm",
+                        (r.status === "confirmada" || r.status === "aprovada") ? "bg-green-100 text-green-700 ring-1 ring-green-200" :
+                        r.status === "pendente" ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200" :
+                        r.status === "cancelada" ? "bg-red-100 text-red-700 ring-1 ring-red-200" :
+                        (r.status === "manutencao" || r.status === "bloqueada") ? "bg-slate-800 text-slate-100 ring-1 ring-slate-900" :
+                        "bg-slate-100 text-slate-700 ring-1 ring-slate-200"
                       )}>
-                        {r.status}
+                        {r.status === "manutencao" ? "Manutenção" : r.status}
                       </Badge>
                     </div>
                   </TableCell>
