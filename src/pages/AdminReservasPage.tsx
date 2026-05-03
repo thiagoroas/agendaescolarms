@@ -62,7 +62,7 @@ const AdminReservasPage = () => {
         r.disciplina.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.turma.toLowerCase().includes(searchTerm.toLowerCase())
       )
-      .sort((a, b) => b.data.localeCompare(a.data));
+      .sort((a, b) => b.data.localeCompare(a.data) || a.aula - b.aula);
   }, [reservas, currentEscolaId, searchTerm, statusFilter]);
 
   return (
