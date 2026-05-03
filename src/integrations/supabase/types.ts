@@ -336,6 +336,7 @@ export type Database = {
           recurso_id: string | null
           status: string
           turma: string
+          turno: string | null
           updated_at: string | null
         }
         Insert: {
@@ -357,6 +358,7 @@ export type Database = {
           recurso_id?: string | null
           status?: string
           turma: string
+          turno?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -378,6 +380,7 @@ export type Database = {
           recurso_id?: string | null
           status?: string
           turma?: string
+          turno?: string | null
           updated_at?: string | null
         }
         Relationships: [
