@@ -170,9 +170,9 @@ const DashboardPage = () => {
             <LayoutDashboard size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Hoje na Escola</h1>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Resumo do dia</h1>
             <p className="text-sm font-medium text-slate-500 truncate max-w-[200px] sm:max-w-none">
-              {escolaAtiva?.nome || "Carregando..."} · {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
+              {escolaAtiva?.nome ? `${escolaAtiva.nome} · ` : "Visão geral · "}{format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
             </p>
           </div>
         </div>
