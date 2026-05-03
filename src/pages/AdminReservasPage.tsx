@@ -33,13 +33,20 @@ const AdminReservasPage = () => {
     
     return reservas
       .filter(r => r.escola_id === currentEscolaId)
+      .filter(r => {
+        if (statusFilter === "todas") return true;
+        if (statusFilter === "confirmadas") return r.status === "confirmada" || r.status === "aprovada";
+        if (statusFilter === "manutencao") return r.status === "manutencao" || r.status === "bloqueada";
+        if (statusFilter === "canceladas") return r.status === "cancelada";
+        return true;
+      })
       .filter(r => 
         r.nome_professor.toLowerCase().includes(searchTerm.toLowerCase()) || 
         r.disciplina.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.turma.toLowerCase().includes(searchTerm.toLowerCase())
       )
       .sort((a, b) => b.data.localeCompare(a.data));
-  }, [reservas, currentEscolaId, searchTerm]);
+  }, [reservas, currentEscolaId, searchTerm, statusFilter]);
 
   return (
     <div className="space-y-6">
