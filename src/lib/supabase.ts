@@ -8,8 +8,14 @@ export const supabase = createClient(
   supabaseAnonKey || 'placeholder-key'
 );
 
+// Helper para validar UUID
+export const isValidUUID = (uuid: string | null | undefined): boolean => {
+  if (!uuid) return false;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+};
+
 // Verifica se o Supabase está configurado corretamente
-// Considera configurado se as variáveis existirem E não forem os valores de placeholder
 export const isSupabaseConfigured = Boolean(supabaseUrl) && 
   Boolean(supabaseAnonKey) && 
   supabaseUrl !== 'https://placeholder-url.supabase.co';
