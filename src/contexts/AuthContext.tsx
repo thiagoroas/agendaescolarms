@@ -198,6 +198,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         console.log("[AUTH] visibility visible - Chrome mobile trigger");
+        // Se já temos usuário e profile ativo e escola selecionada, não revalidamos para evitar loop
+        if (user && profile && isValidUUID(selectedEscolaId)) {
+          console.log("[AUTH] app já ativo e saudável, ignorando visibility revalidation");
+          return;
+        }
         revalidateSession();
       }
     };
@@ -206,6 +211,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("[AUTH] pageshow event", { persisted: event.persisted });
       if (event.persisted) {
         console.log("[AUTH] page restored from bfcache - revalidating session");
+        // Mesma lógica de proteção
+        if (user && profile && isValidUUID(selectedEscolaId)) {
+          return;
+        }
         revalidateSession();
       }
     };
