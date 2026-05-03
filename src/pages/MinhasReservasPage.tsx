@@ -19,25 +19,23 @@ const MinhasReservasPage = () => {
   const { recursos } = useRecursos();
 
 
+  const currentEscolaId = selectedEscolaId || profile?.escola_id;
+
   const userReservas = useMemo(() => {
-    // Para professor, apenas suas próprias reservas que NÃO sejam manutenção/bloqueio
-    if (profile?.role === 'professor') {
+    // Se for administrador (Lab ou Plataforma), mostra TODAS as reservas da escola ativa/vinculada
+    if (profile?.role === 'admin_lab' || profile?.role === 'admin_plataforma') {
       return reservas.filter(r => 
-        r.profile_id === user?.id && 
+        r.escola_id === currentEscolaId && 
         !['manutencao', 'bloqueada'].includes(r.status)
       );
     }
     
-    // Para administradores, mostramos todas da escola (equivalente ao Dashboard panorâmico)
-    // Mas o pedido diz que "Minhas Reservas" deve mostrar apenas as do professor logado? 
-    // Re-lendo: "Minhas Reservas: Deve mostrar apenas reservas do professor logado."
-    // "Excluir status manutencao e bloqueada da tela Minhas Reservas do professor."
-    // Então mesmo se for admin acessando "Minhas Reservas" (pessoais), filtramos.
+    // Para professor, apenas suas próprias reservas que NÃO sejam manutenção/bloqueio
     return reservas.filter(r => 
       r.profile_id === user?.id && 
       !['manutencao', 'bloqueada'].includes(r.status)
     );
-  }, [reservas, user?.id, profile?.role]);
+  }, [reservas, user?.id, profile?.role, currentEscolaId]);
 
   const today = startOfDay(new Date());
   
