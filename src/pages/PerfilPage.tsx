@@ -242,7 +242,8 @@ const PerfilPage = () => {
                         id="fullName" 
                         value={fullName} 
                         onChange={(e) => setFullName(e.target.value)}
-                        className="pl-10 border-slate-200 focus:ring-blue-500"
+                        disabled={profile?.role === "professor"}
+                        className={cn("pl-10 border-slate-200 focus:ring-blue-500", profile?.role === "professor" && "bg-slate-50 cursor-not-allowed")}
                         placeholder="Seu nome completo"
                         required
                       />
