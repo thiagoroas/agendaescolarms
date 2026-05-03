@@ -304,11 +304,36 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     const avisoConfirmado = avisosAtivos.find(a => a.exigir_confirmacao);
     
     try {
+      const isProfessor = profile?.role === 'professor';
+      
+      // Validação de escola_id do professor
+      if (!profile?.escola_id) {
+        toast.error("Seu usuário não está vinculado a uma escola. Peça ao administrador para configurar seu perfil.");
+        return;
+      }
+
+      // Validação de recurso
+      const recurso = availableRecursos.find(r => r.id === formData.recursoId);
+      if (!recurso) {
+        toast.error("Recurso não encontrado.");
+        return;
+      }
+
+      if (recurso.escola_id !== profile.escola_id) {
+        toast.error("Este recurso não pertence à sua escola.");
+        return;
+      }
+
+      if (!recurso.ativo) {
+        toast.error("Este recurso está inativo.");
+        return;
+      }
+
       for (const aula of formData.aulas) {
         const h = allHorarios.find(hour => hour.ordem === aula);
         
-        await createReserva({
-          escola_id: profile?.escola_id || "",
+        const payload = {
+          escola_id: profile.escola_id,
           recurso_id: formData.recursoId,
           profile_id: formData.professorId,
           criado_por: user?.id || "",
@@ -321,14 +346,23 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           horario: h ? `${h.hora_inicio.substring(0, 5)} – ${h.hora_fim.substring(0, 5)}` : "",
           objetivo_pedagogico: formData.objetivo_pedagogico,
           observacao: formData.observacao,
-          status: "confirmada",
+          status: "confirmada" as const,
           aviso_confirmado_id: avisoConfirmado?.id,
           aviso_confirmado_em: avisoConfirmado ? new Date().toISOString() : undefined
-        });
+        };
+
+        console.log("[RESERVA PAYLOAD]", payload);
+        
+        const result = await createReserva(payload);
+        if (!result) {
+          // Se falhou um (e não foi conflito), interrompe
+          break;
+        }
       }
       onClose();
-    } catch (err) {
-      console.error("Erro ao criar reserva:", err);
+    } catch (err: any) {
+      console.error("Erro no fluxo de criação de reserva:", err);
+      toast.error(err.message || "Erro ao processar reserva");
     }
   };
 

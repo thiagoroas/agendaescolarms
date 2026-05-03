@@ -80,8 +80,10 @@ export const useReservas = (escolaId?: string) => {
         toast.success("Reserva realizada com sucesso!");
         return createdData as Reserva;
       } catch (err: any) {
-        console.error("Error creating reserva:", err.message);
-        toast.error("Erro ao criar reserva");
+        console.error("Error creating reserva:", err);
+        const errorMessage = err.message || "Erro ao criar reserva";
+        const errorDetails = err.details ? ` (${err.details})` : "";
+        toast.error(`${errorMessage}${errorDetails}`);
         return null;
       }
     } else {
