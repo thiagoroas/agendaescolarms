@@ -348,8 +348,8 @@ const AprovacoesPage = () => {
                       <SelectValue placeholder="Aula" />
                     </SelectTrigger>
                     <SelectContent>
-                      {horarios.filter(h => !h.isIntervalo).map(h => (
-                        <SelectItem key={h.aula} value={h.aula.toString()}>Aula {h.aula} ({h.inicio})</SelectItem>
+                      {horarios.filter(h => h.tipo === 'aula' && h.ativo).map(h => (
+                        <SelectItem key={h.ordem} value={h.ordem.toString()}>{h.nome} ({h.hora_inicio.substring(0, 5)})</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
