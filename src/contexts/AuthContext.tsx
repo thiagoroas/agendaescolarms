@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 
@@ -23,6 +23,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   setSelectedEscolaId: (id: string) => void;
   updateProfile: (updatedProfile: Partial<Profile>) => void;
+  loadSessionAndProfile: (silent?: boolean) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,105 +34,102 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEscolaId, setSelectedEscolaIdState] = useState<string | null>(null);
+  
+  const isLoadingProfileRef = useRef(false);
 
   const setSelectedEscolaId = (id: string) => {
     setSelectedEscolaIdState(id);
     localStorage.setItem("agenda_selected_escola_id", id);
   };
 
-  const loadProfile = async (u: User) => {
-    console.log("[AUTH] fetching profile id:", u.id);
+  const loadSessionAndProfile = async (silent = false) => {
+    if (isLoadingProfileRef.current) return;
+    isLoadingProfileRef.current = true;
+    
+    if (!silent) {
+      setLoading(true);
+    }
+    
+    console.log("[AUTH] loadSessionAndProfile start (silent:", silent, ")");
+    
     try {
+      console.log("[AUTH] getSession start");
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log("[AUTH] getSession result", session ? "session found" : "no session");
+
+      if (sessionError) throw sessionError;
+
+      if (!session?.user) {
+        setUser(null);
+        setProfile(null);
+        setError(null);
+        return;
+      }
+
+      const currentUser = session.user;
+      setUser(currentUser);
+
+      console.log("[AUTH] fetch profile start id:", currentUser.id);
       const { data, error: profileError } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", u.id)
+        .eq("id", currentUser.id)
         .maybeSingle();
+
+      console.log("[AUTH] fetch profile result", data ? "profile found" : "profile not found");
 
       if (profileError) {
         console.error("[AUTH] erro ao buscar profile", profileError);
         setError(profileError.message);
         setProfile(null);
-        return null;
-      }
-
-      if (!data) {
-        console.warn("[AUTH] profile não encontrado para", u.email);
+      } else if (!data) {
+        console.warn("[AUTH] profile não encontrado para", currentUser.email);
         setError("profile_not_found");
         setProfile(null);
-        return null;
+      } else {
+        const mappedProfile: Profile = {
+          id: data.id,
+          full_name: data.nome,
+          escola_id: data.escola_id,
+          role: data.papel as UserRole,
+          status: data.status as "ativo" | "pendente" | "bloqueado",
+          disciplinas: data.disciplinas
+        };
+        
+        setProfile(mappedProfile);
+        setError(null);
+        
+        const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
+        setSelectedEscolaIdState(savedEscolaId || data.escola_id);
       }
-
-      console.log("[AUTH] profile found:", data.nome);
-      const mappedProfile: Profile = {
-        id: data.id,
-        full_name: data.nome,
-        escola_id: data.escola_id,
-        role: data.papel as UserRole,
-        status: data.status as "ativo" | "pendente" | "bloqueado",
-        disciplinas: data.disciplinas
-      };
-      
-      setProfile(mappedProfile);
-      setError(null);
-      
-      const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
-      setSelectedEscolaIdState(savedEscolaId || data.escola_id);
-      return mappedProfile;
-    } catch (e) {
-      console.error("[AUTH] exception in loadProfile", e);
-      setError("Exceção ao carregar perfil");
-      setProfile(null);
-      return null;
+    } catch (err) {
+      console.error("[AUTH] loadSessionAndProfile error", err);
+      setError("Erro ao carregar sessão");
+    } finally {
+      isLoadingProfileRef.current = false;
+      setLoading(false);
+      console.log("[AUTH] loading finalized");
     }
   };
 
   useEffect(() => {
-    async function initAuth() {
-      console.log("[AUTH] init start");
-      setLoading(true);
-
-      // Timeout de segurança para não travar o app em loading
-      const timeoutId = setTimeout(() => {
-        console.warn("[AUTH] init timeout reached, forcing loading false");
-        setLoading(false);
-      }, 8000);
-
-      if (!isSupabaseConfigured) {
-        clearTimeout(timeoutId);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) {
-          console.log("[AUTH] no session");
-          setUser(null);
-          setProfile(null);
-        } else {
-          console.log("[AUTH] session found:", session.user.email);
-          setUser(session.user);
-          await loadProfile(session.user);
-        }
-      } catch (err) {
-        console.error("[AUTH] init error", err);
-      } finally {
-        clearTimeout(timeoutId);
-        setLoading(false);
-      }
+    console.log("[AUTH] app start");
+    
+    if (!isSupabaseConfigured) {
+      setLoading(false);
+      return;
     }
 
-    initAuth();
+    loadSessionAndProfile();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("[AUTH] event:", event);
       
       if (event === "SIGNED_IN" && session?.user) {
-        setUser(session.user);
-        setLoading(true);
-        await loadProfile(session.user);
-        setLoading(false);
+        loadSessionAndProfile();
+      } else if (event === "TOKEN_REFRESHED") {
+        console.log("[AUTH] token refreshed");
+        if (session?.user) setUser(session.user);
       } else if (event === "SIGNED_OUT") {
         console.log("[AUTH] signed out");
         setUser(null);
@@ -141,7 +139,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    return () => subscription.unsubscribe();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        console.log("[AUTH] visibility visible");
+        // Se já temos usuário e profile, fazemos um refresh silencioso
+        if (user && profile) {
+          loadSessionAndProfile(true);
+        } else {
+          // Se não temos, carregamos normalmente (com loading se necessário)
+          loadSessionAndProfile();
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   const login = async (email: string, senha: string, remember: boolean): Promise<{ success: boolean; error?: string }> => {
@@ -156,7 +172,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     if (data.user) {
-      // O profile será carregado pelo onAuthStateChange (SIGNED_IN)
       return { success: true };
     }
 
@@ -167,18 +182,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     console.log("[AUTH] iniciando logout completo");
     try {
-      // Sign out global para invalidar todas as sessões
       await supabase.auth.signOut({ scope: "global" });
     } catch (err) {
       console.error("[AUTH] logout error", err);
     }
 
-    // Limpar estados locais
     setUser(null);
     setProfile(null);
     setError(null);
     
-    // Limpar storage de forma agressiva
     Object.keys(localStorage)
       .filter(k => k.startsWith("sb-"))
       .forEach(k => localStorage.removeItem(k));
@@ -205,7 +217,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       login, 
       logout, 
       setSelectedEscolaId, 
-      updateProfile 
+      updateProfile,
+      loadSessionAndProfile
     }}>
       {children}
     </AuthContext.Provider>

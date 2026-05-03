@@ -54,24 +54,52 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
 }
 
 const AppContent = () => {
-  const { loading, user, profile, logout } = useAuth();
+  const { loading, user, profile, logout, error } = useAuth();
   const location = useLocation();
+  const [showEmergencyButton, setShowEmergencyButton] = React.useState(false);
+
+  React.useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (loading) {
+      timer = setTimeout(() => {
+        setShowEmergencyButton(true);
+      }, 6000);
+    } else {
+      setShowEmergencyButton(false);
+    }
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   console.log("[AppContent] state:", { 
     loading, 
     hasUser: !!user, 
     hasProfile: !!profile, 
     path: location.pathname,
-    status: profile?.status
+    status: profile?.status,
+    error
   });
 
-  // 1. Loading global
-  if (loading) {
+  // 1. Loading global (apenas se não tivermos usuário E perfil já carregados)
+  if (loading && (!user || !profile)) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-2">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground font-medium">Carregando perfil...</p>
+      <div className="flex h-screen items-center justify-center bg-background p-4">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <div className="space-y-1">
+            <p className="text-sm font-semibold">Carregando perfil...</p>
+            <p className="text-xs text-muted-foreground italic">Isso pode levar alguns segundos</p>
+          </div>
+          
+          {showEmergencyButton && (
+            <div className="mt-4 animate-in fade-in duration-500">
+              <button 
+                onClick={() => logout()} 
+                className="px-4 py-2 bg-destructive/10 text-destructive text-sm font-medium rounded-lg hover:bg-destructive/20 transition-colors border border-destructive/20"
+              >
+                Sair e voltar ao login
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -90,7 +118,9 @@ const AppContent = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // 3. Se está logado mas não tem perfil (e não é modo demo)
+  // 3. Se está logado mas não tem perfil
+  if (!profile) {
+    return (
       <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
         <h1 className="mb-2 text-2xl font-bold text-destructive">Perfil não encontrado</h1>
         <div className="space-y-2 mb-6">
@@ -105,6 +135,8 @@ const AppContent = () => {
           Sair e tentar outro e-mail
         </button>
       </div>
+    );
+  }
 
   // 4. Se o perfil está pendente ou bloqueado
   if (profile?.status === "pendente") {
