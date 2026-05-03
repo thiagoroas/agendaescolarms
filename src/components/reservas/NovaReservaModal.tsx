@@ -520,27 +520,27 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {allHorarios.map(h => (
                 <div 
-                  key={h.aula} 
+                  key={h.ordem} 
                   className={cn(
                     "flex items-center space-x-3 p-3 rounded-xl border-2 transition-all",
-                    formData.aulas.includes(h.aula) ? "bg-blue-50 border-blue-200 shadow-sm" : "bg-white border-slate-50 hover:bg-slate-50",
-                    conflictingAulas.includes(h.aula) && "bg-red-50 border-red-200"
+                    formData.aulas.includes(h.ordem) ? "bg-blue-50 border-blue-200 shadow-sm" : "bg-white border-slate-50 hover:bg-slate-50",
+                    conflictingAulas.includes(h.ordem) && "bg-red-50 border-red-200"
                   )}
                 >
                   <Checkbox 
-                    id={`aula-${h.aula}`}
-                    checked={formData.aulas.includes(h.aula)}
+                    id={`aula-${h.ordem}`}
+                    checked={formData.aulas.includes(h.ordem)}
                     onCheckedChange={(checked) => {
                       const newAulas = checked 
-                        ? [...formData.aulas, h.aula] 
-                        : formData.aulas.filter(a => a !== h.aula);
+                        ? [...formData.aulas, h.ordem] 
+                        : formData.aulas.filter(a => a !== h.ordem);
                       setFormData({...formData, aulas: newAulas});
                     }}
                   />
                   <div className="flex flex-col min-w-0">
-                    <Label htmlFor={`aula-${h.aula}`} className={cn("text-[11px] font-black cursor-pointer truncate", conflictingAulas.includes(h.aula) ? "text-red-600" : "text-slate-900")}>{h.label}</Label>
-                    <span className={cn("text-[9px] font-bold whitespace-nowrap", conflictingAulas.includes(h.aula) ? "text-red-400" : "text-slate-400")}>
-                      {conflictingAulas.includes(h.aula) ? "Indisponível" : `${h.inicio} - ${h.fim}`}
+                    <Label htmlFor={`aula-${h.ordem}`} className={cn("text-[11px] font-black cursor-pointer truncate", conflictingAulas.includes(h.ordem) ? "text-red-600" : "text-slate-900")}>{h.nome}</Label>
+                    <span className={cn("text-[9px] font-bold whitespace-nowrap", conflictingAulas.includes(h.ordem) ? "text-red-400" : "text-slate-400")}>
+                      {conflictingAulas.includes(h.ordem) ? "Indisponível" : `${h.hora_inicio.substring(0, 5)} - ${h.hora_fim.substring(0, 5)}`}
                     </span>
                   </div>
                 </div>
