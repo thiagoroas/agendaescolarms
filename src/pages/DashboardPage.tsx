@@ -330,8 +330,8 @@ const DashboardPage = () => {
                         </p>
                       </div>
                       
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600" onClick={() => navigate("/agenda")}>
-                        <Plus className="h-5 w-5" />
+                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600" onClick={() => navigate(profile?.role === "professor" ? "/minhas-reservas" : "/admin/reservas")}>
+                        <ChevronRight className="h-5 w-5" />
                       </Button>
                     </CardContent>
                   </Card>
