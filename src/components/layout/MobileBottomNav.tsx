@@ -18,7 +18,8 @@ import {
   SheetHeader, 
   SheetTitle, 
   SheetTrigger,
-  SheetClose
+  SheetClose,
+  SheetDescription
 } from "@/components/ui/sheet";
 import { useNavigation } from "@/hooks/useNavigation";
 import { toast } from "sonner";
