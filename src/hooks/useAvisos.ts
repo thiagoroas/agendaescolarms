@@ -25,8 +25,7 @@ export const useAvisos = (escolaId?: string) => {
     }
 
     setLoading(true);
-    setError(null);
-
+    console.log("[LOOP DEBUG] fetch avisos para escola:", targetEscolaId);
     if (isSupabaseConfigured) {
       try {
         console.log("[AVISOS] escolaId usado:", targetEscolaId);

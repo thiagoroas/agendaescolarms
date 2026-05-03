@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase, isSupabaseConfigured, isValidUUID } from "@/lib/supabase";
 import { Escola } from "@/data/mockData";
 import { getMockEscolas, saveMockEscolas, getMockUsuarios, getMockRecursos, getMockReservas, getMockAvisos } from "@/data/storage";
@@ -9,11 +9,13 @@ export const useEscolas = () => {
   const { profile, selectedEscolaId, setSelectedEscolaId, loading: authLoading } = useAuth();
   const [escolas, setEscolas] = useState<Escola[]>([]);
   const [loading, setLoading] = useState(true);
+  const autoSelectedSchoolRef = useRef(false);
 
   const fetchEscolas = async () => {
     if (authLoading) return;
     
     setLoading(true);
+    console.log("[LOOP DEBUG] fetch escolas");
     if (isSupabaseConfigured) {
       try {
         let query = supabase.from("escolas").select("*").order("nome");
@@ -36,12 +38,13 @@ export const useEscolas = () => {
         
         setEscolas(mappedEscolas);
 
-        // Auto-seleção de escola se necessário
-        if (isSupabaseConfigured && !authLoading && mappedEscolas.length > 0) {
+        // Auto-seleção de escola real (apenas se ainda não houve auto-seleção nesta sessão)
+        if (isSupabaseConfigured && !authLoading && mappedEscolas.length > 0 && !autoSelectedSchoolRef.current) {
           const currentId = selectedEscolaId || profile?.escola_id;
           if (!currentId || !isValidUUID(currentId)) {
-            console.log("[ESCOLAS] Auto-selecionando primeira escola válida");
+            console.log("[LOOP DEBUG] auto select escola:", mappedEscolas[0].id);
             setSelectedEscolaId(mappedEscolas[0].id);
+            autoSelectedSchoolRef.current = true;
           }
         }
       } catch (error: any) {

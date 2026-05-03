@@ -37,9 +37,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const isLoadingProfileRef = useRef(false);
 
+  const legacyCleanedRef = useRef(false);
+
   // Limpa localStorage de IDs legados se estiver no modo Supabase
   useEffect(() => {
-    if (isSupabaseConfigured) {
+    if (isSupabaseConfigured && !legacyCleanedRef.current) {
+      console.log("[LOOP DEBUG] limpar legacy storage");
       const keysToClean = [
         "agenda_selected_escola_id",
         "agenda_active_school",
@@ -54,6 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.removeItem(key);
         }
       });
+      legacyCleanedRef.current = true;
     }
   }, []);
 
@@ -62,8 +66,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.warn("[AUTH] Ignorando tentativa de salvar escolaId inválido no modo Supabase:", id);
       return;
     }
-    setSelectedEscolaIdState(id);
-    localStorage.setItem("agenda_selected_escola_id", id);
+    
+    if (selectedEscolaId !== id) {
+      console.log("[LOOP DEBUG] selectedEscolaId mudou:", id);
+      setSelectedEscolaIdState(id);
+      localStorage.setItem("agenda_selected_escola_id", id);
+    }
   };
 
   const loadSessionAndProfile = async (silent = false) => {
@@ -87,6 +95,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
         setProfile(null);
         setError(null);
+        isLoadingProfileRef.current = false;
+        setLoading(false);
         return;
       }
 
@@ -126,10 +136,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Valida se o ID salvo é compatível com o modo atual
         const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
         if (isSupabaseConfigured && savedEscolaId && !isValidUUID(savedEscolaId)) {
-          setSelectedEscolaIdState(data.escola_id);
+          if (selectedEscolaId !== data.escola_id) {
+            setSelectedEscolaIdState(data.escola_id);
+          }
           localStorage.removeItem("agenda_selected_escola_id");
-        } else {
-          setSelectedEscolaIdState(savedEscolaId || data.escola_id);
+        } else if (savedEscolaId && selectedEscolaId !== savedEscolaId) {
+          setSelectedEscolaIdState(savedEscolaId);
+        } else if (!savedEscolaId && data.escola_id && selectedEscolaId !== data.escola_id) {
+          setSelectedEscolaIdState(data.escola_id);
         }
       }
     } catch (err) {
@@ -184,6 +198,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         console.log("[AUTH] visibility visible - Chrome mobile trigger");
+        // Se já temos usuário e profile ativo e escola selecionada, não revalidamos para evitar loop
+        if (user && profile && isValidUUID(selectedEscolaId)) {
+          console.log("[AUTH] app já ativo e saudável, ignorando visibility revalidation");
+          return;
+        }
         revalidateSession();
       }
     };
@@ -192,6 +211,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("[AUTH] pageshow event", { persisted: event.persisted });
       if (event.persisted) {
         console.log("[AUTH] page restored from bfcache - revalidating session");
+        // Mesma lógica de proteção
+        if (user && profile && isValidUUID(selectedEscolaId)) {
+          return;
+        }
         revalidateSession();
       }
     };
@@ -204,7 +227,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pageshow", handlePageShow);
     };
-  }, [user, profile]);
+  }, [user?.id, profile?.id, selectedEscolaId]);
 
   const login = async (email: string, senha: string, remember: boolean): Promise<{ success: boolean; error?: string }> => {
     setError(null);

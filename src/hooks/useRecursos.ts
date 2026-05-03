@@ -26,8 +26,7 @@ export const useRecursos = (escolaId?: string) => {
     }
 
     setLoading(true);
-    setError(null);
-
+    console.log("[LOOP DEBUG] fetch recursos para escola:", targetEscolaId);
     if (isSupabaseConfigured) {
       try {
         console.log("[RECURSOS] escolaId usado:", targetEscolaId);
