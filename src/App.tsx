@@ -20,6 +20,7 @@ import AdminProfessoresPage from "./pages/AdminProfessoresPage";
 import AdminRecursosPage from "./pages/AdminRecursosPage";
 import AdminReservasPage from "./pages/AdminReservasPage";
 import AdminEscolasPage from "./pages/AdminEscolasPage";
+import AdminHorariosPage from "./pages/AdminHorariosPage";
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean, error: Error | null }> {
   constructor(props: { children: ReactNode }) {
@@ -186,6 +187,7 @@ const AppContent = () => {
         <Route path="/admin/reservas" element={<ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}><AppLayout><AdminReservasPage /></AppLayout></ProtectedRoute>} />
         <Route path="/admin/aprovacoes" element={<ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}><AppLayout><AprovacoesPage /></AppLayout></ProtectedRoute>} />
         <Route path="/admin/avisos" element={<ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}><AppLayout><AdminAvisosPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/admin/horarios" element={<ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}><AppLayout><AdminHorariosPage /></AppLayout></ProtectedRoute>} />
         <Route path="/admin/escolas" element={<ProtectedRoute allowedRoles={["admin_plataforma"]}><AppLayout><AdminEscolasPage /></AppLayout></ProtectedRoute>} />
 
         {/* Redirecionamento da raiz e fallback */}
