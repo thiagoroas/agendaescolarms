@@ -103,7 +103,8 @@ const DashboardPage = () => {
   const reservasHoje = useMemo(() => {
     let list = reservasEscola.filter(r => 
       r.data === hojeStr && 
-      !["cancelada", "manutencao", "bloqueada"].includes(r.status)
+      r.status !== "cancelada" &&
+      !["manutencao", "bloqueada"].includes(r.status)
     );
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id && (r.status === "confirmada" || r.status === "aprovada"));
