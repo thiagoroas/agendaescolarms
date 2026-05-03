@@ -137,8 +137,12 @@ const DashboardPage = () => {
   }, [reservasEscola, hojeStr, profile?.role, user?.id]);
 
   const alertas = useMemo(() => {
-    return reservasEscola.filter(r => r.status === "manutencao" || r.status === "bloqueada");
-  }, [reservasEscola]);
+    // Bloqueios e manutenções ativos (hoje e futuros)
+    return reservasEscola.filter(r => 
+      (r.status === "manutencao" || r.status === "bloqueada") &&
+      r.data >= hojeStr
+    );
+  }, [reservasEscola, hojeStr]);
 
   const recursosEmUsoHoje = useMemo(() => {
     const ids = new Set(reservasHoje.map(r => r.recurso_id));
