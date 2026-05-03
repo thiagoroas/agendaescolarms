@@ -147,7 +147,7 @@ const MobileBottomNav = () => {
                             to={item.path}
                             className={({ isActive }) =>
                               cn(
-                                "flex items-center gap-3.5 rounded-xl px-4 py-2.5 min-h-[44px] w-full transition-all duration-200",
+                                "flex flex-row items-center gap-4 rounded-xl px-4 py-3 min-h-[52px] w-full transition-all duration-200",
                                 isActive 
                                   ? "bg-blue-50 text-blue-700 font-bold shadow-sm" 
                                   : "text-slate-600 hover:bg-slate-50 active:bg-slate-100"
@@ -156,8 +156,8 @@ const MobileBottomNav = () => {
                           >
                             {({ isActive }) => (
                               <>
-                                <item.icon className={cn("h-4.5 w-4.5 shrink-0 transition-colors", isActive ? "text-blue-600" : "text-slate-400")} />
-                                <span className="text-sm truncate">{item.label}</span>
+                                <item.icon className={cn("h-5 w-5 shrink-0 transition-colors", isActive ? "text-blue-600" : "text-slate-400")} />
+                                <span className="text-[15px] leading-none">{item.label}</span>
                               </>
                             )}
                           </NavLink>
