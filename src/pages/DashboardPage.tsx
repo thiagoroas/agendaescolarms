@@ -74,11 +74,15 @@ const DashboardPage = () => {
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
   
   const escolaAtiva = todasEscolas.find(e => e.id === currentEscolaId);
-  const recursosEscola = todosRecursos.filter(r => r.escola_id === currentEscolaId);
+  const recursosEscola = useMemo(() => {
+    if (isSupabaseConfigured && !isValidUUID(currentEscolaId)) return [];
+    return todosRecursos.filter(r => r.escola_id === currentEscolaId);
+  }, [todosRecursos, currentEscolaId]);
   
   const hojeStr = format(new Date(), "yyyy-MM-dd");
   
   const reservasEscola = useMemo(() => {
+    if (isSupabaseConfigured && !isValidUUID(currentEscolaId)) return [];
     return todasReservas.filter(r => r.escola_id === currentEscolaId);
   }, [todasReservas, currentEscolaId]);
 
