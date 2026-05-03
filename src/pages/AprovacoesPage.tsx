@@ -74,7 +74,7 @@ const AprovacoesPage = () => {
 
   const proximasReservas = useMemo(() => {
     return reservasEscola
-      .filter(r => r.data >= hojeStr && (r.status === "confirmada" || r.status === "aprovada"))
+      .filter(r => r.data > hojeStr && (r.status === "confirmada" || r.status === "aprovada"))
       .filter(r => 
         r.nome_professor.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.disciplina.toLowerCase().includes(searchTerm.toLowerCase()) ||

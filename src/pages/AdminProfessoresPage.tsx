@@ -5,7 +5,7 @@ import { Usuario } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
 import { getMockUsuarios, saveMockUsuarios } from "../data/storage";
 import { Button } from "@/components/ui/button";
-import { Plus, UserPlus, UserCheck, Search, Info, Building2, Trash2, Edit2, Loader2, Key } from "lucide-react";
+import { Plus, UserPlus, UserCheck, Search, Info, Building2, Trash2, Edit2, Loader2, Key, Power } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -380,32 +380,34 @@ const AdminProfessoresPage = () => {
                             disabled={loading}
                             className="text-red-600 hover:bg-red-50 border-red-100 h-8 w-8 p-0"
                             onClick={async () => {
-                              const actionName = u.status === 'bloqueado' ? 'Excluir' : 'Bloquear';
-                              if (confirm(`Deseja ${actionName} ${u.nome}?`)) {
+                              const actionName = u.status === 'bloqueado' ? 'Ativar' : 'Bloquear';
+                              if (confirm(`Deseja ${actionName} o professor ${u.nome}?`)) {
                                 if (isSupabaseConfigured) {
                                   setLoading(true);
                                   try {
+                                    const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
                                     const { error } = await supabase.functions.invoke('manage-user', {
-                                      body: { action: 'delete_or_disable', userData: { id: u.id } }
+                                      body: { action: 'update', userData: { id: u.id, status: nextStatus } }
                                     });
                                     if (error) throw error;
-                                    toast.success("Usuário bloqueado com sucesso.");
+                                    toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'} com sucesso.`);
                                     fetchUsers();
                                   } catch (err: any) {
-                                    toast.error("Erro ao bloquear usuário");
+                                    toast.error("Erro ao alterar status do usuário");
                                   } finally {
                                     setLoading(false);
                                   }
                                 } else {
-                                  const updated = localUsers.filter(user => user.id !== u.id);
+                                  const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
+                                  const updated = localUsers.map(usr => usr.id === u.id ? { ...usr, status: nextStatus as any } : usr);
                                   saveMockUsuarios(updated as any);
                                   setLocalUsers(updated);
-                                  toast.success("Usuário excluído.");
+                                  toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'}.`);
                                 }
                               }
                             }}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Power className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
