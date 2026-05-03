@@ -65,9 +65,19 @@ const AgendaPage = () => {
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobile, setIsMobile] = useState(false);
-  const { reservas: reservasState, cancelReserva, refresh: refreshReservas } = useReservas();
-  const { recursos: schoolRecursos, loading: loadingRecursos } = useRecursos();
-  const { avisos: avisosState, loading: loadingAvisos } = useAvisos();
+  const { reservas: reservasState, cancelReserva, refresh: refreshReservas, error: errorReservas } = useReservas();
+  const { recursos: schoolRecursos, loading: loadingRecursos, error: errorRecursos } = useRecursos();
+  const { avisos: avisosState, loading: loadingAvisos, error: errorAvisos } = useAvisos();
+  const hasShownErrorToastRef = React.useRef(false);
+
+  useEffect(() => {
+    if ((errorReservas || errorRecursos || errorAvisos) && !hasShownErrorToastRef.current) {
+      toast.error("Alguns dados não puderam ser carregados. Tente atualizar a página.", {
+        id: "erro-geral-agenda"
+      });
+      hasShownErrorToastRef.current = true;
+    }
+  }, [errorReservas, errorRecursos, errorAvisos]);
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
   const [isModalRelatorioOpen, setIsModalRelatorioOpen] = useState(false);
   const [showAllAvisos, setShowAllAvisos] = useState(false);
