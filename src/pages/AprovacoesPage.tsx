@@ -233,11 +233,16 @@ const AprovacoesPage = () => {
                         <TableRow key={r.id} className="hover:bg-slate-50/50 transition-colors border-slate-50">
                           <TableCell className="py-4">
                             <span className="font-black text-slate-900">{format(parseISO(r.data), "dd/MM")}</span>
+                          </TableCell>
+                          <TableCell>
                             <span className="text-[10px] font-bold text-slate-400 block tracking-tight">Aula {r.aula}</span>
+                            <span className="text-[10px] text-slate-500 block">{r.horario}</span>
                           </TableCell>
                           <TableCell>
                             <span className="font-black text-slate-900 block">{r.nome_professor}</span>
-                            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{r.turma}</span>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className="bg-blue-50 text-blue-700 border-none font-bold text-[9px] uppercase tracking-widest">{r.turma}</Badge>
                           </TableCell>
                           <TableCell>
                              <Badge 
@@ -246,6 +251,16 @@ const AprovacoesPage = () => {
                               className="text-[9px] font-black border-none"
                             >
                               {rec?.nome}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={cn(
+                              "text-[9px] font-black uppercase tracking-widest border-none",
+                              r.status === "confirmada" || r.status === "aprovada" ? "bg-green-100 text-green-700" :
+                              r.status === "pendente" ? "bg-amber-100 text-amber-700" :
+                              "bg-slate-100 text-slate-700"
+                            )}>
+                              {r.status}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
