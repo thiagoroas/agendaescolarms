@@ -191,7 +191,7 @@ const DashboardPage = () => {
             if (profile?.role === "professor") {
               navigate("/minhas-reservas");
             } else {
-              navigate("/agenda");
+              navigate("/admin/reservas");
             }
           }}
           aria-label="Ver agendamentos de hoje"
