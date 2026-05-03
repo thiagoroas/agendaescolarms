@@ -259,7 +259,8 @@ const PerfilPage = () => {
                         type="email"
                         value={email} 
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10 border-slate-200 focus:ring-blue-500"
+                        disabled={profile?.role === "professor"}
+                        className={cn("pl-10 border-slate-200 focus:ring-blue-500", profile?.role === "professor" && "bg-slate-50 cursor-not-allowed")}
                         placeholder="seu@email.com"
                         required
                       />
