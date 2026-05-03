@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAvisos } from "@/hooks/useAvisos";
 import { format, addDays, startOfWeek, isSameDay, parseISO, isWithinInterval, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
