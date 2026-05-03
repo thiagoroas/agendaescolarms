@@ -18,10 +18,22 @@ import { isValidUUID, isSupabaseConfigured } from "@/lib/supabase";
 
 const AdminReservasPage = () => {
   const { profile, selectedEscolaId } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { escolas, loading: loadingEscolas } = useEscolas();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("todas");
+  const initialStatus = searchParams.get("status") || "todas";
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const { reservas, cancelReserva } = useReservas();
+
+  // Update URL when filter changes
+  useEffect(() => {
+    if (statusFilter !== "todas") {
+      setSearchParams({ status: statusFilter });
+    } else {
+      searchParams.delete("status");
+      setSearchParams(searchParams);
+    }
+  }, [statusFilter, setSearchParams, searchParams]);
   const { recursos } = useRecursos();
 
 
