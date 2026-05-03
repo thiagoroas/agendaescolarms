@@ -188,7 +188,7 @@ const DashboardPage = () => {
               <Badge className="bg-blue-600 text-white border-none font-black">{reservasHoje.length}</Badge>
             </div>
             <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Reservas de Hoje</p>
-            <h3 className="text-xl font-black text-slate-900 mt-1">Agenda Hoje</h3>
+            <h3 className="text-xl font-black text-slate-900 mt-1">Hoje</h3>
           </CardContent>
         </Card>
 
