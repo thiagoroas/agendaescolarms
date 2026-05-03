@@ -169,7 +169,7 @@ const MobileBottomNav = () => {
               </nav>
             </div>
 
-            <div className="p-4 border-t border-slate-100 bg-white shrink-0 pb-safe-offset-4">
+            <div className="p-4 border-t border-slate-100 bg-white shrink-0 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
               <button
                 onClick={() => {
                   logout();
