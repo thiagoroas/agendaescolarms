@@ -255,9 +255,9 @@ const DashboardPage = () => {
               <Badge className="bg-slate-600 text-white border-none font-black">{alertas.length}</Badge>
             </div>
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              {alertas.some(a => a.data === hojeStr) ? "Bloqueios Ativos" : "Próximos Bloqueios"}
+              BLOQUEIOS E MANUTENÇÃO
             </p>
-            <h3 className="text-xl font-black text-slate-900 mt-1">Manutenção</h3>
+            <h3 className="text-xl font-black text-slate-900 mt-1">Próximos bloqueios</h3>
           </CardContent>
         </Card>
 
