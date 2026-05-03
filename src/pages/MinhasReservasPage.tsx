@@ -12,11 +12,14 @@ import { format, isAfter, parseISO, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ConfirmCancelModal } from "@/components/reservas/ConfirmCancelModal";
 
 const MinhasReservasPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
   const { reservas, cancelReserva } = useReservas();
   const { recursos } = useRecursos();
+  const [reservaParaCancelar, setReservaParaCancelar] = useState<Reserva | null>(null);
+  const [cancelando, setCancelando] = useState(false);
 
 
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
@@ -112,11 +115,7 @@ const MinhasReservasPage = () => {
                 variant="outline" 
                 size="sm" 
                 className="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700" 
-                onClick={async () => {
-                  if (window.confirm("Deseja realmente cancelar esta reserva?")) {
-                    await cancelReserva(r.id);
-                  }
-                }}
+                onClick={() => setReservaParaCancelar(r)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Cancelar
@@ -185,6 +184,23 @@ const MinhasReservasPage = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      <ConfirmCancelModal
+        isOpen={!!reservaParaCancelar}
+        onClose={() => setReservaParaCancelar(null)}
+        loading={cancelando}
+        onConfirm={async (motivo) => {
+          if (reservaParaCancelar) {
+            setCancelando(true);
+            try {
+              await cancelReserva(reservaParaCancelar.id, motivo);
+            } finally {
+              setCancelando(false);
+              setReservaParaCancelar(null);
+            }
+          }
+        }}
+      />
     </div>
   );
 };
