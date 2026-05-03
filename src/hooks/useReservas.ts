@@ -25,8 +25,7 @@ export const useReservas = (escolaId?: string) => {
     }
 
     setLoading(true);
-    setError(null);
-
+    console.log("[LOOP DEBUG] fetch reservas para escola:", targetEscolaId);
     if (isSupabaseConfigured) {
       try {
         console.log("[RESERVAS] escolaId usado:", targetEscolaId);
