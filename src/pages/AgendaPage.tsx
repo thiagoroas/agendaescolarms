@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as Cale
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../contexts/AuthContext";
-import { isSupabaseConfigured } from "../lib/supabase";
+import { isSupabaseConfigured, isValidUUID } from "../lib/supabase";
 import { Reserva, Recurso, AvisoLaboratorio } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
 import { useRecursos } from "@/hooks/useRecursos";
