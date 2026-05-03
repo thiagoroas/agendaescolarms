@@ -87,10 +87,10 @@ export const useEscolas = () => {
     }
   }, [profile?.id, authLoading]);
 
-  const createEscola = async (novaEscola: Omit<Escola, "id" | "status">) => {
+  const createEscola = async (novaEscola: Omit<Escola, "id" | "status">, createDefaultResources = false) => {
     if (isSupabaseConfigured) {
       try {
-        const { data, error } = await supabase
+        const { data: escolaData, error: escolaError } = await supabase
           .from("escolas")
           .insert([{ 
             nome: novaEscola.nome, 
@@ -101,18 +101,35 @@ export const useEscolas = () => {
           .select()
           .single();
 
-        if (error) throw error;
+        if (escolaError) throw escolaError;
+        
+        // Criar horários padrão automaticamente
+        const horariosToInsert = FALLBACK_HORARIOS.map(h => ({
+          ...h,
+          escola_id: escolaData.id
+        }));
+        
+        await supabase.from("horarios_escola").insert(horariosToInsert);
+
+        // Criar recursos padrão se solicitado
+        if (createDefaultResources) {
+          const recursosToInsert = DEFAULT_RESOURCES.map(r => ({
+            ...r,
+            escola_id: escolaData.id
+          }));
+          await supabase.from("recursos").insert(recursosToInsert);
+        }
         
         const created: Escola = {
-          id: data.id,
-          nome: data.nome,
-          cidade: data.cidade,
-          estado: data.estado,
-          status: data.status
+          id: escolaData.id,
+          nome: escolaData.nome,
+          cidade: escolaData.cidade,
+          estado: escolaData.estado,
+          status: escolaData.status
         };
         
         setEscolas(prev => [created, ...prev]);
-        toast.success("Escola cadastrada com sucesso!");
+        toast.success("Escola e horários padrão criados!");
         return created;
       } catch (error: any) {
         console.error("Error creating school:", error.message);
@@ -125,6 +142,19 @@ export const useEscolas = () => {
         id: "escola-" + Date.now(),
         status: "ativa"
       };
+      
+      // No modo mock não persistimos horários por escola facilmente num hook de escola,
+      // mas podemos persistir os recursos se solicitado
+      if (createDefaultResources) {
+        const mockRecursos = getMockRecursos();
+        const newResources: Recurso[] = DEFAULT_RESOURCES.map((r, i) => ({
+          ...r,
+          id: `rec-${Date.now()}-${i}`,
+          escola_id: created.id
+        }));
+        saveMockRecursos([...mockRecursos, ...newResources]);
+      }
+
       setEscolas(prev => {
         const updated = [created, ...prev];
         saveMockEscolas(updated);
