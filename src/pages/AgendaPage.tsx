@@ -97,6 +97,8 @@ const AgendaPage = () => {
   const currentSchoolId = selectedEscolaId || profile?.escola_id;
 
   const reservasHoje = useMemo(() => {
+    if (isSupabaseConfigured && !isValidUUID(currentSchoolId)) return [];
+    
     const todayStr = format(new Date(), "yyyy-MM-dd");
     return reservasState.filter(r => 
       r.escola_id === currentSchoolId && 
