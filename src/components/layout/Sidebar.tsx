@@ -3,26 +3,19 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useEscolas } from "@/hooks/useEscolas";
 import { 
   Calendar, 
-  BookOpen, 
-  User, 
-  Users, 
-  Monitor, 
-  ClipboardList, 
-  Building2, 
-  LogOut,
-  LayoutDashboard,
-  CheckCircle,
   ChevronDown,
   Building,
-  Bell
+  LogOut
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useNavigation } from "@/hooks/useNavigation";
 
 const Sidebar = () => {
   const { profile, logout, selectedEscolaId, setSelectedEscolaId } = useAuth();
   const { escolas, loading } = useEscolas();
+  const { sections } = useNavigation();
   const escola = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
 
   const handleEscolaChange = (id: string) => {
@@ -32,28 +25,6 @@ const Sidebar = () => {
       toast.success(`Escola ativa alterada para ${novaEscola.nome}`);
     }
   };
-
-  const menuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-    { icon: Calendar, label: "Agenda", path: "/agenda" },
-    { icon: BookOpen, label: "Minhas Reservas", path: "/minhas-reservas" },
-    { icon: User, label: "Perfil", path: "/perfil" },
-  ];
-
-  const adminItems = [
-    { icon: CheckCircle, label: "Central do Laboratório", path: "/admin/aprovacoes", roles: ["admin_lab", "admin_plataforma"] },
-    { icon: Bell, label: "Avisos", path: "/admin/avisos", roles: ["admin_lab", "admin_plataforma"] },
-    { icon: Users, label: "Professores", path: "/admin/professores", roles: ["admin_lab", "admin_plataforma"] },
-    { icon: Monitor, label: "Recursos", path: "/admin/recursos", roles: ["admin_lab", "admin_plataforma"] },
-    { icon: ClipboardList, label: "Todas as Reservas", path: "/admin/reservas", roles: ["admin_lab", "admin_plataforma"] },
-  ];
-
-  const platformItems = [
-    { icon: Building2, label: "Escolas", path: "/admin/escolas", roles: ["admin_plataforma"] },
-  ];
-
-  const filteredAdmin = adminItems.filter(i => i.roles.includes(profile?.role || ""));
-  const filteredPlatform = platformItems.filter(i => i.roles?.includes(profile?.role || ""));
 
   return (
     <aside className="fixed left-0 top-0 hidden h-full w-[264px] flex-col border-r bg-white md:flex z-40">
@@ -136,86 +107,39 @@ const Sidebar = () => {
         <Separator className="bg-slate-100" />
       </div>
 
-      <nav className="flex-1 space-y-0.5 p-3 overflow-y-auto scrollbar-hide">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 group",
-                isActive 
-                  ? "bg-blue-50 text-blue-700 font-semibold" 
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <item.icon className={cn("h-4 w-4 transition-transform", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
-                {item.label}
-              </>
+      <nav className="flex-1 space-y-6 p-3 overflow-y-auto scrollbar-hide">
+        {sections.map((section, idx) => (
+          <div key={section.title || idx} className="space-y-1">
+            {section.title && (
+              <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 mt-4 first:mt-0">
+                {section.title}
+              </div>
             )}
-          </NavLink>
+            <div className="space-y-0.5">
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 group",
+                      isActive 
+                        ? "bg-blue-50 text-blue-700 font-semibold" 
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <item.icon className={cn("h-4 w-4 transition-transform", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
+                      {item.label}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          </div>
         ))}
-
-        {filteredAdmin.length > 0 && (
-          <>
-            <div className="mt-6 mb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">Administração</div>
-            <div className="space-y-0.5">
-              {filteredAdmin.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 group",
-                      isActive 
-                        ? "bg-blue-50 text-blue-700 font-semibold" 
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                    )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <item.icon className={cn("h-4 w-4 transition-transform", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
-                      {item.label}
-                    </>
-                  )}
-                </NavLink>
-              ))}
-            </div>
-          </>
-        )}
-
-        {filteredPlatform.length > 0 && (
-          <>
-            <div className="mt-6 mb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">Plataforma</div>
-            <div className="space-y-0.5">
-              {filteredPlatform.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 group",
-                      isActive 
-                        ? "bg-blue-50 text-blue-700 font-semibold" 
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                    )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <item.icon className={cn("h-4 w-4 transition-transform", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
-                      {item.label}
-                    </>
-                  )}
-                </NavLink>
-              ))}
-            </div>
-          </>
-        )}
       </nav>
 
       <div className="mt-auto p-4 border-t border-slate-100">
@@ -229,7 +153,7 @@ const Sidebar = () => {
           }
         >
           <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-sm group-hover:scale-110 transition-transform">
-            {profile?.full_name.charAt(0).toUpperCase()}
+            {profile?.full_name?.charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col min-w-0">
             <p className="text-xs font-bold text-slate-900 truncate leading-tight group-hover:text-blue-700 transition-colors">{profile?.full_name}</p>
