@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 
 const PerfilPage = () => {
   const { user, profile, logout, updateProfile } = useAuth();
