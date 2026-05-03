@@ -6,21 +6,18 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const useEscolas = () => {
-  const { profile, selectedEscolaId, setSelectedEscolaId } = useAuth();
+  const { profile, selectedEscolaId, setSelectedEscolaId, loading: authLoading } = useAuth();
   const [escolas, setEscolas] = useState<Escola[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchEscolas = async () => {
+    if (authLoading) return;
+    
     setLoading(true);
     if (isSupabaseConfigured) {
       try {
         let query = supabase.from("escolas").select("*").order("nome");
         
-        // Se não for admin plataforma, filtrar pela escola do usuário
-        // No entanto, a AdminEscolasPage só é acessível para admin_plataforma
-        // Mas o TopHeader usa a lista de escolas.
-        // Se for admin_lab ou professor, eles geralmente só precisam ver a própria escola
-        // Mas para simplificar, o admin_plataforma vê tudo e os outros vêem apenas a sua
         if (profile && profile.role !== "admin_plataforma" && profile.escola_id) {
           query = query.eq("id", profile.escola_id);
         }
@@ -38,9 +35,18 @@ export const useEscolas = () => {
         }));
         
         setEscolas(mappedEscolas);
+
+        // Auto-seleção de escola se necessário
+        if (isSupabaseConfigured && !authLoading && mappedEscolas.length > 0) {
+          const currentId = selectedEscolaId || profile?.escola_id;
+          if (!currentId || !isValidUUID(currentId)) {
+            console.log("[ESCOLAS] Auto-selecionando primeira escola válida");
+            setSelectedEscolaId(mappedEscolas[0].id);
+          }
+        }
       } catch (error: any) {
         console.error("Error fetching schools:", error.message);
-        toast.error("Erro ao carregar escolas");
+        toast.error("Erro ao carregar escolas", { id: "erro-carregar-escolas" });
       } finally {
         setLoading(false);
       }
@@ -55,11 +61,10 @@ export const useEscolas = () => {
   };
 
   useEffect(() => {
-    // Only fetch if profile is loaded or if we are in mock mode without profile
-    if (profile || !isSupabaseConfigured) {
+    if (!authLoading) {
       fetchEscolas();
     }
-  }, [profile]);
+  }, [profile?.id, authLoading]);
 
   const createEscola = async (novaEscola: Omit<Escola, "id" | "status">) => {
     if (isSupabaseConfigured) {
