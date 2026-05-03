@@ -1,61 +1,62 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { isSupabaseConfigured } from "../lib/supabase";
-import { getMockEscolas, getMockRecursos, getMockReservas } from "../data/storage";
+import { getMockEscolas } from "../data/storage";
 import { useRecursos } from "@/hooks/useRecursos";
 import { useReservas } from "@/hooks/useReservas";
 import { useAvisos } from "@/hooks/useAvisos";
-import { Reserva, Recurso, Escola, AvisoLaboratorio } from "../data/mockData";
-import { format, parseISO, isSameDay } from "date-fns";
+import { Escola } from "../data/mockData";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+// ... (imports remain the same)
 import { 
   Calendar, 
   Clock, 
-  CheckCircle, 
-  AlertCircle, 
-  Plus, 
-  FileText,
-  User,
   Monitor,
   LayoutDashboard,
   Bell,
   Info,
   AlertTriangle,
-  ChevronRight,
-  Trash2
+  Plus,
+  Trash2,
+  User,
+  FileText
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { resetMockData } from "../data/storage";
 import { useToast } from "@/hooks/use-toast";
 
 const DashboardPage = () => {
-  const { user, profile, selectedEscolaId } = useAuth();
+  const { user, profile, selectedEscolaId, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { recursos: todosRecursos, loading: loadingRecursos } = useRecursos();
-  const { reservas: todasReservas, loading: loadingReservas } = useReservas();
-  const { avisos, loading: loadingAvisos } = useAvisos();
+  const { recursos: todosRecursos, loading: loadingRecursos, error: errorRecursos } = useRecursos();
+  const { reservas: todasReservas, loading: loadingReservas, error: errorReservas } = useReservas();
+  const { avisos, loading: loadingAvisos, error: errorAvisos } = useAvisos();
 
   const [todasEscolas, setTodasEscolas] = useState<Escola[]>([]);
+  const hasShownErrorToastRef = useRef(false);
 
   useEffect(() => {
     setTodasEscolas(getMockEscolas());
   }, []);
+
+  useEffect(() => {
+    if (errorRecursos || errorReservas || errorAvisos) {
+      if (!hasShownErrorToastRef.current) {
+        toast({
+          title: "Erro de carregamento",
+          description: "Alguns dados não puderam ser carregados. Tente atualizar a página.",
+          variant: "destructive"
+        });
+        hasShownErrorToastRef.current = true;
+      }
+    }
+  }, [errorRecursos, errorReservas, errorAvisos, toast]);
 
 
   
