@@ -102,8 +102,15 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
   useEffect(() => {
     const fetchExistingReservations = async () => {
-      if (!isOpen || !formData.data || !formData.recursoId) return;
+      const targetEscolaId = profile?.escola_id;
+      if (!isOpen || !formData.data || !formData.recursoId || !targetEscolaId) return;
       
+      // Validação de UUID
+      if (isSupabaseConfigured && (!isValidUUID(targetEscolaId) || !isValidUUID(formData.recursoId))) {
+        console.warn("[NovaReservaModal] UUID inválido para consulta de conflitos:", { targetEscolaId, recursoId: formData.recursoId });
+        return;
+      }
+
       setIsCheckingConflicts(true);
       try {
         if (isSupabaseConfigured) {
@@ -112,7 +119,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             .select('*')
             .eq('data', formData.data)
             .eq('recurso_id', formData.recursoId)
-            .eq('escola_id', profile?.escola_id)
+            .eq('escola_id', targetEscolaId)
             .neq('status', 'cancelada');
           
           if (error) throw error;
