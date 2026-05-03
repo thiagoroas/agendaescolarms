@@ -241,21 +241,25 @@ const DashboardPage = () => {
           className="rounded-3xl border-none shadow-sm bg-amber-50/50 hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-amber-100 transition-all group cursor-pointer"
           onClick={() => {
             if (profile?.role === "professor") {
-              navigate("/minhas-reservas");
+              // Professor vê na agenda (poderíamos passar um parâmetro para destacar bloqueios)
+              navigate("/agenda"); 
             } else {
-              navigate("/admin/aprovacoes");
+              // Admin vê na central de reservas filtrada
+              navigate("/admin/reservas?status=manutencao");
             }
           }}
-          aria-label="Ver solicitações pendentes"
+          aria-label="Ver bloqueios e manutenções"
         >
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
-                <Bell size={20} />
+                <AlertTriangle size={20} />
               </div>
               <Badge className="bg-slate-600 text-white border-none font-black">{alertas.length}</Badge>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Bloqueios</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              {alertas.some(a => a.data === hojeStr) ? "Bloqueios Ativos" : "Próximos Bloqueios"}
+            </p>
             <h3 className="text-xl font-black text-slate-900 mt-1">Manutenção</h3>
           </CardContent>
         </Card>
