@@ -41,12 +41,9 @@ export const DiagnosticPanel = () => {
       setHasAccessToken(true);
       setTokenSent(true);
 
-      // Chamada explícita com o token para garantir o envio
+      // Chamada simplificada - o SDK do Supabase já injeta o token se houver sessão
       const { data, error } = await supabase.functions.invoke('manage-user', {
-        body: { action: 'ping' },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
+        body: { action: 'ping' }
       });
 
       setLastResponse(data || error);
