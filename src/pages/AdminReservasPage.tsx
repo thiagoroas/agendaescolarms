@@ -15,6 +15,7 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { isValidUUID, isSupabaseConfigured } from "@/lib/supabase";
+import { ConfirmCancelModal } from "@/components/reservas/ConfirmCancelModal";
 
 const AdminReservasPage = () => {
   const { profile, selectedEscolaId } = useAuth();
@@ -24,6 +25,8 @@ const AdminReservasPage = () => {
   const initialStatus = searchParams.get("status") || "todas";
   const [statusFilter, setStatusFilter] = useState(initialStatus);
   const { reservas, cancelReserva } = useReservas();
+  const [reservaParaCancelar, setReservaParaCancelar] = useState<Reserva | null>(null);
+  const [cancelando, setCancelando] = useState(false);
 
   // Update URL when filter changes
   useEffect(() => {
@@ -199,11 +202,7 @@ const AdminReservasPage = () => {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50" 
-                        onClick={async () => {
-                          if (window.confirm("Deseja realmente cancelar esta reserva?")) {
-                            await cancelReserva(r.id);
-                          }
-                        }}
+                        onClick={() => setReservaParaCancelar(r)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -248,11 +247,7 @@ const AdminReservasPage = () => {
                   variant="outline" 
                   size="sm" 
                   className="flex-1 text-red-600 border-red-100" 
-                  onClick={async () => {
-                    if (window.confirm("Deseja realmente cancelar esta reserva?")) {
-                      await cancelReserva(r.id);
-                    }
-                  }}
+                  onClick={() => setReservaParaCancelar(r)}
                 >
                   Cancelar
                 </Button>
@@ -261,6 +256,23 @@ const AdminReservasPage = () => {
           );
         })}
       </div>
+
+      <ConfirmCancelModal
+        isOpen={!!reservaParaCancelar}
+        onClose={() => setReservaParaCancelar(null)}
+        loading={cancelando}
+        onConfirm={async (motivo) => {
+          if (reservaParaCancelar) {
+            setCancelando(true);
+            try {
+              await cancelReserva(reservaParaCancelar.id, motivo);
+            } finally {
+              setCancelando(false);
+              setReservaParaCancelar(null);
+            }
+          }
+        }}
+      />
     </div>
   );
 };
