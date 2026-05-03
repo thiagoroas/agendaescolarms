@@ -407,7 +407,7 @@ const AdminProfessoresPage = () => {
                               }
                             }}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Power className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
