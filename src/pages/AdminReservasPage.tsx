@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useEscolas } from "@/hooks/useEscolas";
 import { useReservas } from "@/hooks/useReservas";
@@ -17,9 +18,26 @@ import { isValidUUID, isSupabaseConfigured } from "@/lib/supabase";
 
 const AdminReservasPage = () => {
   const { profile, selectedEscolaId } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { escolas, loading: loadingEscolas } = useEscolas();
   const [searchTerm, setSearchTerm] = useState("");
+  const initialStatus = searchParams.get("status") || "todas";
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const { reservas, cancelReserva } = useReservas();
+
+  // Update URL when filter changes
+  useEffect(() => {
+    const currentStatus = searchParams.get("status");
+    if (statusFilter !== "todas") {
+      if (currentStatus !== statusFilter) {
+        setSearchParams({ status: statusFilter });
+      }
+    } else {
+      if (currentStatus) {
+        setSearchParams({});
+      }
+    }
+  }, [statusFilter, setSearchParams, searchParams]);
   const { recursos } = useRecursos();
 
 
@@ -32,13 +50,20 @@ const AdminReservasPage = () => {
     
     return reservas
       .filter(r => r.escola_id === currentEscolaId)
+      .filter(r => {
+        if (statusFilter === "todas") return true;
+        if (statusFilter === "confirmadas") return r.status === "confirmada" || r.status === "aprovada";
+        if (statusFilter === "manutencao") return r.status === "manutencao" || r.status === "bloqueada";
+        if (statusFilter === "canceladas") return r.status === "cancelada";
+        return true;
+      })
       .filter(r => 
         r.nome_professor.toLowerCase().includes(searchTerm.toLowerCase()) || 
         r.disciplina.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.turma.toLowerCase().includes(searchTerm.toLowerCase())
       )
       .sort((a, b) => b.data.localeCompare(a.data));
-  }, [reservas, currentEscolaId, searchTerm]);
+  }, [reservas, currentEscolaId, searchTerm, statusFilter]);
 
   return (
     <div className="space-y-6">
@@ -61,20 +86,57 @@ const AdminReservasPage = () => {
         </div>
       </header>
 
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input 
-            className="pl-10" 
-            placeholder="Filtrar por professor, disciplina ou turma..." 
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap gap-2">
+          <Button 
+            variant={statusFilter === "todas" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setStatusFilter("todas")}
+            className="rounded-full px-4 h-9 font-bold uppercase tracking-widest text-[10px]"
+          >
+            Todas
+          </Button>
+          <Button 
+            variant={statusFilter === "confirmadas" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setStatusFilter("confirmadas")}
+            className="rounded-full px-4 h-9 font-bold uppercase tracking-widest text-[10px]"
+          >
+            Confirmadas
+          </Button>
+          <Button 
+            variant={statusFilter === "manutencao" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setStatusFilter("manutencao")}
+            className="rounded-full px-4 h-9 font-bold uppercase tracking-widest text-[10px]"
+          >
+            Manutenção/Bloqueios
+          </Button>
+          <Button 
+            variant={statusFilter === "canceladas" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setStatusFilter("canceladas")}
+            className="rounded-full px-4 h-9 font-bold uppercase tracking-widest text-[10px]"
+          >
+            Canceladas
+          </Button>
         </div>
-        <Button variant="outline">
-          <Filter className="mr-2 h-4 w-4" />
-          Filtros Avançados
-        </Button>
+
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input 
+              className="pl-10" 
+              placeholder="Filtrar por professor, disciplina ou turma..." 
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <Button variant="outline">
+            <Filter className="mr-2 h-4 w-4" />
+            Mais Filtros
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-xl border bg-white shadow-sm overflow-hidden hidden md:block">

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAvisos } from "@/hooks/useAvisos";
 import { format, addDays, startOfWeek, isSameDay, parseISO, isWithinInterval, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -53,6 +54,7 @@ const initialsOf = (name: string) =>
 
 const AgendaPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { escolas: allEscolas, loading: loadingEscolas } = useEscolas();
   const [currentDate, setCurrentDate] = useState(() => {
     const today = new Date();
@@ -64,7 +66,8 @@ const AgendaPage = () => {
     return today;
   });
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const onlyBlocks = searchParams.get("view") === "blocks";
   const [isMobile, setIsMobile] = useState(false);
   const { reservas: reservasState, cancelReserva, refresh: refreshReservas, error: errorReservas } = useReservas();
   const { recursos: schoolRecursos, loading: loadingRecursos, error: errorRecursos } = useRecursos();
@@ -135,6 +138,7 @@ const AgendaPage = () => {
       r.aula === aula &&
       r.escola_id === currentSchoolId &&
       (r.status === "confirmada" || r.status === "aprovada" || r.status === "pendente" || r.status === "manutencao" || r.status === "bloqueada") &&
+      (!onlyBlocks || r.status === "manutencao" || r.status === "bloqueada") &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
       (!searchQuery ||
         r.nome_professor.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -151,6 +155,8 @@ const AgendaPage = () => {
       r.escola_id === currentSchoolId &&
       r.data >= mondayStr &&
       r.data <= fridayStr &&
+      (r.status === "confirmada" || r.status === "aprovada" || r.status === "pendente" || r.status === "manutencao" || r.status === "bloqueada") &&
+      (!onlyBlocks || r.status === "manutencao" || r.status === "bloqueada") &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
       (!searchQuery ||
         r.nome_professor.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -345,6 +351,32 @@ const AgendaPage = () => {
               Resetar dados demo
             </Button>
           )}
+        </div>
+      )}
+
+      {/* Indicador de Filtro de Bloqueios */}
+      {onlyBlocks && (
+        <div className="mx-4 mb-4 p-4 bg-slate-900 text-white rounded-2xl flex items-center justify-between shadow-lg animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/10 rounded-xl">
+              <AlertTriangle size={20} className="text-amber-400" />
+            </div>
+            <div>
+              <h4 className="text-sm font-black uppercase tracking-tight">Visualizando Bloqueios</h4>
+              <p className="text-[10px] font-bold opacity-70">A agenda está filtrada para mostrar apenas manutenções e bloqueios.</p>
+            </div>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10"
+            onClick={() => {
+              searchParams.delete("view");
+              setSearchParams(searchParams);
+            }}
+          >
+            Limpar Filtro
+          </Button>
         </div>
       )}
 
@@ -589,7 +621,10 @@ const AgendaPage = () => {
         onDelete={handleExcluirReserva}
         reserva={activeReserva?.reserva || null}
         recurso={activeReserva?.recurso || null}
-        canEdit={activeReserva?.reserva.profile_id === user?.id || profile?.role !== 'professor'}
+        canEdit={
+          (activeReserva?.reserva.profile_id === user?.id || profile?.role !== 'professor') &&
+          !(profile?.role === 'professor' && (activeReserva?.reserva.status === 'manutencao' || activeReserva?.reserva.status === 'bloqueada'))
+        }
       />
 
       <RelatorioReservasModal

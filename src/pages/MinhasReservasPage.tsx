@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useReservas } from "@/hooks/useReservas";
 import { useRecursos } from "@/hooks/useRecursos";
@@ -19,22 +19,39 @@ const MinhasReservasPage = () => {
   const { recursos } = useRecursos();
 
 
-  const userReservas = reservas
-    .filter(r => r.profile_id === user?.id || (profile?.role !== 'professor' && r.escola_id === profile?.escola_id));
+  const userReservas = useMemo(() => {
+    // Para professor, apenas suas próprias reservas que NÃO sejam manutenção/bloqueio
+    if (profile?.role === 'professor') {
+      return reservas.filter(r => 
+        r.profile_id === user?.id && 
+        !['manutencao', 'bloqueada'].includes(r.status)
+      );
+    }
+    
+    // Para administradores, mostramos todas da escola (equivalente ao Dashboard panorâmico)
+    // Mas o pedido diz que "Minhas Reservas" deve mostrar apenas as do professor logado? 
+    // Re-lendo: "Minhas Reservas: Deve mostrar apenas reservas do professor logado."
+    // "Excluir status manutencao e bloqueada da tela Minhas Reservas do professor."
+    // Então mesmo se for admin acessando "Minhas Reservas" (pessoais), filtramos.
+    return reservas.filter(r => 
+      r.profile_id === user?.id && 
+      !['manutencao', 'bloqueada'].includes(r.status)
+    );
+  }, [reservas, user?.id, profile?.role]);
 
   const today = startOfDay(new Date());
   
-  const upcoming = userReservas
+  const upcoming = useMemo(() => userReservas
     .filter(r => r.status !== 'cancelada' && !isAfter(today, startOfDay(parseISO(r.data))))
-    .sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula);
+    .sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula), [userReservas, today]);
     
-  const past = userReservas
+  const past = useMemo(() => userReservas
     .filter(r => r.status !== 'cancelada' && isAfter(today, startOfDay(parseISO(r.data))))
-    .sort((a, b) => b.data.localeCompare(a.data));
+    .sort((a, b) => b.data.localeCompare(a.data)), [userReservas, today]);
 
-  const canceled = userReservas
+  const canceled = useMemo(() => userReservas
     .filter(r => r.status === 'cancelada')
-    .sort((a, b) => b.data.localeCompare(a.data));
+    .sort((a, b) => b.data.localeCompare(a.data)), [userReservas]);
 
   const ReservaCard = ({ r }: { r: Reserva }) => {
     const rec = recursos.find(rec => rec.id === r.recurso_id);
