@@ -205,6 +205,14 @@ export const useRecursos = (escolaId?: string) => {
         return false;
       }
     } else {
+      const allMockReservas = getMockReservas();
+      const hasReservations = allMockReservas.some(res => res.recurso_id === id);
+
+      if (hasReservations) {
+        toast.error("Este recurso possui reservas no histórico do protótipo. Inative o recurso em vez de excluir.");
+        return false;
+      }
+
       setRecursos(prev => {
         const allMock = getMockRecursos();
         const updatedMock = allMock.filter(r => r.id !== id);
