@@ -13,7 +13,7 @@ import { Usuario, Reserva } from "../../data/mockData";
 import { getMockUsuarios, getMockReservas } from "../../data/storage";
 import { useRecursos } from "@/hooks/useRecursos";
 import { useReservas } from "@/hooks/useReservas";
-import { supabase, isSupabaseConfigured } from "../../lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUUID } from "../../lib/supabase";
 import { horarios } from "../../data/horarios";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
