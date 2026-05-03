@@ -227,7 +227,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pageshow", handlePageShow);
     };
-  }, [user, profile]);
+  }, [user?.id, profile?.id, selectedEscolaId]);
 
   const login = async (email: string, senha: string, remember: boolean): Promise<{ success: boolean; error?: string }> => {
     setError(null);
