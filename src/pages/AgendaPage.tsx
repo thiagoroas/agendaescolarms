@@ -67,6 +67,7 @@ const AgendaPage = () => {
   });
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const onlyBlocks = searchParams.get("view") === "blocks";
   const [isMobile, setIsMobile] = useState(false);
   const { reservas: reservasState, cancelReserva, refresh: refreshReservas, error: errorReservas } = useReservas();
   const { recursos: schoolRecursos, loading: loadingRecursos, error: errorRecursos } = useRecursos();
