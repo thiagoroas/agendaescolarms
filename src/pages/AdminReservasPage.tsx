@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useEscolas } from "@/hooks/useEscolas";
 import { useReservas } from "@/hooks/useReservas";
@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { isValidUUID, isSupabaseConfigured } from "@/lib/supabase";
 
 const AdminReservasPage = () => {
   const { profile, selectedEscolaId } = useAuth();
