@@ -84,6 +84,9 @@ const MobileBottomNav = () => {
                   <SheetTitle className="text-lg font-extrabold text-slate-900 truncate leading-tight">
                     {profile?.full_name}
                   </SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Menu de navegação e configurações do usuário
+                  </SheetDescription>
                   <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider mt-0.5 bg-blue-50 self-start px-2 py-0.5 rounded-full">
                     {profile?.role === "admin_plataforma" ? "Admin Plataforma" : 
                      profile?.role === "admin_lab" ? "Admin Lab" : "Professor"}
