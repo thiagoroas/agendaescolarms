@@ -218,8 +218,11 @@ const AprovacoesPage = () => {
                   <TableHeader>
                     <TableRow className="bg-slate-50/50">
                       <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Data</TableHead>
-                      <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Professor/Turma</TableHead>
+                      <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Aula/Horário</TableHead>
+                      <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Professor</TableHead>
+                      <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Turma</TableHead>
                       <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recurso</TableHead>
+                      <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Status</TableHead>
                       <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
