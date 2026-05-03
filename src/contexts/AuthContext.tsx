@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUUID } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 
 export type UserRole = "admin_plataforma" | "admin_lab" | "professor";
@@ -37,7 +37,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const isLoadingProfileRef = useRef(false);
 
+  // Limpa localStorage de IDs legados se estiver no modo Supabase
+  useEffect(() => {
+    if (isSupabaseConfigured) {
+      const keysToClean = [
+        "agenda_selected_escola_id",
+        "agenda_active_school",
+        "selectedEscolaId",
+        "currentSchoolId"
+      ];
+      
+      keysToClean.forEach(key => {
+        const val = localStorage.getItem(key);
+        if (val && !isValidUUID(val)) {
+          console.log(`[AUTH] Limpando ID legado "${val}" da chave "${key}"`);
+          localStorage.removeItem(key);
+        }
+      });
+    }
+  }, []);
+
   const setSelectedEscolaId = (id: string) => {
+    if (isSupabaseConfigured && !isValidUUID(id)) {
+      console.warn("[AUTH] Ignorando tentativa de salvar escolaId inválido no modo Supabase:", id);
+      return;
+    }
     setSelectedEscolaIdState(id);
     localStorage.setItem("agenda_selected_escola_id", id);
   };
@@ -99,8 +123,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfile(mappedProfile);
         setError(null);
         
+        // Valida se o ID salvo é compatível com o modo atual
         const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
-        setSelectedEscolaIdState(savedEscolaId || data.escola_id);
+        if (isSupabaseConfigured && savedEscolaId && !isValidUUID(savedEscolaId)) {
+          setSelectedEscolaIdState(data.escola_id);
+          localStorage.removeItem("agenda_selected_escola_id");
+        } else {
+          setSelectedEscolaIdState(savedEscolaId || data.escola_id);
+        }
       }
     } catch (err) {
       console.error("[AUTH] loadSessionAndProfile error", err);
