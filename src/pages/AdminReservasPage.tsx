@@ -69,20 +69,57 @@ const AdminReservasPage = () => {
         </div>
       </header>
 
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input 
-            className="pl-10" 
-            placeholder="Filtrar por professor, disciplina ou turma..." 
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap gap-2">
+          <Button 
+            variant={statusFilter === "todas" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setStatusFilter("todas")}
+            className="rounded-full px-4 h-9 font-bold uppercase tracking-widest text-[10px]"
+          >
+            Todas
+          </Button>
+          <Button 
+            variant={statusFilter === "confirmadas" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setStatusFilter("confirmadas")}
+            className="rounded-full px-4 h-9 font-bold uppercase tracking-widest text-[10px]"
+          >
+            Confirmadas
+          </Button>
+          <Button 
+            variant={statusFilter === "manutencao" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setStatusFilter("manutencao")}
+            className="rounded-full px-4 h-9 font-bold uppercase tracking-widest text-[10px]"
+          >
+            Manutenção/Bloqueios
+          </Button>
+          <Button 
+            variant={statusFilter === "canceladas" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setStatusFilter("canceladas")}
+            className="rounded-full px-4 h-9 font-bold uppercase tracking-widest text-[10px]"
+          >
+            Canceladas
+          </Button>
         </div>
-        <Button variant="outline">
-          <Filter className="mr-2 h-4 w-4" />
-          Filtros Avançados
-        </Button>
+
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input 
+              className="pl-10" 
+              placeholder="Filtrar por professor, disciplina ou turma..." 
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <Button variant="outline">
+            <Filter className="mr-2 h-4 w-4" />
+            Mais Filtros
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-xl border bg-white shadow-sm overflow-hidden hidden md:block">
