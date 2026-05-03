@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Reserva, Recurso, Escola } from "@/data/mockData";
-import { horarios } from "@/data/horarios";
+import { useHorarios } from "@/hooks/useHorarios";
 import { X, Printer, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from "@/lib/utils";
@@ -26,6 +26,7 @@ const RelatorioReservasModal: React.FC<RelatorioReservasModalProps> = ({
   selectedEscolaId,
   periodo
 }) => {
+  const { horarios } = useHorarios(selectedEscolaId || undefined);
   if (!isOpen) return null;
 
   const escola = escolas.find(e => e.id === selectedEscolaId);
@@ -98,7 +99,7 @@ const RelatorioReservasModal: React.FC<RelatorioReservasModalProps> = ({
                 {filteredReservas.length > 0 ? (
                   filteredReservas.map((reserva) => {
                     const recurso = recursos.find(r => r.id === reserva.recurso_id);
-                    const horario = horarios.find(h => h.aula === reserva.aula);
+                    const horario = horarios.find(h => h.ordem === reserva.aula);
                     
                     return (
                       <tr key={reserva.id} className="hover:bg-slate-50/50 transition-colors">
@@ -107,7 +108,7 @@ const RelatorioReservasModal: React.FC<RelatorioReservasModalProps> = ({
                         </td>
                         <td className="py-3 px-2 text-xs text-slate-600">
                           {reserva.aula}ª Aula
-                          <div className="text-[10px] text-slate-400">{horario?.inicio}</div>
+                          <div className="text-[10px] text-slate-400">{horario?.hora_inicio?.substring(0, 5)}</div>
                         </td>
                         <td className="py-3 px-2 text-xs font-semibold text-slate-900">
                           {recurso?.nome || 'N/A'}
