@@ -103,15 +103,13 @@ const DashboardPage = () => {
   const reservasHoje = useMemo(() => {
     let list = reservasEscola.filter(r => 
       r.data === hojeStr && 
-      r.status !== "cancelada" &&
-      !["manutencao", "bloqueada"].includes(r.status)
+      (r.status === "confirmada" || r.status === "aprovada")
     );
+    
     if (profile?.role === "professor") {
-      list = list.filter(r => r.profile_id === user?.id && (r.status === "confirmada" || r.status === "aprovada"));
-    } else {
-      // Para admin lab e admin plataforma, incluímos pendentes também para que vejam o que precisam aprovar
-      list = list.filter(r => !["cancelada", "manutencao", "bloqueada"].includes(r.status));
+      list = list.filter(r => r.profile_id === user?.id);
     }
+    
     return list.sort((a, b) => a.aula - b.aula);
   }, [reservasEscola, hojeStr, profile?.role, user?.id]);
 
