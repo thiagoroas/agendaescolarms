@@ -371,10 +371,8 @@ const AgendaPage = () => {
             size="sm" 
             className="text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10"
             onClick={() => {
-              const params = new URLSearchParams(window.location.search);
-              params.delete("view");
-              window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
-              window.location.reload(); // Simplest way to refresh since state is derived from searchParams
+              searchParams.delete("view");
+              setSearchParams(searchParams);
             }}
           >
             Limpar Filtro
