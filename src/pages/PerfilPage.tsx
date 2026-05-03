@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 
 const PerfilPage = () => {
   const { user, profile, logout, updateProfile } = useAuth();
@@ -242,7 +243,8 @@ const PerfilPage = () => {
                         id="fullName" 
                         value={fullName} 
                         onChange={(e) => setFullName(e.target.value)}
-                        className="pl-10 border-slate-200 focus:ring-blue-500"
+                        disabled={profile?.role === "professor"}
+                        className={cn("pl-10 border-slate-200 focus:ring-blue-500", profile?.role === "professor" && "bg-slate-50 cursor-not-allowed")}
                         placeholder="Seu nome completo"
                         required
                       />
@@ -257,7 +259,8 @@ const PerfilPage = () => {
                         type="email"
                         value={email} 
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10 border-slate-200 focus:ring-blue-500"
+                        disabled={profile?.role === "professor"}
+                        className={cn("pl-10 border-slate-200 focus:ring-blue-500", profile?.role === "professor" && "bg-slate-50 cursor-not-allowed")}
                         placeholder="seu@email.com"
                         required
                       />

@@ -103,7 +103,8 @@ const DashboardPage = () => {
   const reservasHoje = useMemo(() => {
     let list = reservasEscola.filter(r => 
       r.data === hojeStr && 
-      !["cancelada", "manutencao", "bloqueada"].includes(r.status)
+      r.status !== "cancelada" &&
+      !["manutencao", "bloqueada"].includes(r.status)
     );
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id && (r.status === "confirmada" || r.status === "aprovada"));
@@ -117,7 +118,8 @@ const DashboardPage = () => {
   const proximasReservas = useMemo(() => {
     let list = reservasEscola.filter(r => 
       r.data >= hojeStr && 
-      !["cancelada", "manutencao", "bloqueada"].includes(r.status)
+      r.status !== "cancelada" && 
+      !["manutencao", "bloqueada"].includes(r.status)
     );
     
     // Para o Dashboard, se for hoje, só mostrar se for uma aula futura? 
@@ -213,6 +215,7 @@ const DashboardPage = () => {
                profile?.role === "admin_lab" ? "Agendamentos da escola hoje" : 
                "Agendamentos da escola ativa hoje"}
             </h3>
+            <p className="text-[10px] font-bold text-blue-400 mt-1">Apenas reservas de hoje</p>
           </CardContent>
         </Card>
 
