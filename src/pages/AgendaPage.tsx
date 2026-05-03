@@ -125,6 +125,9 @@ const AgendaPage = () => {
   const getReservaForSlot = (date: Date, aula: number) => {
     if (!date) return null;
     const dateStr = format(date, "yyyy-MM-dd");
+
+    if (isSupabaseConfigured && !isValidUUID(currentSchoolId)) return null;
+
     return reservasState.find(r =>
       r.data === dateStr &&
       r.aula === aula &&
