@@ -113,15 +113,23 @@ const DashboardPage = () => {
 
   const proximasReservas = useMemo(() => {
     let list = reservasEscola.filter(r => 
-      r.data > hojeStr && 
+      r.data >= hojeStr && 
       !["cancelada", "manutencao", "bloqueada"].includes(r.status)
     );
     
+    // Para o Dashboard, se for hoje, só mostrar se for uma aula futura? 
+    // O pedido diz: "Dashboard/Início do Professor: [...] card 'Próximas reservas' ou seção compacta mostrando no máximo as 3 próximas reservas confirmadas"
+    // E "não mostrar reservas de hoje em próximas se já estão no card de hoje"
+    // Na verdade, o dashboard atual separa reservasHoje e proximasReservas.
+    // Vamos filtrar as de hoje da lista de próximas para evitar duplicidade visual se estiverem no mesmo dashboard.
+    
+    list = list.filter(r => r.data > hojeStr);
+
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
     }
     
-    return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, 10);
+    return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, profile?.role === "professor" ? 3 : 5);
   }, [reservasEscola, hojeStr, profile?.role, user?.id]);
 
   const alertas = useMemo(() => {
