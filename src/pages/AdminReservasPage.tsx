@@ -19,6 +19,7 @@ const AdminReservasPage = () => {
   const { profile, selectedEscolaId } = useAuth();
   const { escolas, loading: loadingEscolas } = useEscolas();
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("todas");
   const { reservas, cancelReserva } = useReservas();
   const { recursos } = useRecursos();
 
