@@ -4,10 +4,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle2, Server, Shield, User, Globe, RefreshCcw, Terminal, Lock } from "lucide-react";
+import { AlertCircle, CheckCircle2, Server, Shield, User, Globe, RefreshCcw, Terminal, Lock, ChevronDown, ChevronUp } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const DiagnosticPanel = () => {
   const { user, profile } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
   const [edgeFunctionStatus, setEdgeFunctionStatus] = useState<"idle" | "checking" | "ok" | "error" | "unauthorized">("idle");
   const [edgeError, setEdgeError] = useState<string | null>(null);
   const [lastResponse, setLastResponse] = useState<any>(null);
