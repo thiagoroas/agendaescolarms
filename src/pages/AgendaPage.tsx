@@ -54,7 +54,7 @@ const initialsOf = (name: string) =>
 
 const AgendaPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { escolas: allEscolas, loading: loadingEscolas } = useEscolas();
   const [currentDate, setCurrentDate] = useState(() => {
     const today = new Date();
