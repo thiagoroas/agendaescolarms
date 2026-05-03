@@ -34,7 +34,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
-import { horarios } from "../data/horarios";
+import { useHorarios } from "@/hooks/useHorarios";
 
 const AprovacoesPage = () => {
   const { profile, selectedEscolaId } = useAuth();
@@ -43,6 +43,7 @@ const AprovacoesPage = () => {
   const [isManutencaoModalOpen, setIsManutencaoModalOpen] = useState(false);
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [recursos, setRecursos] = useState<Recurso[]>([]);
+  const { horarios } = useHorarios(selectedEscolaId || undefined);
   
   // Form para bloqueio de manutenção
   const [manutencaoData, setManutencaoData] = useState({
@@ -99,7 +100,7 @@ const AprovacoesPage = () => {
       return;
     }
 
-    const h = horarios.find(hour => hour.aula === Number(manutencaoData.aula));
+    const h = horarios.find(hour => hour.ordem === Number(manutencaoData.aula));
     const novaManutencao: Reserva = {
       id: `mnt-${Date.now()}`,
       escola_id: currentEscolaId || "",
@@ -111,7 +112,7 @@ const AprovacoesPage = () => {
       data: manutencaoData.data,
       turno: (Number(manutencaoData.aula) <= 4 ? "manha" : "tarde") as "manha" | "tarde",
       aula: Number(manutencaoData.aula),
-      horario: h ? `${h.inicio} – ${h.fim}` : "",
+      horario: h ? `${h.hora_inicio.substring(0, 5)} – ${h.hora_fim.substring(0, 5)}` : "",
       observacao: manutencaoData.motivo,
       status: "manutencao" as any,
       criado_em: new Date().toISOString()
@@ -347,8 +348,8 @@ const AprovacoesPage = () => {
                       <SelectValue placeholder="Aula" />
                     </SelectTrigger>
                     <SelectContent>
-                      {horarios.filter(h => !h.isIntervalo).map(h => (
-                        <SelectItem key={h.aula} value={h.aula.toString()}>Aula {h.aula} ({h.inicio})</SelectItem>
+                      {horarios.filter(h => h.tipo === 'aula' && h.ativo).map(h => (
+                        <SelectItem key={h.ordem} value={h.ordem.toString()}>{h.nome} ({h.hora_inicio.substring(0, 5)})</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

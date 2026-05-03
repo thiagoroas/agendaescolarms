@@ -1,3 +1,5 @@
+import { HorarioEscola } from "@/hooks/useHorarios";
+
 export interface Horario {
   aula: number;
   turno: "manha" | "tarde";
@@ -21,3 +23,15 @@ export const horarios: Horario[] = [
 ];
 
 export const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
+
+export const mapHorarioToHorarioEscola = (h: Horario): Partial<HorarioEscola> => {
+  return {
+    nome: h.label,
+    turno: h.turno as any,
+    ordem: h.aula,
+    hora_inicio: h.inicio,
+    hora_fim: h.fim,
+    tipo: h.isIntervalo ? "intervalo" : "aula",
+    ativo: true
+  };
+};

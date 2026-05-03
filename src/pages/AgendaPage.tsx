@@ -14,7 +14,8 @@ import { useReservas } from "@/hooks/useReservas";
 import { getMockEscolas, resetMockData, getMockRecursos, getMockReservas } from "../data/storage";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { horarios, diasSemana } from "../data/horarios";
+import { useHorarios, HorarioEscola } from "@/hooks/useHorarios";
+import { diasSemana } from "../data/horarios";
 import { toast } from "sonner";
 import NovaReservaModal from "../components/reservas/NovaReservaModal";
 import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
@@ -68,6 +69,7 @@ const AgendaPage = () => {
   const { reservas: reservasState, cancelReserva, refresh: refreshReservas, error: errorReservas } = useReservas();
   const { recursos: schoolRecursos, loading: loadingRecursos, error: errorRecursos } = useRecursos();
   const { avisos: avisosState, loading: loadingAvisos, error: errorAvisos } = useAvisos();
+  const { horarios: escolaHorarios, loading: loadingHorarios } = useHorarios();
   const hasShownErrorToastRef = React.useRef(false);
 
   useEffect(() => {
@@ -179,8 +181,8 @@ const AgendaPage = () => {
     });
   }, [avisosState, currentSchoolId]);
 
-  const handleSlotClick = (date: Date, h: typeof horarios[0]) => {
-    const res = getReservaForSlot(date, h.aula);
+  const handleSlotClick = (date: Date, h: HorarioEscola) => {
+    const res = getReservaForSlot(date, h.ordem);
     if (res) {
       const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
       setActiveReserva({ reserva: res, recurso: rec! });
@@ -188,8 +190,8 @@ const AgendaPage = () => {
     } else {
       setSelectedSlot({
         date: format(date, "yyyy-MM-dd"),
-        aula: h.aula,
-        turno: h.turno
+        aula: h.ordem,
+        turno: h.turno as "manha" | "tarde"
       });
       setIsModalNovaOpen(true);
     }
@@ -411,23 +413,23 @@ const AgendaPage = () => {
               })}
             </div>
 
-            {horarios.map((h, hIdx) => (
-              <div key={hIdx} className={`cal-row ${h.isIntervalo ? 'break' : ''}`}>
+            {escolaHorarios.map((h, hIdx) => (
+              <div key={hIdx} className={`cal-row ${h.tipo === 'intervalo' ? 'break' : ''}`}>
                 <div className="cal-time">
-                  <div className="cal-time-label">{h.label}</div>
-                  {!h.isIntervalo && <div className="cal-time-range">{h.inicio}</div>}
+                  <div className="cal-time-label">{h.nome}</div>
+                  {h.tipo !== 'intervalo' && <div className="cal-time-range">{h.hora_inicio.substring(0, 5)}</div>}
                 </div>
 
                 {weekDates.map((date, dIdx) => {
-                  if (h.isIntervalo) {
+                  if (h.tipo === 'intervalo') {
                     return (
                       <div key={dIdx} className="cal-cell break-cell">
-                        {dIdx === 2 && <div className="break-label">Intervalo</div>}
+                        {dIdx === 2 && <div className="break-label">{h.nome}</div>}
                       </div>
                     );
                   }
 
-                  const reserva = getReservaForSlot(date, h.aula);
+                  const reserva = getReservaForSlot(date, h.ordem);
                   const recurso = schoolRecursosList.find(r => r.id === reserva?.recurso_id);
 
                   return (
@@ -508,19 +510,19 @@ const AgendaPage = () => {
               </button>
             </div>
 
-            {horarios.map((h, hIdx) => {
-              const reserva = getReservaForSlot(currentDate, h.aula);
+            {escolaHorarios.map((h, hIdx) => {
+              const reserva = getReservaForSlot(currentDate, h.ordem);
               const recurso = schoolRecursosList.find(r => r.id === reserva?.recurso_id);
 
               return (
-                <div key={hIdx} className={`mobile-slot ${h.isIntervalo ? 'is-break' : ''}`}>
+                <div key={hIdx} className={`mobile-slot ${h.tipo === 'intervalo' ? 'is-break' : ''}`}>
                   <div className="mobile-slot-time">
-                    <span className="mobile-slot-label">{h.label.replace("Aula ", "A")}</span>
-                    <span className="mobile-slot-hour">{h.inicio}</span>
+                    <span className="mobile-slot-label">{h.nome.replace("Aula ", "A")}</span>
+                    <span className="mobile-slot-hour">{h.hora_inicio.substring(0, 5)}</span>
                   </div>
                   <div className="mobile-slot-content">
-                    {h.isIntervalo ? (
-                      <span className="break-label text-[10px] font-black uppercase text-slate-300 tracking-[0.2em]">Intervalo</span>
+                    {h.tipo === 'intervalo' ? (
+                      <span className="break-label text-[10px] font-black uppercase text-slate-300 tracking-[0.2em]">{h.nome}</span>
                     ) : reserva && recurso ? (
                       <button 
                         className={`mobile-card-event ${tipoColor(recurso.tipo)}`}

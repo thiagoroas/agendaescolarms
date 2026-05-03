@@ -122,6 +122,56 @@ export type Database = {
         }
         Relationships: []
       }
+      horarios_escola: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          escola_id: string
+          hora_fim: string
+          hora_inicio: string
+          id: string
+          nome: string
+          ordem: number
+          tipo: string
+          turno: string
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          escola_id: string
+          hora_fim: string
+          hora_inicio: string
+          id?: string
+          nome: string
+          ordem: number
+          tipo: string
+          turno?: string
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          escola_id?: string
+          hora_fim?: string
+          hora_inicio?: string
+          id?: string
+          nome?: string
+          ordem?: number
+          tipo?: string
+          turno?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "horarios_escola_escola_id_fkey"
+            columns: ["escola_id"]
+            isOneToOne: false
+            referencedRelation: "escolas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       logs_auditoria: {
         Row: {
           acao: string
