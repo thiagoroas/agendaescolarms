@@ -354,6 +354,34 @@ const AgendaPage = () => {
         </div>
       )}
 
+      {/* Indicador de Filtro de Bloqueios */}
+      {onlyBlocks && (
+        <div className="mx-4 mb-4 p-4 bg-slate-900 text-white rounded-2xl flex items-center justify-between shadow-lg animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/10 rounded-xl">
+              <AlertTriangle size={20} className="text-amber-400" />
+            </div>
+            <div>
+              <h4 className="text-sm font-black uppercase tracking-tight">Visualizando Bloqueios</h4>
+              <p className="text-[10px] font-bold opacity-70">A agenda está filtrada para mostrar apenas manutenções e bloqueios.</p>
+            </div>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10"
+            onClick={() => {
+              const params = new URLSearchParams(window.location.search);
+              params.delete("view");
+              window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
+              window.location.reload(); // Simplest way to refresh since state is derived from searchParams
+            }}
+          >
+            Limpar Filtro
+          </Button>
+        </div>
+      )}
+
       {/* Banner de Avisos */}
       {avisosAtivos.length > 0 && (
         <div className="mx-4 mb-4 space-y-2">
