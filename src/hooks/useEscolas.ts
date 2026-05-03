@@ -257,6 +257,8 @@ export const useEscolas = () => {
       const resources = getMockRecursos();
       const reservations = getMockReservas();
       const announcements = getMockAvisos();
+      // O mock não tem tabela de horários persistida globalmente no storage.ts ainda,
+      // mas vamos checar os outros vínculos.
 
       const hasLinks = users.some(u => u.escola_id === id) || 
                        resources.some(r => r.escola_id === id) || 
@@ -264,7 +266,7 @@ export const useEscolas = () => {
                        announcements.some(a => a.escola_id === id);
 
       if (hasLinks) {
-        toast.error("Não é possível excluir esta escola porque existem usuários, recursos, reservas ou avisos vinculados. Inative a escola ou remova os vínculos primeiro.");
+        toast.error("Esta escola possui dados vinculados no protótipo. Para preservar o histórico, inative a escola em vez de excluir.");
         return false;
       }
 
