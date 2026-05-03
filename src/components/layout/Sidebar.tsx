@@ -107,31 +107,36 @@ const Sidebar = () => {
         <Separator className="bg-slate-100" />
       </div>
 
-      <nav className="flex-1 space-y-6 p-3 overflow-y-auto scrollbar-hide">
+      <nav className="flex-1 space-y-6 p-4 overflow-y-auto scrollbar-hide">
         {sections.map((section, idx) => (
-          <div key={section.title || idx} className="space-y-1">
+          <div key={section.title || idx} className="space-y-2">
             {section.title && (
-              <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 mt-4 first:mt-0">
+              <div className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 mt-4 first:mt-0">
                 {section.title}
               </div>
             )}
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               {section.items.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 group",
+                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 group border border-transparent",
                       isActive 
-                        ? "bg-blue-50 text-blue-700 font-semibold" 
+                        ? "bg-blue-50 text-blue-700 font-bold border-blue-100 shadow-sm" 
                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                     )
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <item.icon className={cn("h-4 w-4 transition-transform", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
+                      <div className={cn(
+                        "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
+                        isActive ? "bg-blue-600 text-white shadow-sm" : "bg-slate-100 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600"
+                      )}>
+                        <item.icon className="h-4 w-4" />
+                      </div>
                       {item.label}
                     </>
                   )}
