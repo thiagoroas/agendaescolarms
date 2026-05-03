@@ -168,7 +168,11 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
         ? localStorage.getItem('agenda_selected_escola_id') || profile?.escola_id
         : profile?.escola_id;
 
-      if (!targetEscolaId) return;
+      if (!targetEscolaId || (isSupabaseConfigured && !isValidUUID(targetEscolaId))) {
+        console.warn("[NovaReservaModal] EscolaId inválido para buscar professores:", targetEscolaId);
+        setProfessoresDaEscola([]);
+        return;
+      }
 
       setIsLoadingProfessores(true);
       try {
