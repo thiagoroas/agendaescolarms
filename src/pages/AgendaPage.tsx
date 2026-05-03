@@ -138,6 +138,7 @@ const AgendaPage = () => {
       r.aula === aula &&
       r.escola_id === currentSchoolId &&
       (r.status === "confirmada" || r.status === "aprovada" || r.status === "pendente" || r.status === "manutencao" || r.status === "bloqueada") &&
+      (!onlyBlocks || r.status === "manutencao" || r.status === "bloqueada") &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
       (!searchQuery ||
         r.nome_professor.toLowerCase().includes(searchQuery.toLowerCase()) ||
