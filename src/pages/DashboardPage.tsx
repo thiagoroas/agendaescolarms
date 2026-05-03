@@ -242,7 +242,7 @@ const DashboardPage = () => {
           onClick={() => {
             if (profile?.role === "professor") {
               // Professor vê na agenda filtrando por bloqueios
-              navigate("/agenda?q=manutenção"); 
+              navigate("/agenda?view=blocks"); 
             } else {
               // Admin vê na central de reservas filtrada
               navigate("/admin/reservas?status=manutencao");
