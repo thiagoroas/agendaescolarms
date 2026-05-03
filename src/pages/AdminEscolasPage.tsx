@@ -80,7 +80,7 @@ const AdminEscolasPage = () => {
         nome: nome.trim(),
         cidade: cidade.trim(),
         estado
-      });
+      }, createDefaultResources);
       if (result) setIsModalOpen(false);
     }
   };
