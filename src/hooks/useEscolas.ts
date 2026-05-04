@@ -317,6 +317,7 @@ export const useEscolas = () => {
     createEscola,
     updateEscola,
     toggleEscolaStatus,
+    getEscolaStats,
     deleteEscola
   };
 };
