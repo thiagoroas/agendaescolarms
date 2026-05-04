@@ -207,46 +207,57 @@ export const useEscolas = () => {
     return updateEscola(id, { status: nextStatus });
   };
 
+  const getEscolaStats = async (id: string) => {
+    if (!isSupabaseConfigured) return null;
+    try {
+      const [
+        usersCheck,
+        resourcesCheck,
+        reservationsCheck,
+        announcementsCheck,
+        schedulesCheck
+      ] = await Promise.all([
+        supabase.from("profiles").select("id", { count: 'exact', head: true }).eq("escola_id", id),
+        supabase.from("recursos").select("id", { count: 'exact', head: true }).eq("escola_id", id),
+        supabase.from("reservas").select("id", { count: 'exact', head: true }).eq("escola_id", id),
+        supabase.from("avisos_laboratorio").select("id", { count: 'exact', head: true }).eq("escola_id", id),
+        supabase.from("horarios_escola").select("id", { count: 'exact', head: true }).eq("escola_id", id)
+      ]);
+
+      return {
+        users: usersCheck.count || 0,
+        resources: resourcesCheck.count || 0,
+        reservations: reservationsCheck.count || 0,
+        announcements: announcementsCheck.count || 0,
+        schedules: schedulesCheck.count || 0
+      };
+    } catch (error) {
+      console.error("Error fetching school stats:", error);
+      return null;
+    }
+  };
+
   const deleteEscola = async (id: string) => {
     if (isSupabaseConfigured) {
       try {
-        // 1. Verificar todos os vínculos
-        const [
-          usersCheck, 
-          resourcesCheck, 
-          reservationsCheck, 
-          announcementsCheck, 
-          schedulesCheck
-        ] = await Promise.all([
-          supabase.from("profiles").select("id", { count: 'exact', head: true }).eq("escola_id", id),
-          supabase.from("recursos").select("id", { count: 'exact', head: true }).eq("escola_id", id),
-          supabase.from("reservas").select("id", { count: 'exact', head: true }).eq("escola_id", id),
-          supabase.from("avisos_laboratorio").select("id", { count: 'exact', head: true }).eq("escola_id", id),
-          supabase.from("horarios_escola").select("id", { count: 'exact', head: true }).eq("escola_id", id)
-        ]);
+        const stats = await getEscolaStats(id);
+        if (!stats) throw new Error("Não foi possível verificar os dados da escola.");
 
-        const userCount = usersCheck.count || 0;
-        const resourceCount = resourcesCheck.count || 0;
-        const reservationCount = reservationsCheck.count || 0;
-        const announcementCount = announcementsCheck.count || 0;
-        const scheduleCount = schedulesCheck.count || 0;
+        const { users, resources, reservations, announcements, schedules } = stats;
 
-        // Regra 3: Se tiver qualquer reserva histórica, nunca excluir
-        if (reservationCount > 0) {
+        // Regra: Bloquear se tiver dados importantes
+        if (reservations > 0) {
           toast.error("Esta escola possui reservas vinculadas. Para preservar o histórico, inative a escola em vez de excluir.");
           return false;
         }
 
-        // Regra 1 e 4: Se tiver professores, usuários LAB ou recursos, não excluir
-        if (userCount > 0 || resourceCount > 0 || announcementCount > 0) {
-          toast.error("Esta escola possui dados vinculados (usuários, recursos ou avisos). Inative a escola ou remova os vínculos antes de excluir.");
+        if (users > 0 || resources > 0 || announcements > 0) {
+          toast.error("Esta escola possui usuários, recursos ou avisos vinculados. Para preservar o histórico, inative a escola em vez de excluir.");
           return false;
         }
 
-        // Regra 2: Se tiver apenas horários, permitir excluir (removendo horários primeiro)
-        if (scheduleCount > 0) {
-          // A confirmação é feita na UI, mas aqui garantimos que apenas horários existem
-          // Excluir horários primeiro devido à FK
+        // Regra: Se tiver apenas horários, permitir exclusão (removendo horários primeiro)
+        if (schedules > 0) {
           const { error: schedError } = await supabase
             .from("horarios_escola")
             .delete()
@@ -255,7 +266,6 @@ export const useEscolas = () => {
           if (schedError) throw schedError;
         }
 
-        // Proceder com a exclusão da escola
         const { error } = await supabase
           .from("escolas")
           .delete()
@@ -279,27 +289,15 @@ export const useEscolas = () => {
         return false;
       }
     } else {
-      // Regras para Mock (mesma lógica)
+      // Mock logic
       const users = getMockUsuarios().filter(u => u.escola_id === id);
       const resources = getMockRecursos().filter(r => r.escola_id === id);
       const reservations = getMockReservas().filter(res => res.escola_id === id);
       const announcements = getMockAvisos().filter(a => a.escola_id === id);
 
-      if (reservations.length > 0) {
-        toast.error("Esta escola possui reservas vinculadas no protótipo. Inative em vez de excluir.");
-        return false;
-      }
-
-      if (users.length > 0 || resources.length > 0 || announcements.length > 0) {
+      if (reservations.length > 0 || users.length > 0 || resources.length > 0 || announcements.length > 0) {
         toast.error("Esta escola possui dados vinculados no protótipo. Inative a escola em vez de excluir.");
         return false;
-      }
-
-      if (selectedEscolaId === id) {
-        const remainingEscolas = escolas.filter(e => e.id !== id && e.status === "ativa");
-        if (remainingEscolas.length > 0) {
-          setSelectedEscolaId(remainingEscolas[0].id);
-        }
       }
 
       setEscolas(prev => {
@@ -319,6 +317,7 @@ export const useEscolas = () => {
     createEscola,
     updateEscola,
     toggleEscolaStatus,
+    getEscolaStats,
     deleteEscola
   };
 };

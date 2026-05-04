@@ -16,12 +16,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 const AdminEscolasPage = () => {
   const { profile } = useAuth();
-  const { escolas, loading, createEscola, updateEscola, toggleEscolaStatus, deleteEscola } = useEscolas();
+  const { escolas, loading, createEscola, updateEscola, toggleEscolaStatus, deleteEscola, getEscolaStats } = useEscolas();
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [escolaToDelete, setEscolaToDelete] = useState<Escola | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [stats, setStats] = useState<{users: number, resources: number, reservations: number, announcements: number, schedules: number} | null>(null);
   const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
 
   const isAdminPlataforma = profile?.role === "admin_plataforma";
@@ -86,9 +88,13 @@ const AdminEscolasPage = () => {
     }
   };
 
-  const handleDeleteClick = (escola: Escola) => {
+  const handleDeleteClick = async (escola: Escola) => {
     setEscolaToDelete(escola);
     setIsDeleteModalOpen(true);
+    setLoadingStats(true);
+    const s = await getEscolaStats(escola.id);
+    setStats(s);
+    setLoadingStats(false);
   };
 
   const handleConfirmDelete = async () => {
@@ -103,6 +109,7 @@ const AdminEscolasPage = () => {
     if (success) {
       setIsDeleteModalOpen(false);
       setEscolaToDelete(null);
+      setStats(null);
     }
   };
 
@@ -261,7 +268,10 @@ const AdminEscolasPage = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+      <Dialog open={isDeleteModalOpen} onOpenChange={(open) => {
+        setIsDeleteModalOpen(open);
+        if (!open) { setStats(null); setEscolaToDelete(null); }
+      }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
@@ -270,11 +280,53 @@ const AdminEscolasPage = () => {
             </DialogTitle>
             <DialogDescription className="pt-2">
               Tem certeza que deseja excluir a escola <strong>{escolaToDelete?.nome}</strong>?
-              <br /><br />
-              <span className="text-amber-600 font-medium">
-                Esta ação removerá permanentemente a escola e seus horários padrão.
-                Se a escola possuir usuários, recursos ou reservas, a exclusão será bloqueada.
-              </span>
+              
+              {loadingStats ? (
+                <div className="flex items-center gap-2 mt-4 text-slate-500">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Verificando dados vinculados...</span>
+                </div>
+              ) : stats ? (
+                <div className="mt-4 space-y-3">
+                  <div className="bg-slate-50 p-3 rounded-lg border text-xs space-y-1">
+                    <p className="font-semibold text-slate-700 mb-2">Checklist de Vínculos:</p>
+                    <div className="flex justify-between">
+                      <span>Usuários (Professores/Lab):</span>
+                      <span className={stats.users > 0 ? "text-red-600 font-bold" : "text-emerald-600"}>{stats.users}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Recursos:</span>
+                      <span className={stats.resources > 0 ? "text-red-600 font-bold" : "text-emerald-600"}>{stats.resources}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Reservas:</span>
+                      <span className={stats.reservations > 0 ? "text-red-600 font-bold" : "text-emerald-600"}>{stats.reservations}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Avisos:</span>
+                      <span className={stats.announcements > 0 ? "text-red-600 font-bold" : "text-emerald-600"}>{stats.announcements}</span>
+                    </div>
+                    <div className="flex justify-between border-t pt-1 mt-1">
+                      <span>Horários Padrão:</span>
+                      <span className="text-blue-600 font-medium">{stats.schedules}</span>
+                    </div>
+                  </div>
+
+                  { (stats.users > 0 || stats.resources > 0 || stats.reservations > 0 || stats.announcements > 0) ? (
+                    <p className="text-red-600 font-medium text-sm">
+                      Esta escola possui usuários, recursos, reservas ou avisos vinculados. Para preservar o histórico, inative a escola em vez de excluir.
+                    </p>
+                  ) : stats.schedules > 0 ? (
+                    <p className="text-amber-600 font-medium text-sm">
+                      Esta escola possui apenas horários padrão. Eles serão removidos junto com a escola.
+                    </p>
+                  ) : (
+                    <p className="text-slate-600 text-sm">
+                      Esta escola não possui dados vinculados e pode ser removida com segurança.
+                    </p>
+                  )}
+                </div>
+              ) : null}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="pt-4">
@@ -285,7 +337,7 @@ const AdminEscolasPage = () => {
               type="button" 
               className="bg-red-600 hover:bg-red-700 text-white" 
               onClick={handleConfirmDelete}
-              disabled={isDeleting}
+              disabled={isDeleting || loadingStats || (stats ? (stats.users > 0 || stats.resources > 0 || stats.reservations > 0 || stats.announcements > 0) : false)}
             >
               {isDeleting ? (
                 <>
