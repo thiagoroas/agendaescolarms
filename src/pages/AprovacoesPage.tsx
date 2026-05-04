@@ -167,7 +167,7 @@ const AprovacoesPage = () => {
             </div>
           </div>
           <p className="text-[9px] text-slate-400 pt-1 border-t border-slate-200">
-            Fonte: {isSupabaseConfigured ? "Supabase (useReservas)" : "Mock Data"} · Rota: /admin/aprovacoes
+            Fonte: {isSupabaseConfigured ? "Supabase (useReservas)" : "Mock Data"} · Rota: {window.location.pathname}
           </p>
         </div>
       )}
