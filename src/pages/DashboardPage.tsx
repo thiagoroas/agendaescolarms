@@ -178,7 +178,6 @@ const DashboardPage = () => {
     const limit = profile?.role === "professor" ? 3 : 15;
     return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, limit);
   }, [reservationsSource, hojeStr, profile?.role, user?.id]);
-  }, [reservationsSource, hojeStr, profile?.role, user?.id]);
 
   const debugData = useMemo(() => {
     return {
