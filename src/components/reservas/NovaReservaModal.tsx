@@ -67,7 +67,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
 
   const [existingReservations, setExistingReservations] = useState<any[]>([]);
   const [isCheckingConflicts, setIsCheckingConflicts] = useState(false);
-  const [conflictingAulas, setConflictingAulas] = useState<number[]>([]);
+  const [conflictingAulas, setConflictingAulas] = useState<{aula: number, recursoId: string}[]>([]);
   const [avisosConfirmados, setAvisosConfirmados] = useState<Record<string, boolean>>({});
 
   // avisosState is now loaded via useAvisos hook
@@ -85,15 +85,15 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
       const dentroData = hojeStr >= a.data_inicio && hojeStr <= a.data_fim;
       if (!dentroData) return false;
 
-      // Se o aviso é vinculado a um recurso, só mostra se o recurso estiver selecionado
-      if (a.recurso_id && a.recurso_id !== formData.recursoId) return false;
+      // Se o aviso é vinculado a um recurso, só mostra se o recurso estiver entre os selecionados
+      if (a.recurso_id && !formData.recursoIds.includes(a.recurso_id)) return false;
 
       return true;
     }).sort((a, b) => {
       const prioridade = { urgente: 0, atencao: 1, informativo: 2 };
       return prioridade[a.tipo] - prioridade[b.tipo] as any;
     });
-  }, [avisosState, currentSchoolId, formData.data, formData.recursoId]);
+  }, [avisosState, currentSchoolId, formData.data, formData.recursoIds]);
 
   const allAvisosConfirmados = useMemo(() => {
     const avisosQueExigemConfirmacao = avisosAtivos.filter(a => a.exigir_confirmacao);
@@ -104,11 +104,15 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
   useEffect(() => {
     const fetchExistingReservations = async () => {
       const targetEscolaId = profile?.escola_id;
-      if (!isOpen || !formData.data || !formData.recursoId || !targetEscolaId) return;
+      if (!isOpen || !formData.data || formData.recursoIds.length === 0 || !targetEscolaId) {
+        setExistingReservations([]);
+        return;
+      }
       
       // Validação de UUID
-      if (isSupabaseConfigured && (!isValidUUID(targetEscolaId) || !isValidUUID(formData.recursoId))) {
-        console.warn("[NovaReservaModal] UUID inválido para consulta de conflitos:", { targetEscolaId, recursoId: formData.recursoId });
+      const validRecursoIds = formData.recursoIds.filter(id => !isSupabaseConfigured || isValidUUID(id));
+      if (isSupabaseConfigured && (!isValidUUID(targetEscolaId) || validRecursoIds.length === 0)) {
+        console.warn("[NovaReservaModal] UUID inválido para consulta de conflitos:", { targetEscolaId, recursoIds: formData.recursoIds });
         return;
       }
 
@@ -119,7 +123,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
             .from('reservas')
             .select('*')
             .eq('data', formData.data)
-            .eq('recurso_id', formData.recursoId)
+            .in('recurso_id', formData.recursoIds)
             .eq('escola_id', targetEscolaId)
             .neq('status', 'cancelada');
           
@@ -130,7 +134,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           const allMockReservas = getMockReservas();
           const mockFiltered = allMockReservas.filter(r => 
             r.data === formData.data && 
-            r.recurso_id === formData.recursoId && 
+            formData.recursoIds.includes(r.recurso_id) && 
             r.escola_id === profile?.escola_id &&
             r.status !== 'cancelada'
           );
@@ -144,18 +148,25 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     };
 
     fetchExistingReservations();
-  }, [isOpen, formData.data, formData.recursoId, profile?.escola_id]);
+  }, [isOpen, formData.data, formData.recursoIds, profile?.escola_id]);
 
   useEffect(() => {
     if (existingReservations.length > 0 && formData.aulas.length > 0) {
-      const conflicts = formData.aulas.filter(aula => 
-        existingReservations.some(r => Number(r.aula) === Number(aula))
-      );
+      const conflicts: {aula: number, recursoId: string}[] = [];
+      
+      formData.aulas.forEach(aula => {
+        formData.recursoIds.forEach(recursoId => {
+          if (existingReservations.some(r => Number(r.aula) === Number(aula) && r.recurso_id === recursoId)) {
+            conflicts.push({ aula, recursoId });
+          }
+        });
+      });
+      
       setConflictingAulas(conflicts);
     } else {
       setConflictingAulas([]);
     }
-  }, [existingReservations, formData.aulas]);
+  }, [existingReservations, formData.aulas, formData.recursoIds]);
 
   const [selectedProfessor, setSelectedProfessor] = useState<Usuario | null>(null);
   const [professoresDaEscola, setProfessoresDaEscola] = useState<Usuario[]>([]);
