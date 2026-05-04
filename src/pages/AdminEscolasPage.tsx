@@ -109,6 +109,7 @@ const AdminEscolasPage = () => {
     if (success) {
       setIsDeleteModalOpen(false);
       setEscolaToDelete(null);
+      setStats(null);
     }
   };
 
