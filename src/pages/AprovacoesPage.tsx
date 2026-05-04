@@ -100,6 +100,18 @@ const AprovacoesPage = () => {
       .sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula);
   }, [reservasEscola, hojeStr, searchTerm]);
 
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log("[CENTRAL LAB DEBUG]", {
+        escolaId: currentEscolaId,
+        totalBruto: allReservas.length,
+        hoje: reservasHoje.length,
+        futuro: proximasReservas.length,
+        isSupabase: isSupabaseConfigured
+      });
+    }
+  }, [allReservas.length, reservasHoje.length, proximasReservas.length, currentEscolaId]);
+
   const handleCancelarReserva = async (id: string) => {
     if (window.confirm("Deseja realmente cancelar esta reserva?")) {
       await cancelReserva(id);
