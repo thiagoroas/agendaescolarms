@@ -110,21 +110,34 @@ const DashboardPage = () => {
   }, [reservationsSource]);
 
   const reservasHoje = useMemo(() => {
-    // Para Admin Lab e Admin Plataforma, mostramos todas as reservas confirmadas da escola para hoje
+    // Diagnóstico via logs internos para entender o que está acontecendo no filter
     let list = reservationsSource.filter(r => {
-      // Normalização da data para comparação YYYY-MM-DD
-      const resData = r.data.split('T')[0];
+      // Normalização da data: tenta YYYY-MM-DD ou extrai do timestamp
+      let resData = r.data;
+      if (resData.includes('T')) {
+        resData = resData.split('T')[0];
+      } else if (resData.includes(' ')) {
+        resData = resData.split(' ')[0];
+      }
+      
       const isToday = resData === hojeStr;
       
-      // Filtro de status flexível para abranger variações de banco
-      // Usamos type assertion para evitar erros de TS com valores fora do enum em ambiente de dev/mock
-      const status = r.status as string;
-      const isConfirmed = status === "confirmada" || status === "aprovada" || status === "ativo" || status === "ativa";
+      const status = String(r.status).toLowerCase();
+      // Status válidos para exibição na Central (confirmados ou em uso)
+      const isConfirmed = [
+        "confirmada", 
+        "confirmado", 
+        "aprovada", 
+        "aprovado", 
+        "ativo", 
+        "ativa", 
+        "realizada",
+        "pendente" // Incluindo pendente para diagnóstico se nada aparecer
+      ].includes(status);
       
       return isToday && isConfirmed;
     });
     
-    // Se for professor, ele vê apenas as próprias reservas de hoje
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
     }
@@ -134,10 +147,26 @@ const DashboardPage = () => {
 
   const proximasReservas = useMemo(() => {
     let list = reservationsSource.filter(r => {
-      const resData = r.data.split('T')[0];
+      let resData = r.data;
+      if (resData.includes('T')) {
+        resData = resData.split('T')[0];
+      } else if (resData.includes(' ')) {
+        resData = resData.split(' ')[0];
+      }
+      
       const isFuture = resData > hojeStr;
-      const status = r.status as string;
-      const isConfirmed = status === "confirmada" || status === "aprovada" || status === "ativo" || status === "ativa";
+      
+      const status = String(r.status).toLowerCase();
+      const isConfirmed = [
+        "confirmada", 
+        "confirmado", 
+        "aprovada", 
+        "aprovado", 
+        "ativo", 
+        "ativa", 
+        "realizada",
+        "pendente"
+      ].includes(status);
       
       return isFuture && isConfirmed;
     });
@@ -148,6 +177,7 @@ const DashboardPage = () => {
     
     const limit = profile?.role === "professor" ? 3 : 15;
     return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, limit);
+  }, [reservationsSource, hojeStr, profile?.role, user?.id]);
   }, [reservationsSource, hojeStr, profile?.role, user?.id]);
 
   const debugData = useMemo(() => {
