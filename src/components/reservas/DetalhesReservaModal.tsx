@@ -44,7 +44,11 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
                   (reserva.status === "manutencao" || reserva.status === "bloqueada") ? "bg-slate-700 text-white" :
                   "bg-blue-500 text-white"
                 )}>
-                  {reserva.status}
+                  {reserva.status === "confirmada" ? "Confirmada" : 
+                   reserva.status === "aprovada" ? "Aprovada" :
+                   reserva.status === "cancelada" ? "Cancelada" :
+                   reserva.status === "bloqueada" ? "Bloqueada" :
+                   reserva.status === "pendente" ? "Pendente" : reserva.status}
                 </Badge>
               )}
             </div>
@@ -127,11 +131,7 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
                   }}
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Excluir
-                </Button>
-                <Button className="flex-[2] h-12 bg-slate-900 hover:bg-slate-800 rounded-xl font-black uppercase tracking-widest text-white shadow-xl shadow-slate-200 active:scale-95 transition-all">
-                  <Edit className="mr-2 h-4 w-4" />
-                  Editar Reserva
+                  Cancelar Reserva
                 </Button>
               </>
             ) : (
