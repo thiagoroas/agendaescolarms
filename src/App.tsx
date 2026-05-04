@@ -190,6 +190,7 @@ const AppContent = () => {
         <Route path="/admin/recursos" element={<ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}><AppLayout><AdminRecursosPage /></AppLayout></ProtectedRoute>} />
         <Route path="/admin/reservas" element={<ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}><AppLayout><AdminReservasPage /></AppLayout></ProtectedRoute>} />
         <Route path="/admin/aprovacoes" element={<ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}><AppLayout><AprovacoesPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/admin/central" element={<ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}><AppLayout><AprovacoesPage /></AppLayout></ProtectedRoute>} />
         <Route path="/admin/avisos" element={<ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}><AppLayout><AdminAvisosPage /></AppLayout></ProtectedRoute>} />
         <Route path="/admin/horarios" element={<ProtectedRoute allowedRoles={["admin_lab", "admin_plataforma"]}><AppLayout><AdminHorariosPage /></AppLayout></ProtectedRoute>} />
         <Route path="/admin/escolas" element={<ProtectedRoute allowedRoles={["admin_plataforma"]}><AppLayout><AdminEscolasPage /></AppLayout></ProtectedRoute>} />
