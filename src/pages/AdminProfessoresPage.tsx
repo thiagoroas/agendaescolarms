@@ -95,6 +95,10 @@ const AdminProfessoresPage = () => {
     if (activeTab === "professores" && u.papel !== "professor") return false;
     if (activeTab === "usuarios_lab" && u.papel !== "admin_lab") return false;
 
+    // Status filter
+    if (statusFilter === "ativos" && (u.status === "removido")) return false;
+    if (statusFilter !== "todos" && statusFilter !== "ativos" && u.status !== statusFilter) return false;
+
     // Search filter
     const matchesSearch = u.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          u.email.toLowerCase().includes(searchTerm.toLowerCase());
