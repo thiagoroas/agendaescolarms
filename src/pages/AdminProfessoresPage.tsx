@@ -228,7 +228,39 @@ const AdminProfessoresPage = () => {
           papel: papel,
           status: "ativo",
           disciplinas: papel === "professor" ? disciplinasArray : undefined
-        };
+  };
+
+  const handleRemoverUsuario = async (u: Usuario) => {
+    const isProfessor = u.papel === 'professor';
+    const message = isProfessor 
+      ? `Deseja remover este professor da escola? Ele não aparecerá mais na lista de professores ativos e não poderá realizar novas reservas. O histórico será preservado.`
+      : `Deseja remover este administrador da escola? O histórico será preservado.`;
+
+    if (confirm(message)) {
+      setLoading(true);
+      if (isSupabaseConfigured) {
+        try {
+          const { error } = await supabase.functions.invoke('manage-user', {
+            body: { action: 'update', userData: { id: u.id, status: 'removido' } }
+          });
+          if (error) throw error;
+          toast.success("Usuário removido da escola.");
+          fetchUsers();
+        } catch (err: any) {
+          console.error("Error removing user:", err.message);
+          toast.error("Erro ao remover usuário");
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        const updated = localUsers.map(usr => usr.id === u.id ? { ...usr, status: "removido" as const } : usr);
+        saveMockUsuarios(updated as any);
+        setLocalUsers(updated);
+        toast.success("Usuário removido da escola.");
+        setLoading(false);
+      }
+    }
+  };
         const updated = [{ ...novoUsuario, senha }, ...localUsers];
         saveMockUsuarios(updated as any);
         setLocalUsers(updated);
