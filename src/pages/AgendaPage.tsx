@@ -575,8 +575,7 @@ const AgendaPage = () => {
             </div>
 
             {escolaHorarios.map((h, hIdx) => {
-              const reserva = getReservaForSlot(currentDate, h.ordem);
-              const recurso = schoolRecursosList.find(r => r.id === reserva?.recurso_id);
+              const reservasNoSlot = getReservasForSlot(currentDate, h.ordem);
 
               return (
                 <div key={hIdx} className={`mobile-slot ${h.tipo === 'intervalo' ? 'is-break' : ''}`}>
@@ -587,22 +586,35 @@ const AgendaPage = () => {
                   <div className="mobile-slot-content">
                     {h.tipo === 'intervalo' ? (
                       <span className="break-label text-[10px] font-black uppercase text-slate-300 tracking-[0.2em]">{h.nome}</span>
-                    ) : reserva && recurso ? (
-                      <button 
-                        className={`mobile-card-event ${tipoColor(recurso.tipo)}`}
-                        onClick={() => handleSlotClick(currentDate, h)}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo), width: '22px', height: '22px', fontSize: '10px' }}>
-                            {initialsOf(reserva.nome_professor)}
-                          </span>
-                          <span className="text-[13px] font-bold text-slate-900 leading-none truncate block">{reserva.nome_professor}</span>
-                        </div>
-                        <div className="flex items-center gap-2 mt-auto min-w-0">
-                          <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md shrink-0">{reserva.turma}</span>
-                          <span className="text-[11px] font-medium text-slate-500 truncate">• {recurso.nome}</span>
-                        </div>
-                      </button>
+                    ) : reservasNoSlot.length > 0 ? (
+                      <div className="flex flex-col gap-2 w-full">
+                        {reservasNoSlot.map((reserva) => {
+                          const recurso = schoolRecursosList.find(r => r.id === reserva.recurso_id);
+                          if (!recurso) return null;
+
+                          return (
+                            <button 
+                              key={reserva.id}
+                              className={`mobile-card-event ${tipoColor(recurso.tipo)}`}
+                              onClick={() => {
+                                setActiveReserva({ reserva, recurso });
+                                setIsModalDetalhesOpen(true);
+                              }}
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo), width: '22px', height: '22px', fontSize: '10px' }}>
+                                  {initialsOf(reserva.nome_professor)}
+                                </span>
+                                <span className="text-[13px] font-bold text-slate-900 leading-none truncate block">{reserva.nome_professor}</span>
+                              </div>
+                              <div className="flex items-center gap-2 mt-auto min-w-0">
+                                <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md shrink-0">{reserva.turma}</span>
+                                <span className="text-[11px] font-medium text-slate-500 truncate">• {recurso.nome}</span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
                     ) : (
                       <button 
                         className="mobile-card-available"
