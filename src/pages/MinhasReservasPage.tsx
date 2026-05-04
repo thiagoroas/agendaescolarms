@@ -25,20 +25,38 @@ const MinhasReservasPage = () => {
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
 
   const userReservas = useMemo(() => {
-    // Se for administrador (Lab ou Plataforma), mostra TODAS as reservas da escola ativa/vinculada
+    let filtered;
     if (profile?.role === 'admin_lab' || profile?.role === 'admin_plataforma') {
-      return reservas.filter(r => 
+      filtered = reservas.filter(r => 
         r.escola_id === currentEscolaId && 
         !['manutencao', 'bloqueada'].includes(r.status)
       );
+    } else {
+      filtered = reservas.filter(r => 
+        r.profile_id === user?.id && 
+        !['manutencao', 'bloqueada'].includes(r.status)
+      );
     }
-    
-    // Para professor, apenas suas próprias reservas que NÃO sejam manutenção/bloqueio
-    return reservas.filter(r => 
-      r.profile_id === user?.id && 
-      !['manutencao', 'bloqueada'].includes(r.status)
-    );
-  }, [reservas, user?.id, profile?.role, currentEscolaId]);
+
+    // Agrupa para exibição
+    const grouped: Record<string, Reserva & { recursosList: string[] }> = {};
+    filtered.forEach(res => {
+      const key = `${res.data}-${res.aula}-${res.profile_id}-${res.turma}-${res.disciplina}`;
+      const recurso = recursos.find(r => r.id === res.recurso_id);
+      const recursoNome = recurso?.nome || 'N/A';
+
+      if (grouped[key]) {
+        grouped[key].recursosList.push(recursoNome);
+      } else {
+        grouped[key] = {
+          ...res,
+          recursosList: [recursoNome]
+        };
+      }
+    });
+
+    return Object.values(grouped);
+  }, [reservas, user?.id, profile?.role, currentEscolaId, recursos]);
 
   const today = startOfDay(new Date());
   
@@ -55,7 +73,7 @@ const MinhasReservasPage = () => {
     .sort((a, b) => b.data.localeCompare(a.data)), [userReservas]);
 
   const ReservaCard = ({ r }: { r: Reserva }) => {
-    const rec = recursos.find(rec => rec.id === r.recurso_id);
+    const recNames = (r as any).recursosList || [];
     const isCanceled = r.status === 'cancelada';
     
     return (
@@ -70,13 +88,13 @@ const MinhasReservasPage = () => {
               <p className="text-sm text-slate-500">{r.turma}</p>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <Badge 
-                style={isCanceled ? {} : { backgroundColor: rec?.cor_fundo, color: rec?.cor_texto, borderColor: rec?.cor_borda }}
-                variant={isCanceled ? "outline" : "outline"}
-                className={cn(isCanceled && "bg-slate-100 text-slate-400 border-slate-200")}
-              >
-                {rec?.nome}
-              </Badge>
+              <div className="flex flex-wrap justify-end gap-1">
+                {recNames.map((name: string, i: number) => (
+                  <Badge key={i} variant="outline" className={cn(isCanceled ? "bg-slate-100 text-slate-400 border-slate-200" : "bg-blue-50 text-blue-700 border-blue-200")}>
+                    {name}
+                  </Badge>
+                ))}
+              </div>
               {r.status && (
                 <Badge variant={
                   r.status === "confirmada" || r.status === "aprovada" ? "default" : 
@@ -193,7 +211,31 @@ const MinhasReservasPage = () => {
           if (reservaParaCancelar) {
             setCancelando(true);
             try {
-              await cancelReserva(reservaParaCancelar.id, motivo);
+              // Verifica se existem outras reservas do mesmo professor, mesma data e mesma aula
+              const reservasRelacionadas = userReservas.filter(r => 
+                r.profile_id === reservaParaCancelar.profile_id &&
+                r.data === reservaParaCancelar.data &&
+                r.aula === reservaParaCancelar.aula &&
+                r.status !== 'cancelada' &&
+                r.id !== reservaParaCancelar.id
+              );
+
+              if (reservasRelacionadas.length > 0) {
+                const confirmAll = window.confirm(
+                  `Esta reserva possui outros recursos no mesmo horário. Deseja cancelar TODOS os recursos deste agendamento?\n\nClique em 'OK' para cancelar tudo ou 'Cancelar' para cancelar apenas este recurso.`
+                );
+
+                if (confirmAll) {
+                  await Promise.all([
+                    cancelReserva(reservaParaCancelar.id, motivo),
+                    ...reservasRelacionadas.map(r => cancelReserva(r.id, motivo))
+                  ]);
+                } else {
+                  await cancelReserva(reservaParaCancelar.id, motivo);
+                }
+              } else {
+                await cancelReserva(reservaParaCancelar.id, motivo);
+              }
             } finally {
               setCancelando(false);
               setReservaParaCancelar(null);
