@@ -278,10 +278,10 @@ const AgendaPage = () => {
           </Popover>
 
           <div className="flex items-center gap-1">
-            <button className="btn-icon" onClick={() => navigateWeek('prev')} aria-label={isMobile ? "Dia anterior" : "Semana anterior"}>
+            <button className="btn-icon" onClick={() => navigateWeek('prev')} aria-label={(isMobile && mobileView === "dia") ? "Dia anterior" : "Semana anterior"}>
               <ChevronLeft size={16} />
             </button>
-            <button className="btn-icon" onClick={() => navigateWeek('next')} aria-label={isMobile ? "Próximo dia" : "Próxima semana"}>
+            <button className="btn-icon" onClick={() => navigateWeek('next')} aria-label={(isMobile && mobileView === "dia") ? "Próximo dia" : "Próxima semana"}>
               <ChevronRight size={16} />
             </button>
           </div>
