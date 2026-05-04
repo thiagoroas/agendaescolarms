@@ -151,7 +151,23 @@ const AdminRecursosPage = () => {
       <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
         <div className="space-y-1">
           <h1 className="text-3xl font-black tracking-tight text-slate-900 uppercase">Gestão de Recursos</h1>
-          <p className="text-sm font-medium text-slate-500">Administre laboratórios, projetores e equipamentos da escola.</p>
+          <div className="flex items-center gap-4 mt-1">
+            <p className="text-sm font-medium text-slate-500">Administre laboratórios, projetores e equipamentos da escola.</p>
+            <div className="flex bg-slate-100 p-1 rounded-xl">
+              <button 
+                onClick={() => setShowInactive(false)}
+                className={cn("px-4 py-1 text-[10px] font-black uppercase rounded-lg transition-all", !showInactive ? "bg-white text-blue-600 shadow-sm" : "text-slate-400")}
+              >
+                Ativos
+              </button>
+              <button 
+                onClick={() => setShowInactive(true)}
+                className={cn("px-4 py-1 text-[10px] font-black uppercase rounded-lg transition-all", showInactive ? "bg-white text-red-600 shadow-sm" : "text-slate-400")}
+              >
+                Inativos
+              </button>
+            </div>
+          </div>
         </div>
         <Button className="bg-blue-600 hover:bg-blue-700 h-12 px-6 rounded-2xl shadow-xl shadow-blue-100 font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95" onClick={() => setIsModalOpen(true)}>
           <Plus className="mr-2 h-5 w-5 stroke-[3px]" />
