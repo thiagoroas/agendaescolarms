@@ -79,7 +79,15 @@ const DashboardPage = () => {
     return todosRecursos.filter(r => r.escola_id === currentEscolaId);
   }, [todosRecursos, currentEscolaId]);
   
-  const hojeStr = format(new Date(), "yyyy-MM-dd");
+  const getLocalDateString = () => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const hojeStr = getLocalDateString();
   
   const reservasEscola = useMemo(() => {
     if (isSupabaseConfigured && !isValidUUID(currentEscolaId)) return [];
@@ -106,6 +114,8 @@ const DashboardPage = () => {
       (r.status === "confirmada" || r.status === "aprovada")
     );
     
+    // Admin Lab and Admin Plataforma see all school reservations for today
+    // Only teachers are limited to their own
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
     }
@@ -115,26 +125,26 @@ const DashboardPage = () => {
 
   const proximasReservas = useMemo(() => {
     let list = reservasEscola.filter(r => 
-      r.data >= hojeStr && 
-      r.status !== "cancelada" && 
-      !["manutencao", "bloqueada"].includes(r.status)
+      r.data > hojeStr && 
+      (r.status === "confirmada" || r.status === "aprovada")
     );
     
-    // Para o Dashboard, se for hoje, só mostrar se for uma aula futura? 
-    // O pedido diz: "Dashboard/Início do Professor: [...] card 'Próximas reservas' ou seção compacta mostrando no máximo as 3 próximas reservas confirmadas"
-    // E "não mostrar reservas de hoje em próximas se já estão no card de hoje"
-    // Na verdade, o dashboard atual separa reservasHoje e proximasReservas.
-    // Vamos filtrar as de hoje da lista de próximas para evitar duplicidade visual se estiverem no mesmo dashboard.
-    
-    list = list.filter(r => r.data > hojeStr);
-
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
     }
     
-    const limit = profile?.role === "professor" ? 3 : 5;
+    const limit = profile?.role === "professor" ? 3 : 10;
     return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, limit);
   }, [reservasEscola, hojeStr, profile?.role, user?.id]);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log("[CENTRAL LAB] escola_id usado:", currentEscolaId);
+      console.log("[CENTRAL LAB] hoje calculado:", hojeStr);
+      console.log("[CENTRAL LAB] total reservas hoje:", reservasHoje.length);
+      console.log("[CENTRAL LAB] total próximas reservas:", proximasReservas.length);
+    }
+  }, [currentEscolaId, hojeStr, reservasHoje.length, proximasReservas.length]);
 
   const alertas = useMemo(() => {
     // Bloqueios e manutenções ativos (hoje e futuros)
@@ -170,7 +180,7 @@ const DashboardPage = () => {
             <LayoutDashboard size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Resumo do dia</h1>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Central do Laboratório</h1>
             <p className="text-sm font-medium text-slate-500 truncate max-w-[200px] sm:max-w-none">
               {escolaAtiva?.nome ? `${escolaAtiva.nome} · ` : "Visão geral · "}{format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
             </p>
@@ -209,9 +219,7 @@ const DashboardPage = () => {
             </div>
             <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Agendamentos</p>
             <h3 className="text-xl font-black text-slate-900 mt-1">
-              {profile?.role === "professor" ? "Meus agendamentos hoje" : 
-               profile?.role === "admin_lab" ? "Agendamentos da escola hoje" : 
-               "Agendamentos da escola ativa hoje"}
+              {profile?.role === "professor" ? "Meus agendamentos hoje" : "Reservas de hoje"}
             </h3>
             <p className="text-[10px] font-bold text-blue-400 mt-1">Apenas reservas de hoje</p>
           </CardContent>
@@ -301,7 +309,7 @@ const DashboardPage = () => {
           <div className="flex items-center justify-between px-2">
             <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
               <Clock className="text-blue-600" size={20} />
-              Próximas Reservas
+              Acompanhamento de Reservas
             </h2>
             <Button 
               variant="ghost" 
@@ -323,6 +331,7 @@ const DashboardPage = () => {
             {proximasReservas.length > 0 ? (
               proximasReservas.map(res => {
                 const rec = todosRecursos.find(r => r.id === res.recurso_id);
+                const isProfessor = profile?.role === "professor";
                 return (
                   <Card key={res.id} className="rounded-2xl border-slate-100 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-50 transition-all group">
                     <CardContent className="p-4 flex items-center gap-4">
@@ -346,7 +355,7 @@ const DashboardPage = () => {
                         </p>
                       </div>
                       
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600" onClick={() => navigate(profile?.role === "professor" ? "/minhas-reservas" : "/admin/reservas")}>
+                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600" onClick={() => navigate(isProfessor ? "/minhas-reservas" : "/admin/reservas")}>
                         <ChevronRight className="h-5 w-5" />
                       </Button>
                     </CardContent>
