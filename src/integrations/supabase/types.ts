@@ -405,6 +405,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_delete_escola_teste: {
+        Args: { p_escola_id: string }
+        Returns: Json
+      }
       is_admin_lab: { Args: never; Returns: boolean }
       is_admin_plataforma: { Args: never; Returns: boolean }
       my_escola_id: { Args: never; Returns: string }
