@@ -88,9 +88,13 @@ const AdminEscolasPage = () => {
     }
   };
 
-  const handleDeleteClick = (escola: Escola) => {
+  const handleDeleteClick = async (escola: Escola) => {
     setEscolaToDelete(escola);
     setIsDeleteModalOpen(true);
+    setLoadingStats(true);
+    const s = await getEscolaStats(escola.id);
+    setStats(s);
+    setLoadingStats(false);
   };
 
   const handleConfirmDelete = async () => {
