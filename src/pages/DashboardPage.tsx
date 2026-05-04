@@ -46,6 +46,7 @@ const DashboardPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { recursos: todosRecursos, loading: loadingRecursos, error: errorRecursos } = useRecursos();
+  // Central do Laboratório usa o hook useReservas que já carrega os dados da escola selecionada
   const { reservas: todasReservas, loading: loadingReservas, error: errorReservas } = useReservas();
   const { avisos, loading: loadingAvisos, error: errorAvisos } = useAvisos();
 
@@ -69,11 +70,9 @@ const DashboardPage = () => {
     }
   }, [errorRecursos, errorReservas, errorAvisos, toast]);
 
-
-  
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
-  
   const escolaAtiva = todasEscolas.find(e => e.id === currentEscolaId);
+  
   const recursosEscola = useMemo(() => {
     if (isSupabaseConfigured && !isValidUUID(currentEscolaId)) return [];
     return todosRecursos.filter(r => r.escola_id === currentEscolaId);
@@ -89,13 +88,7 @@ const DashboardPage = () => {
 
   const hojeStr = getLocalDateString();
   
-  const reservasEscola = useMemo(() => {
-    if (isSupabaseConfigured && !isValidUUID(currentEscolaId)) return [];
-    return todasReservas.filter(r => r.escola_id === currentEscolaId);
-  }, [todasReservas, currentEscolaId]);
-
   const avisosAtivos = useMemo(() => {
-    const hojeStr = format(new Date(), "yyyy-MM-dd");
     return avisos.filter(a => 
       a.ativo && 
       a.escola_id === currentEscolaId && 
@@ -106,53 +99,80 @@ const DashboardPage = () => {
       const prioridade = { urgente: 0, atencao: 1, informativo: 2 };
       return prioridade[a.tipo] - prioridade[b.tipo];
     });
-  }, [avisos, currentEscolaId]);
+  }, [avisos, currentEscolaId, hojeStr]);
+
+  const reservationsSource = todasReservas;
+
+  const statusEncontrados = useMemo(() => {
+    const set = new Set<string>();
+    reservationsSource.forEach(r => set.add(r.status));
+    return Array.from(set);
+  }, [reservationsSource]);
 
   const reservasHoje = useMemo(() => {
-    let list = reservasEscola.filter(r => 
-      r.data === hojeStr && 
-      (r.status === "confirmada" || r.status === "aprovada")
-    );
+    // Para Admin Lab e Admin Plataforma, mostramos todas as reservas confirmadas da escola para hoje
+    let list = reservationsSource.filter(r => {
+      // Normalização da data para comparação YYYY-MM-DD
+      const resData = r.data.split('T')[0];
+      const isToday = resData === hojeStr;
+      
+      // Filtro de status flexível para abranger variações de banco
+      // Usamos type assertion para evitar erros de TS com valores fora do enum em ambiente de dev/mock
+      const status = r.status as string;
+      const isConfirmed = status === "confirmada" || status === "aprovada" || status === "ativo" || status === "ativa";
+      
+      return isToday && isConfirmed;
+    });
     
-    // Admin Lab and Admin Plataforma see all school reservations for today
-    // Only teachers are limited to their own
+    // Se for professor, ele vê apenas as próprias reservas de hoje
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
     }
     
     return list.sort((a, b) => a.aula - b.aula);
-  }, [reservasEscola, hojeStr, profile?.role, user?.id]);
+  }, [reservationsSource, hojeStr, profile?.role, user?.id]);
 
   const proximasReservas = useMemo(() => {
-    let list = reservasEscola.filter(r => 
-      r.data > hojeStr && 
-      (r.status === "confirmada" || r.status === "aprovada")
-    );
+    let list = reservationsSource.filter(r => {
+      const resData = r.data.split('T')[0];
+      const isFuture = resData > hojeStr;
+      const status = r.status as string;
+      const isConfirmed = status === "confirmada" || status === "aprovada" || status === "ativo" || status === "ativa";
+      
+      return isFuture && isConfirmed;
+    });
     
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
     }
     
-    const limit = profile?.role === "professor" ? 3 : 10;
+    const limit = profile?.role === "professor" ? 3 : 15;
     return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, limit);
-  }, [reservasEscola, hojeStr, profile?.role, user?.id]);
+  }, [reservationsSource, hojeStr, profile?.role, user?.id]);
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log("[CENTRAL LAB] escola_id usado:", currentEscolaId);
-      console.log("[CENTRAL LAB] hoje calculado:", hojeStr);
-      console.log("[CENTRAL LAB] total reservas hoje:", reservasHoje.length);
-      console.log("[CENTRAL LAB] total próximas reservas:", proximasReservas.length);
+      console.log("[CENTRAL LAB] profile.role:", profile?.role);
+      console.log("[CENTRAL LAB] profile.escola_id:", profile?.escola_id);
+      console.log("[CENTRAL LAB] selectedEscolaId:", selectedEscolaId);
+      console.log("[CENTRAL LAB] escolaIdFinalUsado:", currentEscolaId);
+      console.log("[CENTRAL LAB] hojeLocal:", hojeStr);
+      console.log("[CENTRAL LAB] totalReservasCarregadas (raw):", reservationsSource.length);
+      console.log("[CENTRAL LAB] statusEncontrados:", statusEncontrados);
+      console.log("[CENTRAL LAB] reservasHojeFiltradas:", reservasHoje.length);
+      console.log("[CENTRAL LAB] reservasFuturasFiltradas:", proximasReservas.length);
+      if (reservasHoje.length > 0) {
+        console.log("[CENTRAL LAB] primeiraReservaExemplo:", reservasHoje[0]);
+      }
     }
-  }, [currentEscolaId, hojeStr, reservasHoje.length, proximasReservas.length]);
+  }, [profile?.role, profile?.escola_id, selectedEscolaId, currentEscolaId, hojeStr, reservationsSource, statusEncontrados, reservasHoje, proximasReservas]);
 
   const alertas = useMemo(() => {
-    // Bloqueios e manutenções ativos (hoje e futuros)
-    return reservasEscola.filter(r => 
+    return reservationsSource.filter(r => 
       (r.status === "manutencao" || r.status === "bloqueada") &&
       r.data >= hojeStr
     );
-  }, [reservasEscola, hojeStr]);
+  }, [reservationsSource, hojeStr]);
 
   const recursosEmUsoHoje = useMemo(() => {
     const ids = new Set(reservasHoje.map(r => r.recurso_id));
@@ -247,10 +267,8 @@ const DashboardPage = () => {
           className="rounded-3xl border-none shadow-sm bg-amber-50/50 hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-amber-100 transition-all group cursor-pointer"
           onClick={() => {
             if (profile?.role === "professor") {
-              // Professor vê na agenda filtrando por bloqueios
               navigate("/agenda?view=blocks"); 
             } else {
-              // Admin vê na central de reservas filtrada
               navigate("/admin/reservas?status=manutencao");
             }
           }}
@@ -304,7 +322,7 @@ const DashboardPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        {/* Coluna Principal: Próximas Reservas */}
+        {/* Coluna Principal: Acompanhamento de Reservas */}
         <div className="md:col-span-1 xl:col-span-2 space-y-6">
           <div className="flex items-center justify-between px-2">
             <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
@@ -431,8 +449,6 @@ const DashboardPage = () => {
               </div>
             </div>
           )}
-
-          {/* Status dos Recursos */}
         </div>
       </div>
 
