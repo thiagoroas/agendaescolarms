@@ -41,12 +41,12 @@ const Sidebar = () => {
             <label className="text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-1.5 block px-1 truncate">
               Escola ativa
             </label>
-            <div className="relative group">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 border border-blue-200 hover:bg-blue-100/50 transition-all duration-200 cursor-pointer shadow-sm group-hover:shadow group-focus-within:ring-2 group-focus-within:ring-blue-100">
+            <div className="relative group/select">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 border border-blue-200 hover:bg-blue-100/50 transition-all duration-200 cursor-pointer shadow-sm group-hover/select:shadow group-focus-within:ring-2 group-focus-within:ring-blue-100">
                 <div className="bg-blue-600 rounded-lg p-2 text-white shrink-0 shadow-sm">
                   <Building className="h-4 w-4" />
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 lg:block hidden group-hover/sidebar:block transition-all">
                   <div className="flex items-center justify-between gap-1">
                     <p className="text-sm font-bold text-slate-900 truncate leading-none">
                       {loading ? "Carregando..." : (escola?.nome || "Selecione...")}
@@ -149,7 +149,7 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      <div className="mt-auto p-4 border-t border-slate-100">
+      <div className="mt-auto p-4 border-t border-slate-100 bg-white">
         <NavLink
           to="/perfil"
           className={({ isActive }) =>
@@ -159,10 +159,10 @@ const Sidebar = () => {
             )
           }
         >
-          <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-sm group-hover:scale-110 transition-transform">
+          <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-sm group-hover:scale-110 transition-transform shrink-0">
             {profile?.full_name?.charAt(0).toUpperCase()}
           </div>
-          <div className="flex flex-col min-w-0">
+          <div className="flex flex-col min-w-0 lg:flex hidden group-hover/sidebar:flex transition-all">
             <p className="text-xs font-bold text-slate-900 truncate leading-tight group-hover:text-blue-700 transition-colors">{profile?.full_name}</p>
             <p className="text-[10px] font-medium text-slate-500 capitalize truncate">Meu Perfil</p>
           </div>
@@ -172,10 +172,12 @@ const Sidebar = () => {
             logout();
             window.location.href = "/login";
           }}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-red-600 transition-all duration-200 hover:bg-red-50 hover:text-red-700 group"
+          className="flex w-full items-center gap-2 rounded-lg px-2 lg:px-3 py-2 text-xs font-semibold text-red-600 transition-all duration-200 hover:bg-red-50 hover:text-red-700 group justify-center lg:justify-start group-hover/sidebar:justify-start overflow-hidden"
         >
-          <LogOut className="h-4 w-4" />
-          Sair do sistema
+          <LogOut className="h-4 w-4 shrink-0" />
+          <span className="lg:block hidden group-hover/sidebar:block truncate">
+            Sair do sistema
+          </span>
         </button>
       </div>
     </aside>
