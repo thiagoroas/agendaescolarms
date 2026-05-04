@@ -400,6 +400,7 @@ const AdminProfessoresPage = () => {
                               variant="outline" 
                               size="sm" 
                               disabled={loading}
+                              title="Aprovar"
                               onClick={async () => {
                                 if (isSupabaseConfigured) {
                                   setLoading(true);
@@ -427,44 +428,69 @@ const AdminProfessoresPage = () => {
                               <UserCheck className="h-4 w-4" />
                             </Button>
                           )}
-                          <Button variant="outline" size="sm" onClick={() => openModal(u)} className="h-8 w-8 p-0" disabled={loading}>
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            disabled={loading}
-                            className="text-red-600 hover:bg-red-50 border-red-100 h-8 w-8 p-0"
-                            onClick={async () => {
-                              const actionName = u.status === 'bloqueado' ? 'Ativar' : 'Bloquear';
-                              if (confirm(`Deseja ${actionName} o professor ${u.nome}?`)) {
-                                if (isSupabaseConfigured) {
-                                  setLoading(true);
-                                  try {
-                                    const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
-                                    const { error } = await supabase.functions.invoke('manage-user', {
-                                      body: { action: 'update', userData: { id: u.id, status: nextStatus } }
-                                    });
-                                    if (error) throw error;
-                                    toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'} com sucesso.`);
-                                    fetchUsers();
-                                  } catch (err: any) {
-                                    toast.error("Erro ao alterar status do usuário");
-                                  } finally {
-                                    setLoading(false);
+                          
+                          {(isAdminPlataforma || (isAdminLab && u.papel === "professor")) && (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => openModal(u)} 
+                                className="h-8 w-8 p-0" 
+                                disabled={loading}
+                                title="Editar"
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                              
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                disabled={loading}
+                                title={u.status === 'bloqueado' ? 'Ativar' : 'Bloquear'}
+                                className="text-amber-600 hover:bg-amber-50 border-amber-100 h-8 w-8 p-0"
+                                onClick={async () => {
+                                  const actionName = u.status === 'bloqueado' ? 'Ativar' : 'Bloquear';
+                                  if (confirm(`Deseja ${actionName} o professor ${u.nome}?`)) {
+                                    if (isSupabaseConfigured) {
+                                      setLoading(true);
+                                      try {
+                                        const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
+                                        const { error } = await supabase.functions.invoke('manage-user', {
+                                          body: { action: 'update', userData: { id: u.id, status: nextStatus } }
+                                        });
+                                        if (error) throw error;
+                                        toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'} com sucesso.`);
+                                        fetchUsers();
+                                      } catch (err: any) {
+                                        toast.error("Erro ao alterar status do usuário");
+                                      } finally {
+                                        setLoading(false);
+                                      }
+                                    } else {
+                                      const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
+                                      const updated = localUsers.map(usr => usr.id === u.id ? { ...usr, status: nextStatus as any } : usr);
+                                      saveMockUsuarios(updated as any);
+                                      setLocalUsers(updated);
+                                      toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'}.`);
+                                    }
                                   }
-                                } else {
-                                  const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
-                                  const updated = localUsers.map(usr => usr.id === u.id ? { ...usr, status: nextStatus as any } : usr);
-                                  saveMockUsuarios(updated as any);
-                                  setLocalUsers(updated);
-                                  toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'}.`);
-                                }
-                              }
-                            }}
-                          >
-                            <Power className="h-4 w-4" />
-                          </Button>
+                                }}
+                              >
+                                <Power className="h-4 w-4" />
+                              </Button>
+
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                disabled={loading || u.status === 'removido'}
+                                title="Remover da escola"
+                                className="text-red-600 hover:bg-red-50 border-red-100 h-8 w-8 p-0"
+                                onClick={() => handleRemoverUsuario(u)}
+                              >
+                                <ArchiveX className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
