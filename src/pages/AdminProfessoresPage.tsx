@@ -272,14 +272,30 @@ const AdminProfessoresPage = () => {
           <TabsTrigger value="usuarios_lab" className="data-[state=active]:bg-white">Usuários Laboratório</TabsTrigger>
         </TabsList>
 
-        <div className="relative mt-4">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input 
-            className="pl-10" 
-            placeholder={`Buscar ${activeTab === "professores" ? "professores" : "usuários"} por nome ou e-mail...`} 
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
+        <div className="flex flex-col sm:flex-row gap-4 mt-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input 
+              className="pl-10" 
+              placeholder={`Buscar ${activeTab === "professores" ? "professores" : "usuários"} por nome ou e-mail...`} 
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="w-full sm:w-48">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ativos">Ativos</SelectItem>
+                <SelectItem value="pendente">Pendentes</SelectItem>
+                <SelectItem value="bloqueado">Bloqueados</SelectItem>
+                <SelectItem value="removido">Arquivados</SelectItem>
+                <SelectItem value="todos">Todos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {!isSupabaseConfigured && (
