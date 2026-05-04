@@ -215,6 +215,17 @@ const AdminEscolasPage = () => {
                     Excluir
                   </Button>
                 )}
+                {isAdminPlataforma && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex-1 h-10 text-slate-400 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => handleTestDeleteClick(e)}
+                    title="Excluir escola de teste e todos os vínculos"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           ))}
