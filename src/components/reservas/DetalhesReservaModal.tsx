@@ -21,7 +21,7 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md p-0 border-none rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <DialogContent className="max-w-md w-[95%] p-0 border-none rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 focus:outline-none focus:ring-0">
         <div 
           className="p-8 relative text-white"
           style={{ 

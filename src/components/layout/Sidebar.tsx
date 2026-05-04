@@ -27,7 +27,7 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="fixed left-0 top-0 hidden h-full w-[80px] lg:w-[264px] flex-col border-r bg-white md:flex z-40 transition-[width] duration-300 group/sidebar overflow-hidden hover:w-[264px] md:hover:shadow-xl lg:hover:shadow-none">
+    <aside className="fixed left-0 top-0 hidden h-full w-[80px] lg:w-[264px] flex-col border-r bg-white md:flex z-40 transition-[width] duration-300 group/sidebar overflow-hidden hover:w-[264px] md:hover:shadow-xl lg:hover:shadow-none pt-[env(safe-area-inset-top,0px)]">
       <div className="flex flex-col p-4 lg:p-5">
         <div className="flex items-center gap-3 mb-6">
           <div className="rounded-lg bg-blue-600 p-2 text-white shadow-sm shrink-0">
