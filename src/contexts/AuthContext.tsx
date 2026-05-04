@@ -9,7 +9,7 @@ export interface Profile {
   full_name: string;
   escola_id: string | null;
   role: UserRole;
-  status: "ativo" | "pendente" | "bloqueado";
+  status: "ativo" | "pendente" | "bloqueado" | "removido";
   disciplinas?: string[];
 }
 
