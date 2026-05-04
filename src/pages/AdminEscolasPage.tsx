@@ -269,7 +269,12 @@ const AdminEscolasPage = () => {
               Confirmar Exclusão
             </DialogTitle>
             <DialogDescription className="pt-2">
-              Tem certeza que deseja excluir a escola <strong>{escolaToDelete?.nome}</strong>? Esta ação não poderá ser desfeita.
+              Tem certeza que deseja excluir a escola <strong>{escolaToDelete?.nome}</strong>?
+              <br /><br />
+              <span className="text-amber-600 font-medium">
+                Esta ação removerá permanentemente a escola e seus horários padrão.
+                Se a escola possuir usuários, recursos ou reservas, a exclusão será bloqueada.
+              </span>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="pt-4">
