@@ -17,9 +17,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 const AdminRecursosPage = () => {
   const { profile, selectedEscolaId } = useAuth();
-  const { recursos, loading, createRecurso, updateRecurso, toggleRecursoAtivo, deleteRecurso } = useRecursos();
+  const { recursos, loading, createRecurso, updateRecurso, toggleRecursoAtivo, deleteRecurso, getRecursoStats } = useRecursos();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecurso, setEditingRecurso] = useState<Recurso | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [recursoToDelete, setRecursoToDelete] = useState<Recurso | null>(null);
+  const [deleteStats, setDeleteStats] = useState<any>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
   
   const [nome, setNome] = useState("");
   const [tipo, setTipo] = useState("outro");
