@@ -94,6 +94,8 @@ const AdminEscolasPage = () => {
   const handleConfirmDelete = async () => {
     if (!escolaToDelete) return;
     
+    // Verificar se possui apenas horários (seria bom ter essa info do hook, mas o hook já trata)
+    // A UI pode apenas reforçar a mensagem dependendo do que o hook retornar ou do estado local
     setIsDeleting(true);
     const success = await deleteEscola(escolaToDelete.id);
     setIsDeleting(false);
