@@ -218,7 +218,7 @@ const AgendaPage = () => {
   const weekLabel = `${format(monday, "d 'de' MMM", { locale: ptBR })} – ${format(weekDates[4], "d 'de' MMM", { locale: ptBR })}`;
 
   return (
-    <div className="agenda-proto overflow-y-auto pb-24 md:pb-8 flex-1 flex flex-col min-h-0">
+    <div className="agenda-proto overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-8 flex-1 flex flex-col min-h-0">
       {/* Topbar */}
       <div className="topbar">
         <div className="flex-1">

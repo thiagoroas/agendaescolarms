@@ -220,7 +220,7 @@ const AdminReservasPage = () => {
         </Table>
       </div>
 
-      <div className="grid gap-4 xl:hidden pb-20">
+      <div className="grid gap-4 xl:hidden pb-[calc(5rem+env(safe-area-inset-bottom,0px))]">
         {schoolReservas.map((r) => {
           const rec = recursos.find(rec => rec.id === r.recurso_id);
           return (

@@ -163,7 +163,7 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="space-y-8 pb-20 md:pb-8 animate-in fade-in duration-500">
+    <div className="space-y-8 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-8 animate-in fade-in duration-500">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="h-12 w-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-100">

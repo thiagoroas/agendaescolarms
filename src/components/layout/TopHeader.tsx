@@ -27,7 +27,7 @@ const TopHeader = () => {
   };
 
   return (
-    <header className="h-16 border-b bg-white flex items-center justify-between px-4 md:px-8 sticky top-0 z-[40]">
+    <header className="h-[calc(4rem+env(safe-area-inset-top,0px))] border-b bg-white flex items-center justify-between px-4 md:px-8 sticky top-0 z-[40] pt-[env(safe-area-inset-top,0px)]">
       <div className="flex items-center gap-4">
         <div className="md:hidden">
           {/* Mobile logo could go here if sidebar is hidden */}

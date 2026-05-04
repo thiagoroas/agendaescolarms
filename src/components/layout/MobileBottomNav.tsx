@@ -48,7 +48,7 @@ const MobileBottomNav = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 flex w-full items-center justify-around border-t border-slate-100 bg-white/95 backdrop-blur-md px-2 py-3 md:hidden z-50 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(0,0,0,0.05)]">
+    <nav className="fixed bottom-0 left-0 flex w-full items-center justify-around border-t border-slate-100 bg-white/95 backdrop-blur-md px-2 py-3 md:hidden z-50 pb-[calc(env(safe-area-inset-bottom,0px)+8px)] shadow-[0_-4px_16px_rgba(0,0,0,0.05)]">
       {mainNavItems.map((item) => (
         <NavLink
           key={item.path}
@@ -191,7 +191,7 @@ const MobileBottomNav = () => {
             </div>
 
             {/* Bloco 4: Ação de Sair */}
-            <div className="p-5 bg-white border-t border-slate-100 shrink-0 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
+            <div className="p-5 bg-white border-t border-slate-100 shrink-0 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
               <button
                 onClick={() => {
                   logout();
