@@ -273,12 +273,12 @@ const AprovacoesPage = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {proximasReservas.slice(0, 10).map((r) => {
-                      const rec = recursos.find(rec => rec.id === r.recurso_id);
+                    {proximasReservas.slice(0, 15).map((r) => {
+                      const rec = allRecursos.find(rec => rec.id === r.recurso_id);
                       return (
                         <TableRow key={r.id} className="hover:bg-slate-50/50 transition-colors border-slate-50">
                           <TableCell className="py-4">
-                            <span className="font-black text-slate-900">{format(parseISO(r.data), "dd/MM")}</span>
+                            <span className="font-black text-slate-900">{format(parseISO(r.data.includes('T') ? r.data.split('T')[0] : r.data), "dd/MM")}</span>
                           </TableCell>
                           <TableCell>
                             <span className="text-[10px] font-bold text-slate-400 block tracking-tight">Aula {r.aula}</span>
