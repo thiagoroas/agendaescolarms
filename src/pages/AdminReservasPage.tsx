@@ -186,7 +186,12 @@ const AdminReservasPage = () => {
                         (r.status === "manutencao" || r.status === "bloqueada") ? "bg-slate-800 text-slate-100 ring-1 ring-slate-900" :
                         "bg-slate-100 text-slate-700 ring-1 ring-slate-200"
                       )}>
-                        {r.status === "manutencao" ? "Manutenção" : r.status}
+                        {r.status === "manutencao" ? "Manutenção" : 
+                         r.status === "confirmada" ? "Confirmada" :
+                         r.status === "aprovada" ? "Aprovada" :
+                         r.status === "cancelada" ? "Cancelada" :
+                         r.status === "bloqueada" ? "Bloqueada" :
+                         r.status === "pendente" ? "Pendente" : r.status}
                       </Badge>
                     </div>
                   </TableCell>
