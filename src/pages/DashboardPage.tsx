@@ -311,7 +311,7 @@ const DashboardPage = () => {
           <div className="flex items-center justify-between px-2">
             <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
               <Clock className="text-blue-600" size={20} />
-              Próximas Reservas
+              Acompanhamento de Reservas
             </h2>
             <Button 
               variant="ghost" 
