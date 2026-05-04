@@ -16,15 +16,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 const AdminEscolasPage = () => {
   const { profile } = useAuth();
-  const { escolas, loading, createEscola, updateEscola, toggleEscolaStatus, deleteEscola, getEscolaStats } = useEscolas();
+  const { escolas, loading, createEscola, updateEscola, toggleEscolaStatus, deleteEscola, getEscolaStats, deleteEscolaTeste } = useEscolas();
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isTestDeleteModalOpen, setIsTestDeleteModalOpen] = useState(false);
   const [escolaToDelete, setEscolaToDelete] = useState<Escola | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [loadingStats, setLoadingStats] = useState(false);
   const [stats, setStats] = useState<{users: number, resources: number, reservations: number, announcements: number, schedules: number} | null>(null);
   const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
+  const [confirmName, setConfirmName] = useState("");
 
   const isAdminPlataforma = profile?.role === "admin_plataforma";
 
