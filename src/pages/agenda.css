@@ -606,10 +606,15 @@
 .agenda-proto .mobile-slot-content {
   flex: 1;
   position: relative;
+  min-width: 0; /* Permite que o conteúdo encolha em containers flex */
+  overflow: hidden;
 }
 
 .agenda-proto .mobile-card-available {
   height: 100%;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   border: 1.5px dashed var(--border);
   border-radius: 12px;
   display: flex;
@@ -619,6 +624,9 @@
   font-weight: 500;
   color: var(--text-subtle);
   background: white;
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .agenda-proto .mobile-card-available:active {
@@ -630,6 +638,9 @@
 .agenda-proto .mobile-card-event {
   height: 100%;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
   border-radius: 12px;
   padding: 12px;
   border-left: 4px solid var(--c-strong);
@@ -639,6 +650,7 @@
   flex-direction: column;
   gap: 4px;
   text-align: left;
+  overflow: hidden;
 }
 
 .agenda-proto .mobile-slot.is-break {
