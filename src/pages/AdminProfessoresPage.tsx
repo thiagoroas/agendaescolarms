@@ -244,6 +244,7 @@ const AdminProfessoresPage = () => {
       case "ativo": return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Ativo</Badge>;
       case "pendente": return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">Pendente</Badge>;
       case "bloqueado": return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Bloqueado</Badge>;
+      case "removido": return <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-100">Arquivado</Badge>;
     }
   };
 
