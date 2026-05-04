@@ -701,7 +701,31 @@ const AgendaPage = () => {
           if (reservaParaCancelar) {
             setCancelando(true);
             try {
-              await cancelReserva(reservaParaCancelar.id, motivo);
+              // Verifica se existem outras reservas do mesmo professor, mesma data e mesma aula
+              const reservasRelacionadas = reservasState.filter(r => 
+                r.profile_id === reservaParaCancelar.profile_id &&
+                r.data === reservaParaCancelar.data &&
+                r.aula === reservaParaCancelar.aula &&
+                r.status !== 'cancelada' &&
+                r.id !== reservaParaCancelar.id
+              );
+
+              if (reservasRelacionadas.length > 0) {
+                const confirmAll = window.confirm(
+                  `Esta reserva possui outros recursos no mesmo horário. Deseja cancelar TODOS os recursos deste agendamento?\n\nClique em 'OK' para cancelar tudo ou 'Cancelar' para cancelar apenas este recurso.`
+                );
+
+                if (confirmAll) {
+                  await Promise.all([
+                    cancelReserva(reservaParaCancelar.id, motivo),
+                    ...reservasRelacionadas.map(r => cancelReserva(r.id, motivo))
+                  ]);
+                } else {
+                  await cancelReserva(reservaParaCancelar.id, motivo);
+                }
+              } else {
+                await cancelReserva(reservaParaCancelar.id, motivo);
+              }
             } finally {
               setCancelando(false);
               setReservaParaCancelar(null);
