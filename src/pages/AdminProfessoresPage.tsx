@@ -269,16 +269,6 @@ const AdminProfessoresPage = () => {
         setLoading(false);
       }
     }
-  };
-        const updated = [{ ...novoUsuario, senha }, ...localUsers];
-        saveMockUsuarios(updated as any);
-        setLocalUsers(updated);
-        toast.success("Cadastrado com sucesso!");
-      }
-      setIsModalOpen(false);
-      setLoading(false);
-    }
-  };
 
   const getStatusBadge = (status: Usuario["status"]) => {
     switch (status) {
