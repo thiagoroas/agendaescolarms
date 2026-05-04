@@ -517,26 +517,88 @@ const AdminProfessoresPage = () => {
                   </div>
                 )}
                 <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="flex-1" onClick={() => openModal(u)}>
-                    Editar
-                  </Button>
                   {u.status === "pendente" && (
                     <Button 
                       size="sm" 
                       className="flex-1 bg-emerald-600 hover:bg-emerald-700" 
-                      onClick={() => {
-                        setLocalUsers(prev => {
-                          const updated = prev.map(usr => usr.id === u.id ? { ...usr, status: "ativo" as const } : usr);
-                          if (!isSupabaseConfigured) {
-                            saveMockUsuarios(updated as any);
+                      onClick={async () => {
+                        if (isSupabaseConfigured) {
+                          setLoading(true);
+                          try {
+                            const { error } = await supabase.functions.invoke('manage-user', {
+                              body: { action: 'update', userData: { id: u.id, status: 'ativo' } }
+                            });
+                            if (error) throw error;
+                            toast.success("Acesso aprovado!");
+                            fetchUsers();
+                          } catch (err: any) {
+                            toast.error("Erro ao aprovar usuário");
+                          } finally {
+                            setLoading(false);
                           }
-                          return updated;
-                        });
-                        toast.success("Acesso aprovado!");
+                        } else {
+                          const updated = localUsers.map(usr => usr.id === u.id ? { ...usr, status: "ativo" as const } : usr);
+                          saveMockUsuarios(updated as any);
+                          setLocalUsers(updated);
+                          toast.success("Acesso aprovado!");
+                        }
                       }}
                     >
                       Aprovar
                     </Button>
+                  )}
+
+                  {(isAdminPlataforma || (isAdminLab && u.papel === "professor")) && (
+                    <>
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => openModal(u)}>
+                        Editar
+                      </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1 text-amber-600 border-amber-100"
+                        onClick={async () => {
+                          const actionName = u.status === 'bloqueado' ? 'Ativar' : 'Bloquear';
+                          if (confirm(`Deseja ${actionName} o professor ${u.nome}?`)) {
+                            if (isSupabaseConfigured) {
+                              setLoading(true);
+                              try {
+                                const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
+                                const { error } = await supabase.functions.invoke('manage-user', {
+                                  body: { action: 'update', userData: { id: u.id, status: nextStatus } }
+                                });
+                                if (error) throw error;
+                                toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'} com sucesso.`);
+                                fetchUsers();
+                              } catch (err: any) {
+                                toast.error("Erro ao alterar status do usuário");
+                              } finally {
+                                setLoading(false);
+                              }
+                            } else {
+                              const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
+                              const updated = localUsers.map(usr => usr.id === u.id ? { ...usr, status: nextStatus as any } : usr);
+                              saveMockUsuarios(updated as any);
+                              setLocalUsers(updated);
+                              toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'}.`);
+                            }
+                          }
+                        }}
+                      >
+                        {u.status === 'bloqueado' ? 'Ativar' : 'Bloquear'}
+                      </Button>
+
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        disabled={u.status === 'removido'}
+                        className="flex-1 text-red-600 border-red-100"
+                        onClick={() => handleRemoverUsuario(u)}
+                      >
+                        Remover
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
