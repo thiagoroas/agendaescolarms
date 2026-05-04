@@ -25,20 +25,38 @@ const MinhasReservasPage = () => {
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
 
   const userReservas = useMemo(() => {
-    // Se for administrador (Lab ou Plataforma), mostra TODAS as reservas da escola ativa/vinculada
+    let filtered;
     if (profile?.role === 'admin_lab' || profile?.role === 'admin_plataforma') {
-      return reservas.filter(r => 
+      filtered = reservas.filter(r => 
         r.escola_id === currentEscolaId && 
         !['manutencao', 'bloqueada'].includes(r.status)
       );
+    } else {
+      filtered = reservas.filter(r => 
+        r.profile_id === user?.id && 
+        !['manutencao', 'bloqueada'].includes(r.status)
+      );
     }
-    
-    // Para professor, apenas suas próprias reservas que NÃO sejam manutenção/bloqueio
-    return reservas.filter(r => 
-      r.profile_id === user?.id && 
-      !['manutencao', 'bloqueada'].includes(r.status)
-    );
-  }, [reservas, user?.id, profile?.role, currentEscolaId]);
+
+    // Agrupa para exibição
+    const grouped: Record<string, Reserva & { recursosList: string[] }> = {};
+    filtered.forEach(res => {
+      const key = `${res.data}-${res.aula}-${res.profile_id}-${res.turma}-${res.disciplina}`;
+      const recurso = recursos.find(r => r.id === res.recurso_id);
+      const recursoNome = recurso?.nome || 'N/A';
+
+      if (grouped[key]) {
+        grouped[key].recursosList.push(recursoNome);
+      } else {
+        grouped[key] = {
+          ...res,
+          recursosList: [recursoNome]
+        };
+      }
+    });
+
+    return Object.values(grouped);
+  }, [reservas, user?.id, profile?.role, currentEscolaId, recursos]);
 
   const today = startOfDay(new Date());
   
