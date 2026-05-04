@@ -88,6 +88,19 @@ const DashboardPage = () => {
 
   const hojeStr = getLocalDateString();
   
+  const avisosAtivos = useMemo(() => {
+    return avisos.filter(a => 
+      a.ativo && 
+      a.escola_id === currentEscolaId && 
+      a.exibir_no_dashboard &&
+      hojeStr >= a.data_inicio && 
+      hojeStr <= a.data_fim
+    ).sort((a, b) => {
+      const prioridade = { urgente: 0, atencao: 1, informativo: 2 };
+      return prioridade[a.tipo] - prioridade[b.tipo];
+    });
+  }, [avisos, currentEscolaId, hojeStr]);
+
   const reservationsSource = todasReservas;
 
   const statusEncontrados = useMemo(() => {
@@ -104,7 +117,9 @@ const DashboardPage = () => {
       const isToday = resData === hojeStr;
       
       // Filtro de status flexível para abranger variações de banco
-      const isConfirmed = r.status === "confirmada" || r.status === "aprovada" || r.status === "ativo" || r.status === "ativa";
+      // Usamos type assertion para evitar erros de TS com valores fora do enum em ambiente de dev/mock
+      const status = r.status as string;
+      const isConfirmed = status === "confirmada" || status === "aprovada" || status === "ativo" || status === "ativa";
       
       return isToday && isConfirmed;
     });
@@ -121,7 +136,8 @@ const DashboardPage = () => {
     let list = reservationsSource.filter(r => {
       const resData = r.data.split('T')[0];
       const isFuture = resData > hojeStr;
-      const isConfirmed = r.status === "confirmada" || r.status === "aprovada" || r.status === "ativo" || r.status === "ativa";
+      const status = r.status as string;
+      const isConfirmed = status === "confirmada" || status === "aprovada" || status === "ativo" || status === "ativa";
       
       return isFuture && isConfirmed;
     });
