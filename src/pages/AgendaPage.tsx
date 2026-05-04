@@ -189,8 +189,13 @@ const AgendaPage = () => {
   }, [avisosState, currentSchoolId]);
 
   const handleSlotClick = (date: Date, h: HorarioEscola) => {
-    const res = getReservaForSlot(date, h.ordem);
-    if (res) {
+    const resList = getReservasForSlot(date, h.ordem);
+    if (resList.length > 0) {
+      // Se tiver apenas uma reserva, abre direto. Se tiver várias, poderíamos abrir um menu,
+      // mas por simplicidade vamos abrir a primeira ou permitir que o usuário veja todas na agenda.
+      // O requisito diz que na visualização "Todos" podemos agrupar ou mostrar separadas.
+      // Por enquanto, vamos pegar a primeira para o modal de detalhes.
+      const res = resList[0];
       const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
       setActiveReserva({ reserva: res, recurso: rec! });
       setIsModalDetalhesOpen(true);
