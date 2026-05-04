@@ -282,37 +282,73 @@ const AgendaPage = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="toolbar w-full box-border overflow-hidden">
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2 w-full sm:w-auto">
-          <button
-            className={`chip ${!selectedRecurso ? 'active' : ''}`}
-            onClick={() => setSelectedRecurso(null)}
-          >
-            Todos
-          </button>
-          {schoolRecursos.map(r => (
-            <button
-              key={r.id}
-              className={`chip ${selectedRecurso === r.id ? 'active' : ''}`}
-              onClick={() => setSelectedRecurso(r.id)}
-            >
-              <span className="chip-dot" style={{ background: r.cor_borda }} />
-              {r.nome}
-            </button>
-          ))}
-        </div>
+      <div className="toolbar w-full box-border">
+        {isMobile ? (
+          <div className="flex flex-col gap-3 w-full">
+            <div className="relative w-full">
+              <select 
+                className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500 appearance-none shadow-sm"
+                value={selectedRecurso || ""}
+                onChange={(e) => setSelectedRecurso(e.target.value || null)}
+              >
+                <option value="">Filtrar recurso: Todos</option>
+                {schoolRecursos.map(r => (
+                  <option key={r.id} value={r.id}>
+                    {r.nome}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <ChevronDown size={18} />
+              </div>
+            </div>
 
-        {!isMobile && <div className="toolbar-divider" />}
+            <div className="search w-full relative">
+              <span className="search-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <Search size={16} />
+              </span>
+              <input
+                className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:border-blue-500 shadow-sm"
+                placeholder="Buscar professor, turma…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2 w-full sm:w-auto">
+              <button
+                className={`chip ${!selectedRecurso ? 'active' : ''}`}
+                onClick={() => setSelectedRecurso(null)}
+              >
+                Todos
+              </button>
+              {schoolRecursos.map(r => (
+                <button
+                  key={r.id}
+                  className={`chip ${selectedRecurso === r.id ? 'active' : ''}`}
+                  onClick={() => setSelectedRecurso(r.id)}
+                >
+                  <span className="chip-dot" style={{ background: r.cor_borda }} />
+                  {r.nome}
+                </button>
+              ))}
+            </div>
 
-        <div className="search w-full sm:w-auto mt-2 sm:mt-0">
-          <span className="search-icon"><Search size={14} /></span>
-          <input
-            className="w-full sm:w-[220px]"
-            placeholder="Buscar professor, turma…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+            <div className="toolbar-divider" />
+
+            <div className="search w-full sm:w-auto mt-2 sm:mt-0">
+              <span className="search-icon"><Search size={14} /></span>
+              <input
+                className="w-full sm:w-[220px]"
+                placeholder="Buscar professor, turma…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </>
+        )}
 
         <div className="toolbar-meta">
           <span><strong>{filteredReservationsCount}</strong> reservas</span>
