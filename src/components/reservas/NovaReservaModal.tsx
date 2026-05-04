@@ -59,7 +59,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     disciplina: "",
     turma: "",
     data: "",
-    recursoId: "",
+    recursoIds: [] as string[],
     aulas: [] as number[],
     objetivo_pedagogico: "",
     observacao: ""
