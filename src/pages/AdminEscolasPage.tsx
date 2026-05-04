@@ -94,6 +94,8 @@ const AdminEscolasPage = () => {
   const handleConfirmDelete = async () => {
     if (!escolaToDelete) return;
     
+    // Verificar se possui apenas horários (seria bom ter essa info do hook, mas o hook já trata)
+    // A UI pode apenas reforçar a mensagem dependendo do que o hook retornar ou do estado local
     setIsDeleting(true);
     const success = await deleteEscola(escolaToDelete.id);
     setIsDeleting(false);
@@ -267,7 +269,12 @@ const AdminEscolasPage = () => {
               Confirmar Exclusão
             </DialogTitle>
             <DialogDescription className="pt-2">
-              Tem certeza que deseja excluir a escola <strong>{escolaToDelete?.nome}</strong>? Esta ação não poderá ser desfeita.
+              Tem certeza que deseja excluir a escola <strong>{escolaToDelete?.nome}</strong>?
+              <br /><br />
+              <span className="text-amber-600 font-medium">
+                Esta ação removerá permanentemente a escola e seus horários padrão.
+                Se a escola possuir usuários, recursos ou reservas, a exclusão será bloqueada.
+              </span>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="pt-4">
