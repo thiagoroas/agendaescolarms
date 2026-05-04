@@ -303,6 +303,7 @@ export const useRecursos = (escolaId?: string) => {
     createRecurso,
     updateRecurso,
     toggleRecursoAtivo,
+    getRecursoStats,
     deleteRecurso
   };
 };
