@@ -228,6 +228,15 @@ const AdminProfessoresPage = () => {
           papel: papel,
           status: "ativo",
           disciplinas: papel === "professor" ? disciplinasArray : undefined
+        };
+        const updated = [{ ...novoUsuario, senha } as any, ...localUsers];
+        saveMockUsuarios(updated as any);
+        setLocalUsers(updated);
+        toast.success("Cadastrado com sucesso!");
+      }
+      setIsModalOpen(false);
+      setLoading(false);
+    }
   };
 
   const handleRemoverUsuario = async (u: Usuario) => {
