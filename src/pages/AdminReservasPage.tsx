@@ -55,7 +55,7 @@ const AdminReservasPage = () => {
       .filter(r => r.escola_id === currentEscolaId)
       .filter(r => {
         if (statusFilter === "todas") return true;
-        if (statusFilter === "confirmadas") return r.status === "confirmada" || r.status === "aprovada";
+        if (statusFilter === "confirmadas") return r.status === "confirmada" || r.status === "aprovada" || r.status === "pendente";
         if (statusFilter === "manutencao") return r.status === "manutencao" || r.status === "bloqueada";
         if (statusFilter === "canceladas") return r.status === "cancelada";
         return true;
@@ -186,7 +186,12 @@ const AdminReservasPage = () => {
                         (r.status === "manutencao" || r.status === "bloqueada") ? "bg-slate-800 text-slate-100 ring-1 ring-slate-900" :
                         "bg-slate-100 text-slate-700 ring-1 ring-slate-200"
                       )}>
-                        {r.status === "manutencao" ? "Manutenção" : r.status}
+                        {r.status === "manutencao" ? "Manutenção" : 
+                         r.status === "confirmada" ? "Confirmada" :
+                         r.status === "aprovada" ? "Aprovada" :
+                         r.status === "cancelada" ? "Cancelada" :
+                         r.status === "bloqueada" ? "Bloqueada" :
+                         r.status === "pendente" ? "Pendente" : r.status}
                       </Badge>
                     </div>
                   </TableCell>
@@ -195,17 +200,17 @@ const AdminReservasPage = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600" onClick={() => toast.info("Funcionalidade de edição em breve.")}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50" 
-                        onClick={() => setReservaParaCancelar(r)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {r.status !== "cancelada" && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50" 
+                          onClick={() => setReservaParaCancelar(r)}
+                          title="Cancelar reserva"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -240,17 +245,22 @@ const AdminReservasPage = () => {
                 </Badge>
               </div>
               <div className="flex gap-2 pt-2 border-t">
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.info("Funcionalidade de edição em breve.")}>
-                  Editar
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1 text-red-600 border-red-100" 
-                  onClick={() => setReservaParaCancelar(r)}
-                >
-                  Cancelar
-                </Button>
+                {r.status !== "cancelada" ? (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 text-red-600 border-red-100" 
+                    onClick={() => setReservaParaCancelar(r)}
+                  >
+                    Cancelar reserva
+                  </Button>
+                ) : (
+                  <div className="flex-1 text-center py-1">
+                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 uppercase tracking-widest text-[9px] font-black">
+                      Cancelada
+                    </Badge>
+                  </div>
+                )}
               </div>
             </div>
           );

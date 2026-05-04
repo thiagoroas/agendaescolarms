@@ -88,7 +88,11 @@ const MinhasReservasPage = () => {
                   (r.status === "manutencao" || r.status === "bloqueada") && "bg-slate-100 text-slate-700 border-slate-300",
                   r.status === "cancelada" && "bg-red-100 text-red-700 border-red-200"
                 )}>
-                  {r.status}
+                  {r.status === "confirmada" ? "Confirmada" : 
+                   r.status === "aprovada" ? "Aprovada" :
+                   r.status === "cancelada" ? "Cancelada" :
+                   r.status === "bloqueada" ? "Bloqueada" :
+                   r.status === "pendente" ? "Pendente" : r.status}
                 </Badge>
               )}
             </div>
@@ -107,10 +111,6 @@ const MinhasReservasPage = () => {
 
           {!isCanceled && (
             <div className="flex gap-2 mt-4 pt-4 border-t">
-              <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.info("Funcionalidade de edição em breve.")}>
-                <Edit className="mr-2 h-4 w-4" />
-                Editar
-              </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -118,7 +118,7 @@ const MinhasReservasPage = () => {
                 onClick={() => setReservaParaCancelar(r)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Cancelar
+                Cancelar reserva
               </Button>
             </div>
           )}

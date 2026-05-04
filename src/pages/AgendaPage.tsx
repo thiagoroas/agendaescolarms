@@ -16,6 +16,7 @@ import { getMockEscolas, resetMockData, getMockRecursos, getMockReservas } from 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useHorarios, HorarioEscola } from "@/hooks/useHorarios";
+import { ConfirmCancelModal } from "@/components/reservas/ConfirmCancelModal";
 import { diasSemana } from "../data/horarios";
 import { toast } from "sonner";
 import NovaReservaModal from "../components/reservas/NovaReservaModal";
@@ -203,23 +204,13 @@ const AgendaPage = () => {
     }
   };
 
-  const handleExcluirReserva = async (reservaId: string) => {
-    const reservaParaExcluir = reservasState.find(r => r.id === reservaId);
-    if (!reservaParaExcluir) return;
+  const [reservaParaCancelar, setReservaParaCancelar] = useState<Reserva | null>(null);
+  const [cancelando, setCancelando] = useState(false);
 
-    // Verificar permissões
-    const canDelete = 
-      profile?.role === 'admin_plataforma' || 
-      (profile?.role === 'admin_lab' && reservaParaExcluir.escola_id === profile.escola_id) ||
-      (profile?.role === 'professor' && reservaParaExcluir.profile_id === user?.id);
-
-    if (!canDelete) {
-      toast.error("Você não tem permissão para excluir esta reserva.");
-      return;
-    }
-
-    if (window.confirm("Tem certeza que deseja cancelar esta reserva?")) {
-      await cancelReserva(reservaId);
+  const handleExcluirReserva = (reservaId: string) => {
+    const r = reservasState.find(res => res.id === reservaId);
+    if (r) {
+      setReservaParaCancelar(r);
       setIsModalDetalhesOpen(false);
     }
   };
@@ -634,6 +625,22 @@ const AgendaPage = () => {
         recursos={schoolRecursosList}
         escolas={schoolEscolas}
         selectedEscolaId={currentSchoolId}
+      />
+      <ConfirmCancelModal
+        isOpen={!!reservaParaCancelar}
+        onClose={() => setReservaParaCancelar(null)}
+        loading={cancelando}
+        onConfirm={async (motivo) => {
+          if (reservaParaCancelar) {
+            setCancelando(true);
+            try {
+              await cancelReserva(reservaParaCancelar.id, motivo);
+            } finally {
+              setCancelando(false);
+              setReservaParaCancelar(null);
+            }
+          }
+        }}
       />
     </div>
   );
