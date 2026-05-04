@@ -312,6 +312,26 @@ const AgendaPage = () => {
       <div className="toolbar w-full box-border">
         {isMobile ? (
           <div className="flex flex-col gap-3 w-full">
+            <div className="flex bg-slate-100 p-1 rounded-xl w-full mb-1">
+              <button 
+                className={cn(
+                  "flex-1 py-2 text-xs font-bold rounded-lg transition-all",
+                  mobileView === "dia" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500"
+                )}
+                onClick={() => setMobileView("dia")}
+              >
+                Dia
+              </button>
+              <button 
+                className={cn(
+                  "flex-1 py-2 text-xs font-bold rounded-lg transition-all",
+                  mobileView === "semana" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500"
+                )}
+                onClick={() => setMobileView("semana")}
+              >
+                Semana
+              </button>
+            </div>
             <div className="relative w-full">
               <select 
                 className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500 appearance-none shadow-sm"
