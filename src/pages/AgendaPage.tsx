@@ -519,9 +519,9 @@ const AgendaPage = () => {
         ) : (
           <div className="mobile-timeline">
             <div className="mobile-day-header">
-              <div className="flex items-center gap-3">
-                <CalendarIcon size={20} className="text-blue-600" />
-                <span className="mobile-day-label">
+              <div className="flex items-center gap-3 min-w-0">
+                <CalendarIcon size={20} className="text-blue-600 shrink-0" />
+                <span className="mobile-day-label truncate">
                   {format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
                 </span>
               </div>
