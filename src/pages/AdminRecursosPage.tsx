@@ -321,6 +321,81 @@ const AdminRecursosPage = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <AlertDialogContent className="rounded-3xl border-none shadow-2xl max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-500" />
+              {deleteStats?.total > 0 ? "Inativar Recurso?" : "Excluir Recurso?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="font-medium text-slate-500 space-y-4 pt-2">
+              {isLoadingStats ? (
+                <div className="flex items-center gap-2 py-4">
+                  <div className="h-4 w-4 border-2 border-blue-600 border-t-transparent animate-spin rounded-full"></div>
+                  Verificando histórico...
+                </div>
+              ) : deleteStats?.total > 0 ? (
+                <>
+                  <p>Este recurso possui histórico de uso e não pode ser excluído definitivamente:</p>
+                  <div className="bg-slate-50 p-4 rounded-2xl space-y-1 text-xs font-bold uppercase tracking-wider">
+                    <div className="flex justify-between">
+                      <span>Confirmadas:</span>
+                      <span className="text-blue-600">{deleteStats.confirmada}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Canceladas:</span>
+                      <span className="text-slate-400">{deleteStats.cancelada}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Manutenção:</span>
+                      <span className="text-amber-500">{deleteStats.manutencao}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-slate-200 mt-2 pt-2">
+                      <span>Futuras:</span>
+                      <span className="text-emerald-500">{deleteStats.futuras}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Passadas:</span>
+                      <span className="text-slate-500">{deleteStats.passadas}</span>
+                    </div>
+                  </div>
+                  <p className="text-amber-600 text-xs font-black uppercase">
+                    Recomendação: Inativar o recurso para preservar o histórico.
+                  </p>
+                </>
+              ) : (
+                <p>Este recurso não possui reservas vinculadas e pode ser removido permanentemente.</p>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="pt-6">
+            <AlertDialogCancel className="rounded-xl font-bold uppercase tracking-widest text-[10px] h-10">Cancelar</AlertDialogCancel>
+            {deleteStats?.total > 0 ? (
+              <AlertDialogAction 
+                onClick={() => {
+                  if (recursoToDelete?.id) toggleRecursoAtivo(recursoToDelete.id, true);
+                  setIsDeleteModalOpen(false);
+                }} 
+                className="bg-amber-500 hover:bg-amber-600 rounded-xl font-bold uppercase tracking-widest text-[10px] h-10 px-6"
+              >
+                Inativar Recurso
+              </AlertDialogAction>
+            ) : (
+              <AlertDialogAction 
+                disabled={isLoadingStats}
+                onClick={() => {
+                  if (recursoToDelete?.id) deleteRecurso(recursoToDelete.id);
+                  setIsDeleteModalOpen(false);
+                }} 
+                className="bg-red-500 hover:bg-red-600 rounded-xl font-bold uppercase tracking-widest text-[10px] h-10 px-6"
+              >
+                Excluir Definitivamente
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
