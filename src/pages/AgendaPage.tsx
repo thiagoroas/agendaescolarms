@@ -124,15 +124,16 @@ const AgendaPage = () => {
   const monday = useMemo(() => startOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate]);
   const weekDates = useMemo(() => Array.from({ length: 5 }, (_, i) => addDays(monday, i)), [monday]);
 
-  const navigateWeek = (direction: 'prev' | 'next') => {
+  const navigateDate = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => {
-      // No mobile visualização 'dia', navega dia a dia.
-      // No mobile visualização 'semana' ou no desktop, navega semana a semana (7 dias).
-      const step = (isMobile && mobileView === "dia") ? 1 : 7;
+      // No modo "dia", navega dia a dia.
+      // No modo "semana", navega semana a semana (7 dias).
+      const isSemanaMode = !isMobile || (isMobile && mobileView === "semana");
+      const step = isSemanaMode ? 7 : 1;
       let nextDate = addDays(prev, direction === 'prev' ? -step : step);
       
-      // Se estiver no mobile, vamos pular finais de semana para ser mais fluido na rotina escolar
-      if (isMobile) {
+      // Pular finais de semana para ser mais fluido na rotina escolar (opcional, mas mantido se já estava assim)
+      if (!isSemanaMode) {
         if (nextDate.getDay() === 0) { // Domingo
           nextDate = addDays(nextDate, direction === 'prev' ? -2 : 1);
         } else if (nextDate.getDay() === 6) { // Sábado
@@ -248,11 +249,11 @@ const AgendaPage = () => {
             <span className="truncate max-w-[150px]">{escola?.nome}</span>
             <span className="dot hidden sm:block" />
             <span className="font-bold text-slate-900 truncate">
-              {isMobile 
-                ? (mobileView === "dia" 
-                    ? format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR }) 
-                    : weekLabel)
-                : weekLabel}
+              {isMobile || !isMobile ? (
+                (!isMobile || mobileView === "semana") 
+                  ? `Semana de ${format(monday, "d", { locale: ptBR })} a ${format(weekDates[4], "d 'de' MMMM", { locale: ptBR })}`
+                  : format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })
+              ) : weekLabel}
             </span>
           </div>
         </div>
@@ -278,10 +279,20 @@ const AgendaPage = () => {
           </Popover>
 
           <div className="flex items-center gap-1">
-            <button className="btn-icon" onClick={() => navigateWeek('prev')} aria-label={(isMobile && mobileView === "dia") ? "Dia anterior" : "Semana anterior"}>
+            <button 
+              className="btn-icon" 
+              onClick={() => navigateDate('prev')} 
+              aria-label={(!isMobile || (isMobile && mobileView === "semana")) ? "Semana anterior" : "Dia anterior"}
+              title={(!isMobile || (isMobile && mobileView === "semana")) ? "Semana anterior" : "Dia anterior"}
+            >
               <ChevronLeft size={16} />
             </button>
-            <button className="btn-icon" onClick={() => navigateWeek('next')} aria-label={(isMobile && mobileView === "dia") ? "Próximo dia" : "Próxima semana"}>
+            <button 
+              className="btn-icon" 
+              onClick={() => navigateDate('next')} 
+              aria-label={(!isMobile || (isMobile && mobileView === "semana")) ? "Próximo dia" : "Próxima semana"}
+              title={(!isMobile || (isMobile && mobileView === "semana")) ? "Próxima semana" : "Próximo dia"}
+            >
               <ChevronRight size={16} />
             </button>
           </div>
@@ -310,99 +321,111 @@ const AgendaPage = () => {
 
       {/* Toolbar */}
       <div className="toolbar w-full box-border">
-        {isMobile ? (
-          <div className="flex flex-col gap-3 w-full">
-            <div className="flex bg-slate-100 p-1 rounded-xl w-full mb-1">
-              <button 
-                className={cn(
-                  "flex-1 py-2 text-xs font-bold rounded-lg transition-all",
-                  mobileView === "dia" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500"
-                )}
-                onClick={() => setMobileView("dia")}
-              >
-                Dia
-              </button>
-              <button 
-                className={cn(
-                  "flex-1 py-2 text-xs font-bold rounded-lg transition-all",
-                  mobileView === "semana" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500"
-                )}
-                onClick={() => setMobileView("semana")}
-              >
-                Semana
-              </button>
+        <div className="flex flex-col gap-3 w-full">
+          <div className="flex bg-slate-100 p-1 rounded-xl w-full mb-1">
+            <button 
+              className={cn(
+                "flex-1 py-2 text-xs font-bold rounded-lg transition-all",
+                (isMobile && mobileView === "dia") ? "bg-white text-blue-600 shadow-sm" : "text-slate-500"
+              )}
+              onClick={() => setMobileView("dia")}
+            >
+              Dia
+            </button>
+            <button 
+              className={cn(
+                "flex-1 py-2 text-xs font-bold rounded-lg transition-all",
+                (!isMobile || (isMobile && mobileView === "semana")) ? "bg-white text-blue-600 shadow-sm" : "text-slate-500"
+              )}
+              onClick={() => setMobileView("semana")}
+            >
+              Semana
+            </button>
+          </div>
+          {isMobile && mobileView === "semana" && (
+            <div className="px-1 -mt-2 mb-1">
+              <p className="text-[10px] text-slate-500 flex items-center gap-1">
+                <Info size={10} className="text-blue-500" />
+                Use a visão Dia para navegar dia por dia.
+              </p>
             </div>
-            <div className="relative w-full">
-              <select 
-                className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500 appearance-none shadow-sm"
-                value={selectedRecurso || ""}
-                onChange={(e) => setSelectedRecurso(e.target.value || null)}
-              >
-                <option value="">Filtrar recurso: Todos</option>
-                {schoolRecursos.map(r => (
-                  <option key={r.id} value={r.id}>
-                    {r.nome}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                <ChevronDown size={18} />
+          )}
+          {isMobile ? (
+            <div className="flex flex-col gap-3">
+              <div className="relative w-full">
+                <select 
+                  className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500 appearance-none shadow-sm"
+                  value={selectedRecurso || ""}
+                  onChange={(e) => setSelectedRecurso(e.target.value || null)}
+                >
+                  <option value="">Filtrar recurso: Todos</option>
+                  {schoolRecursos.map(r => (
+                    <option key={r.id} value={r.id}>
+                      {r.nome}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <ChevronDown size={18} />
+                </div>
+              </div>
+
+              <div className="search w-full relative">
+                <span className="search-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <Search size={16} />
+                </span>
+                <input
+                  className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:border-blue-500 shadow-sm"
+                  placeholder="Buscar professor, turma…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
             </div>
-
-            <div className="search w-full relative">
-              <span className="search-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                <Search size={16} />
-              </span>
-              <input
-                className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:border-blue-500 shadow-sm"
-                placeholder="Buscar professor, turma…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2 w-full sm:w-auto">
-              <button
-                className={`chip ${!selectedRecurso ? 'active' : ''}`}
-                onClick={() => setSelectedRecurso(null)}
-              >
-                Todos
-              </button>
-              {schoolRecursos.map(r => (
+          ) : (
+            <div className="flex items-center justify-between gap-4 w-full">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2 w-full sm:w-auto">
                 <button
-                  key={r.id}
-                  className={`chip ${selectedRecurso === r.id ? 'active' : ''}`}
-                  onClick={() => setSelectedRecurso(r.id)}
+                  className={`chip ${!selectedRecurso ? 'active' : ''}`}
+                  onClick={() => setSelectedRecurso(null)}
                 >
-                  <span className="chip-dot" style={{ background: r.cor_borda }} />
-                  {r.nome}
+                  Todos
                 </button>
-              ))}
+                {schoolRecursos.map(r => (
+                  <button
+                    key={r.id}
+                    className={`chip ${selectedRecurso === r.id ? 'active' : ''}`}
+                    onClick={() => setSelectedRecurso(r.id)}
+                  >
+                    <span className="chip-dot" style={{ background: r.cor_borda }} />
+                    {r.nome}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="toolbar-divider" />
+
+                <div className="search w-full sm:w-auto mt-2 sm:mt-0">
+                  <span className="search-icon"><Search size={14} /></span>
+                  <input
+                    className="w-full sm:w-[220px]"
+                    placeholder="Buscar professor, turma…"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
+          )}
 
-            <div className="toolbar-divider" />
-
-            <div className="search w-full sm:w-auto mt-2 sm:mt-0">
-              <span className="search-icon"><Search size={14} /></span>
-              <input
-                className="w-full sm:w-[220px]"
-                placeholder="Buscar professor, turma…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+          <div className="toolbar-meta">
+            <span><strong>{filteredReservationsCount}</strong> reservas</span>
+            <div className="legend">
+              <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--accent-blue)' }} />Lab</span>
+              <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--accent-green)' }} />Projetor</span>
+              <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--danger)' }} />Conflito</span>
             </div>
-          </>
-        )}
-
-        <div className="toolbar-meta">
-          <span><strong>{filteredReservationsCount}</strong> reservas</span>
-          <div className="legend">
-            <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--accent-blue)' }} />Lab</span>
-            <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--accent-green)' }} />Projetor</span>
-            <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--danger)' }} />Conflito</span>
           </div>
         </div>
       </div>
