@@ -35,7 +35,8 @@ const AdminProfessoresPage = () => {
   const [papel, setPapel] = useState<"professor" | "admin_lab">("professor");
   const [escolaId, setEscolaId] = useState("");
   const [disciplinas, setDisciplinas] = useState("");
-  const [status, setStatus] = useState<"ativo" | "pendente" | "bloqueado">("ativo");
+  const [status, setStatus] = useState<"ativo" | "pendente" | "bloqueado" | "removido">("ativo");
+  const [statusFilter, setStatusFilter] = useState<string>("ativos");
 
   const fetchUsers = async () => {
     if (isSupabaseConfigured) {
