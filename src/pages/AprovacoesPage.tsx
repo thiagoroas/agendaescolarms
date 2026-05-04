@@ -100,29 +100,23 @@ const AprovacoesPage = () => {
       .sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula);
   }, [reservasEscola, hojeStr, searchTerm]);
 
-  const handleCancelarReserva = (id: string) => {
+  const handleCancelarReserva = async (id: string) => {
     if (window.confirm("Deseja realmente cancelar esta reserva?")) {
-      const novasReservas = reservas.map(r => 
-        r.id === id ? { ...r, status: "cancelada" as any } : r
-      );
-      setReservas(novasReservas);
-      saveMockReservas(novasReservas);
-      toast.success("Reserva cancelada com sucesso!");
+      await cancelReserva(id);
     }
   };
 
-  const handleBloquearHorario = () => {
+  const handleBloquearHorario = async () => {
     if (!manutencaoData.recursoId || !manutencaoData.data || !manutencaoData.aula || !manutencaoData.motivo) {
       toast.error("Preencha todos os campos para o bloqueio.");
       return;
     }
 
     const h = horarios.find(hour => hour.ordem === Number(manutencaoData.aula));
-    const novaManutencao: Reserva = {
-      id: `mnt-${Date.now()}`,
+    const novaManutencao: Omit<Reserva, "id" | "criado_em"> = {
       escola_id: currentEscolaId || "",
       recurso_id: manutencaoData.recursoId,
-      profile_id: "admin",
+      profile_id: user?.id || "admin",
       nome_professor: "Manutenção",
       disciplina: "Bloqueio",
       turma: "N/A",
@@ -131,22 +125,53 @@ const AprovacoesPage = () => {
       aula: Number(manutencaoData.aula),
       horario: h ? `${h.hora_inicio.substring(0, 5)} – ${h.hora_fim.substring(0, 5)}` : "",
       observacao: manutencaoData.motivo,
-      status: "manutencao" as any,
-      criado_em: new Date().toISOString()
+      status: "manutencao" as any
     };
 
-    const novasReservas = [...reservas, novaManutencao];
-    setReservas(novasReservas);
-    saveMockReservas(novasReservas);
-    toast.success("Horário bloqueado para manutenção!");
-    setIsManutencaoModalOpen(false);
-    setManutencaoData(prev => ({ ...prev, motivo: "" }));
+    const result = await createReserva(novaManutencao);
+    if (result) {
+      setIsManutencaoModalOpen(false);
+      setManutencaoData(prev => ({ ...prev, motivo: "" }));
+    }
   };
 
-  const recursosEscola = recursos.filter(r => r.escola_id === currentEscolaId);
+  const recursosEscola = allRecursos.filter(r => r.escola_id === currentEscolaId);
 
   return (
     <div className="space-y-8 pb-20 md:pb-8 animate-in fade-in duration-500">
+      {/* Painel de Diagnóstico (Debug) - Visível apenas para Admin Lab/Plataforma */}
+      {(profile?.role === 'admin_lab' || profile?.role === 'admin_plataforma') && (
+        <div className="bg-slate-50 border border-slate-200 rounded-3xl p-4 text-[10px] font-mono space-y-2">
+          <div className="flex items-center gap-2 text-slate-500 mb-1">
+            <Info size={12} />
+            <span className="font-bold uppercase tracking-wider">Debug: Central do Laboratório</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <p className="text-slate-400">Escola ID:</p>
+              <p className="truncate font-bold text-blue-600" title={currentEscolaId || "Nenhum"}>
+                {currentEscolaId || "Nenhum"}
+              </p>
+            </div>
+            <div>
+              <p className="text-slate-400">Total Bruto:</p>
+              <p className="font-bold">{allReservas.length}</p>
+            </div>
+            <div>
+              <p className="text-slate-400">Hoje (Filt):</p>
+              <p className="font-bold text-emerald-600">{reservasHoje.length}</p>
+            </div>
+            <div>
+              <p className="text-slate-400">Futuro (Filt):</p>
+              <p className="font-bold text-emerald-600">{proximasReservas.length}</p>
+            </div>
+          </div>
+          <p className="text-[9px] text-slate-400 pt-1 border-t border-slate-200">
+            Fonte: {isSupabaseConfigured ? "Supabase (useReservas)" : "Mock Data"} · Rota: /admin/aprovacoes
+          </p>
+        </div>
+      )}
+
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Central do Laboratório</h1>
@@ -178,9 +203,13 @@ const AprovacoesPage = () => {
               <Clock className="text-blue-500" size={16} /> Reservas de Hoje
             </h2>
             <div className="grid gap-4">
-              {reservasHoje.length > 0 ? (
+              {loadingReservas ? (
+                <div className="bg-slate-50 border border-slate-100 rounded-3xl p-10 text-center animate-pulse">
+                  <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Carregando reservas...</p>
+                </div>
+              ) : reservasHoje.length > 0 ? (
                 reservasHoje.map((r) => {
-                  const rec = recursos.find(rec => rec.id === r.recurso_id);
+                  const rec = allRecursos.find(rec => rec.id === r.recurso_id);
                   return (
                     <div key={r.id} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col sm:flex-row items-center gap-4 transition-all hover:shadow-md">
                       <div className="h-12 w-12 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center justify-center shrink-0">
