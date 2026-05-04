@@ -519,9 +519,9 @@ const AgendaPage = () => {
         ) : (
           <div className="mobile-timeline">
             <div className="mobile-day-header">
-              <div className="flex items-center gap-3">
-                <CalendarIcon size={20} className="text-blue-600" />
-                <span className="mobile-day-label">
+              <div className="flex items-center gap-3 min-w-0">
+                <CalendarIcon size={20} className="text-blue-600 shrink-0" />
+                <span className="mobile-day-label truncate">
                   {format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
                 </span>
               </div>
@@ -555,10 +555,10 @@ const AgendaPage = () => {
                           <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo), width: '22px', height: '22px', fontSize: '10px' }}>
                             {initialsOf(reserva.nome_professor)}
                           </span>
-                          <span className="text-[13px] font-bold text-slate-900 leading-none">{reserva.nome_professor}</span>
+                          <span className="text-[13px] font-bold text-slate-900 leading-none truncate block">{reserva.nome_professor}</span>
                         </div>
-                        <div className="flex items-center gap-3 mt-auto">
-                          <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md">{reserva.turma}</span>
+                        <div className="flex items-center gap-2 mt-auto min-w-0">
+                          <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md shrink-0">{reserva.turma}</span>
                           <span className="text-[11px] font-medium text-slate-500 truncate">• {recurso.nome}</span>
                         </div>
                       </button>
