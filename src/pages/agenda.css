@@ -157,6 +157,8 @@
   background: var(--bg-elevated);
   flex-wrap: wrap;
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 .agenda-proto .chip {
   display: inline-flex;
@@ -220,12 +222,14 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 .agenda-proto .toolbar-meta strong { color: var(--text); font-weight: 600; }
 .agenda-proto .legend {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 .agenda-proto .legend-item {
   display: inline-flex;
@@ -499,32 +503,49 @@
     align-items: flex-start;
     padding: 16px;
     gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .agenda-proto .topbar-actions {
     width: 100%;
     margin-left: 0;
-    justify-content: space-between;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .agenda-proto .toolbar {
     padding: 12px 16px;
     gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .agenda-proto .toolbar-meta {
     width: 100%;
     margin-left: 0;
     justify-content: space-between;
-    padding-top: 8px;
+    padding-top: 12px;
     border-top: 1px solid var(--border);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .agenda-proto .legend {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
   }
 
   .agenda-proto .calendar-wrap {
     padding: 12px 16px 80px;
-    overflow-x: hidden;
     width: 100%;
     box-sizing: border-box;
+    overflow-x: hidden;
   }
 
   .agenda-proto .calendar {
@@ -533,7 +554,6 @@
     border: none;
     box-shadow: none;
     background: transparent;
-    overflow-x: hidden;
   }
 }
 

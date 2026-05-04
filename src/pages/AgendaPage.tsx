@@ -220,13 +220,13 @@ const AgendaPage = () => {
   return (
     <div className="agenda-proto overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-8 flex-1 flex flex-col min-h-0">
       {/* Topbar */}
-      <div className="topbar">
-        <div className="flex-1">
-          <div className="topbar-title">Agenda Escolar Digital</div>
-          <div className="topbar-sub flex flex-wrap gap-x-3">
-            <span className="truncate">{escola?.nome}</span>
+      <div className="topbar w-full box-border overflow-hidden">
+        <div className="flex-1 min-w-0">
+          <div className="topbar-title truncate">Agenda Escolar Digital</div>
+          <div className="topbar-sub flex flex-wrap gap-x-3 min-w-0">
+            <span className="truncate max-w-[150px]">{escola?.nome}</span>
             <span className="dot hidden sm:block" />
-            <span className="font-bold text-slate-900 whitespace-nowrap">{isMobile ? format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR }) : weekLabel}</span>
+            <span className="font-bold text-slate-900 truncate">{isMobile ? format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR }) : weekLabel}</span>
           </div>
         </div>
         <div className="topbar-actions">
@@ -282,8 +282,8 @@ const AgendaPage = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="toolbar">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-2 px-2 w-full sm:w-auto">
+      <div className="toolbar w-full box-border overflow-hidden">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2 w-full sm:w-auto">
           <button
             className={`chip ${!selectedRecurso ? 'active' : ''}`}
             onClick={() => setSelectedRecurso(null)}
@@ -518,10 +518,10 @@ const AgendaPage = () => {
           </div>
         ) : (
           <div className="mobile-timeline">
-            <div className="mobile-day-header">
-              <div className="flex items-center gap-3 min-w-0">
-                <CalendarIcon size={20} className="text-blue-600 shrink-0" />
-                <span className="mobile-day-label truncate">
+            <div className="mobile-day-header w-full box-border">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <CalendarIcon size={18} className="text-blue-600 shrink-0" />
+                <span className="mobile-day-label truncate text-sm sm:text-base">
                   {format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
                 </span>
               </div>
