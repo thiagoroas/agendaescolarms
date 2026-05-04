@@ -139,38 +139,19 @@ const AprovacoesPage = () => {
 
   return (
     <div className="space-y-8 pb-20 md:pb-8 animate-in fade-in duration-500">
-      {/* Painel de Diagnóstico (Debug) - Visível apenas para Admin Lab/Plataforma */}
-      {(profile?.role === 'admin_lab' || profile?.role === 'admin_plataforma') && (
-        <div className="bg-slate-50 border border-slate-200 rounded-3xl p-4 text-[10px] font-mono space-y-2">
-          <div className="flex items-center gap-2 text-slate-500 mb-1">
-            <Info size={12} />
-            <span className="font-bold uppercase tracking-wider">Debug: Central do Laboratório</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div>
-              <p className="text-slate-400">Escola ID:</p>
-              <p className="truncate font-bold text-blue-600" title={currentEscolaId || "Nenhum"}>
-                {currentEscolaId || "Nenhum"}
-              </p>
-            </div>
-            <div>
-              <p className="text-slate-400">Total Bruto:</p>
-              <p className="font-bold">{allReservas.length}</p>
-            </div>
-            <div>
-              <p className="text-slate-400">Hoje (Filt):</p>
-              <p className="font-bold text-emerald-600">{reservasHoje.length}</p>
-            </div>
-            <div>
-              <p className="text-slate-400">Futuro (Filt):</p>
-              <p className="font-bold text-emerald-600">{proximasReservas.length}</p>
-            </div>
-          </div>
-          <p className="text-[9px] text-slate-400 pt-1 border-t border-slate-200">
-            Fonte: {isSupabaseConfigured ? "Supabase (useReservas)" : "Mock Data"} · Rota: {window.location.pathname}
-          </p>
-        </div>
-      )}
+      {/* Debug logs em ambiente de desenvolvimento */}
+      {useEffect(() => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log("[CENTRAL LAB DEBUG]", {
+            escolaId: currentEscolaId,
+            totalBruto: allReservas.length,
+            hoje: reservasHoje.length,
+            futuro: proximasReservas.length,
+            isSupabase: isSupabaseConfigured
+          });
+        }
+      }, [allReservas, reservasHoje, proximasReservas, currentEscolaId])}
+
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
         <div>
