@@ -247,7 +247,13 @@ const AgendaPage = () => {
           <div className="topbar-sub flex flex-wrap gap-x-3 min-w-0">
             <span className="truncate max-w-[150px]">{escola?.nome}</span>
             <span className="dot hidden sm:block" />
-            <span className="font-bold text-slate-900 truncate">{isMobile ? format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR }) : weekLabel}</span>
+            <span className="font-bold text-slate-900 truncate">
+              {isMobile 
+                ? (mobileView === "dia" 
+                    ? format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR }) 
+                    : weekLabel)
+                : weekLabel}
+            </span>
           </div>
         </div>
         <div className="topbar-actions">
