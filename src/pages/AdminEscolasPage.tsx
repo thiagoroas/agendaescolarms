@@ -99,19 +99,38 @@ const AdminEscolasPage = () => {
     setLoadingStats(false);
   };
 
+  const handleTestDeleteClick = async (escola: Escola) => {
+    setEscolaToDelete(escola);
+    setIsTestDeleteModalOpen(true);
+    setConfirmName("");
+    setLoadingStats(true);
+    const s = await getEscolaStats(escola.id);
+    setStats(s);
+    setLoadingStats(false);
+  };
+
   const handleConfirmDelete = async () => {
     if (!escolaToDelete) return;
-    
-    // Verificar se possui apenas horários (seria bom ter essa info do hook, mas o hook já trata)
-    // A UI pode apenas reforçar a mensagem dependendo do que o hook retornar ou do estado local
     setIsDeleting(true);
     const success = await deleteEscola(escolaToDelete.id);
     setIsDeleting(false);
-    
     if (success) {
       setIsDeleteModalOpen(false);
       setEscolaToDelete(null);
       setStats(null);
+    }
+  };
+
+  const handleConfirmTestDelete = async () => {
+    if (!escolaToDelete || confirmName !== escolaToDelete.nome) return;
+    setIsDeleting(true);
+    const success = await deleteEscolaTeste(escolaToDelete.id);
+    setIsDeleting(false);
+    if (success) {
+      setIsTestDeleteModalOpen(false);
+      setEscolaToDelete(null);
+      setStats(null);
+      setConfirmName("");
     }
   };
 
