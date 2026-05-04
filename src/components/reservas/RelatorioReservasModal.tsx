@@ -115,7 +115,6 @@ const RelatorioReservasModal: React.FC<RelatorioReservasModalProps> = ({
               <tbody className="divide-y divide-slate-100">
                 {filteredReservas.length > 0 ? (
                   filteredReservas.map((reserva) => {
-                    const recurso = recursos.find(r => r.id === reserva.recurso_id);
                     const horario = horarios.find(h => h.ordem === reserva.aula);
                     
                     return (
@@ -128,7 +127,7 @@ const RelatorioReservasModal: React.FC<RelatorioReservasModalProps> = ({
                           <div className="text-[10px] text-slate-400">{horario?.hora_inicio?.substring(0, 5)}</div>
                         </td>
                         <td className="py-3 px-2 text-xs font-semibold text-slate-900">
-                          {recurso?.nome || 'N/A'}
+                          {(reserva as any).recursosList?.join('; ') || 'N/A'}
                         </td>
                         <td className="py-3 px-2 text-xs text-slate-700">
                           {reserva.nome_professor}
