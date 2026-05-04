@@ -72,6 +72,7 @@ const AgendaPage = () => {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const onlyBlocks = searchParams.get("view") === "blocks";
   const [isMobile, setIsMobile] = useState(false);
+  const [mobileView, setMobileView] = useState<"dia" | "semana">("dia");
   const { reservas: reservasState, cancelReserva, refresh: refreshReservas, error: errorReservas } = useReservas();
   const { recursos: schoolRecursos, loading: loadingRecursos, error: errorRecursos } = useRecursos();
   const { avisos: avisosState, loading: loadingAvisos, error: errorAvisos } = useAvisos();
