@@ -128,13 +128,13 @@ const AgendaPage = () => {
     });
   };
 
-  const getReservaForSlot = (date: Date, aula: number) => {
-    if (!date) return null;
+  const getReservasForSlot = (date: Date, aula: number) => {
+    if (!date) return [];
     const dateStr = format(date, "yyyy-MM-dd");
 
-    if (isSupabaseConfigured && !isValidUUID(currentSchoolId)) return null;
+    if (isSupabaseConfigured && !isValidUUID(currentSchoolId)) return [];
 
-    return reservasState.find(r =>
+    return reservasState.filter(r =>
       r.data === dateStr &&
       r.aula === aula &&
       r.escola_id === currentSchoolId &&
