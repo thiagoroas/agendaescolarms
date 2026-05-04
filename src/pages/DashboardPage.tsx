@@ -331,6 +331,7 @@ const DashboardPage = () => {
             {proximasReservas.length > 0 ? (
               proximasReservas.map(res => {
                 const rec = todosRecursos.find(r => r.id === res.recurso_id);
+                const isProfessor = profile?.role === "professor";
                 return (
                   <Card key={res.id} className="rounded-2xl border-slate-100 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-50 transition-all group">
                     <CardContent className="p-4 flex items-center gap-4">
@@ -354,7 +355,7 @@ const DashboardPage = () => {
                         </p>
                       </div>
                       
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600" onClick={() => navigate(profile?.role === "professor" ? "/minhas-reservas" : "/admin/reservas")}>
+                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600" onClick={() => navigate(isProfessor ? "/minhas-reservas" : "/admin/reservas")}>
                         <ChevronRight className="h-5 w-5" />
                       </Button>
                     </CardContent>
