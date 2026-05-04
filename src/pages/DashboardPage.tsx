@@ -150,22 +150,31 @@ const DashboardPage = () => {
     return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, limit);
   }, [reservationsSource, hojeStr, profile?.role, user?.id]);
 
+  const debugData = useMemo(() => {
+    return {
+      email: user?.email,
+      role: profile?.role,
+      profileId: user?.id,
+      profileEscolaId: profile?.escola_id,
+      selectedEscolaId: selectedEscolaId,
+      escolaIdFinalUsado: currentEscolaId,
+      hojeLocal: hojeStr,
+      totalReservasBrutas: reservationsSource.length,
+      statusEncontrados: statusEncontrados,
+      datasEncontradas: Array.from(new Set(reservationsSource.map(r => r.data.split('T')[0]))).sort(),
+      reservasHojeBrutas: reservationsSource.filter(r => r.data.split('T')[0] === hojeStr).length,
+      reservasHojeFiltradas: reservasHoje.length,
+      reservasFuturasBrutas: reservationsSource.filter(r => r.data.split('T')[0] > hojeStr).length,
+      reservasFuturasFiltradas: proximasReservas.length,
+      primeiraReserva: reservationsSource[0] || null
+    };
+  }, [user, profile, selectedEscolaId, currentEscolaId, hojeStr, reservationsSource, statusEncontrados, reservasHoje, proximasReservas]);
+
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log("[CENTRAL LAB] profile.role:", profile?.role);
-      console.log("[CENTRAL LAB] profile.escola_id:", profile?.escola_id);
-      console.log("[CENTRAL LAB] selectedEscolaId:", selectedEscolaId);
-      console.log("[CENTRAL LAB] escolaIdFinalUsado:", currentEscolaId);
-      console.log("[CENTRAL LAB] hojeLocal:", hojeStr);
-      console.log("[CENTRAL LAB] totalReservasCarregadas (raw):", reservationsSource.length);
-      console.log("[CENTRAL LAB] statusEncontrados:", statusEncontrados);
-      console.log("[CENTRAL LAB] reservasHojeFiltradas:", reservasHoje.length);
-      console.log("[CENTRAL LAB] reservasFuturasFiltradas:", proximasReservas.length);
-      if (reservasHoje.length > 0) {
-        console.log("[CENTRAL LAB] primeiraReservaExemplo:", reservasHoje[0]);
-      }
+      console.log("[CENTRAL LAB DEBUG]", debugData);
     }
-  }, [profile?.role, profile?.escola_id, selectedEscolaId, currentEscolaId, hojeStr, reservationsSource, statusEncontrados, reservasHoje, proximasReservas]);
+  }, [debugData]);
 
   const alertas = useMemo(() => {
     return reservationsSource.filter(r => 
