@@ -257,10 +257,12 @@ const AdminProfessoresPage = () => {
           <h1 className="text-2xl font-bold text-slate-900">Usuários do Sistema</h1>
           <p className="text-sm text-slate-500">Gerencie professores e administradores de laboratório.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => openModal()}>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Novo Usuário
-        </Button>
+        {(isAdminPlataforma || (isAdminLab && activeTab === "professores")) && (
+          <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => openModal()}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Novo {activeTab === "professores" ? "Professor" : "Administrador"}
+          </Button>
+        )}
       </header>
 
 
