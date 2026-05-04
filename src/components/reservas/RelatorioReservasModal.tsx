@@ -32,14 +32,31 @@ const RelatorioReservasModal: React.FC<RelatorioReservasModalProps> = ({
   const escola = escolas.find(e => e.id === selectedEscolaId);
   
   const filteredReservas = useMemo(() => {
-    return reservas
+    // Agrupa reservas do mesmo professor, data, aula, turma e disciplina
+    const grouped: Record<string, Reserva & { recursosList: string[] }> = {};
+
+    reservas
       .filter(r => !selectedEscolaId || r.escola_id === selectedEscolaId)
-      .sort((a, b) => {
-        // Sort by date, then by aula
-        if (a.data !== b.data) return a.data.localeCompare(b.data);
-        return a.aula - b.aula;
+      .forEach(res => {
+        const key = `${res.data}-${res.aula}-${res.profile_id}-${res.turma}-${res.disciplina}`;
+        const recurso = recursos.find(r => r.id === res.recurso_id);
+        const recursoNome = recurso?.nome || 'N/A';
+
+        if (grouped[key]) {
+          grouped[key].recursosList.push(recursoNome);
+        } else {
+          grouped[key] = {
+            ...res,
+            recursosList: [recursoNome]
+          };
+        }
       });
-  }, [reservas, selectedEscolaId]);
+
+    return Object.values(grouped).sort((a, b) => {
+      if (a.data !== b.data) return a.data.localeCompare(b.data);
+      return a.aula - b.aula;
+    });
+  }, [reservas, selectedEscolaId, recursos]);
 
   const handlePrint = () => {
     window.print();
