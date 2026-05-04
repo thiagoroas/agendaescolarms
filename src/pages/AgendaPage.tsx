@@ -126,8 +126,9 @@ const AgendaPage = () => {
 
   const navigateWeek = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => {
-      // No mobile, navega dia a dia. No desktop, navega semana a semana (7 dias).
-      const step = isMobile ? 1 : 7;
+      // No mobile visualização 'dia', navega dia a dia.
+      // No mobile visualização 'semana' ou no desktop, navega semana a semana (7 dias).
+      const step = (isMobile && mobileView === "dia") ? 1 : 7;
       let nextDate = addDays(prev, direction === 'prev' ? -step : step);
       
       // Se estiver no mobile, vamos pular finais de semana para ser mais fluido na rotina escolar
