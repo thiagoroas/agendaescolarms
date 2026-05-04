@@ -351,38 +351,38 @@ const AgendaPage = () => {
             </div>
           )}
           {isMobile ? (
-            <>
+            <div className="flex flex-col gap-3">
               <div className="relative w-full">
-              <select 
-                className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500 appearance-none shadow-sm"
-                value={selectedRecurso || ""}
-                onChange={(e) => setSelectedRecurso(e.target.value || null)}
-              >
-                <option value="">Filtrar recurso: Todos</option>
-                {schoolRecursos.map(r => (
-                  <option key={r.id} value={r.id}>
-                    {r.nome}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                <ChevronDown size={18} />
+                <select 
+                  className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500 appearance-none shadow-sm"
+                  value={selectedRecurso || ""}
+                  onChange={(e) => setSelectedRecurso(e.target.value || null)}
+                >
+                  <option value="">Filtrar recurso: Todos</option>
+                  {schoolRecursos.map(r => (
+                    <option key={r.id} value={r.id}>
+                      {r.nome}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <ChevronDown size={18} />
+                </div>
+              </div>
+
+              <div className="search w-full relative">
+                <span className="search-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <Search size={16} />
+                </span>
+                <input
+                  className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:border-blue-500 shadow-sm"
+                  placeholder="Buscar professor, turma…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
             </div>
-
-            <div className="search w-full relative">
-              <span className="search-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                <Search size={16} />
-              </span>
-              <input
-                className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm outline-none focus:border-blue-500 shadow-sm"
-                placeholder="Buscar professor, turma…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-        ) : (
+          ) : (
           <>
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2 w-full sm:w-auto">
               <button
