@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { getMockReservas, saveMockReservas, getMockRecursos } from "../data/storage";
+import { useReservas } from "@/hooks/useReservas";
+import { useRecursos } from "@/hooks/useRecursos";
 import { Reserva, Recurso } from "../data/mockData";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -35,14 +36,17 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useHorarios } from "@/hooks/useHorarios";
+import { isValidUUID, isSupabaseConfigured } from "@/lib/supabase";
 
 const AprovacoesPage = () => {
-  const { profile, selectedEscolaId } = useAuth();
+  const { profile, selectedEscolaId, user } = useAuth();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isManutencaoModalOpen, setIsManutencaoModalOpen] = useState(false);
-  const [reservas, setReservas] = useState<Reserva[]>([]);
-  const [recursos, setRecursos] = useState<Recurso[]>([]);
+  
+  // Real data hooks
+  const { reservas: allReservas, cancelReserva, createReserva, loading: loadingReservas } = useReservas();
+  const { recursos: allRecursos, loading: loadingRecursos } = useRecursos();
   const { horarios } = useHorarios(selectedEscolaId || undefined);
   
   // Form para bloqueio de manutenção
@@ -54,27 +58,40 @@ const AprovacoesPage = () => {
   });
   
   const currentEscolaId = selectedEscolaId || profile?.escola_id;
-
-  useEffect(() => {
-    setReservas(getMockReservas());
-    setRecursos(getMockRecursos());
-  }, []);
-  
   const hojeStr = format(new Date(), "yyyy-MM-dd");
 
   const reservasEscola = useMemo(() => {
-    return reservas.filter(r => r.escola_id === currentEscolaId);
-  }, [reservas, currentEscolaId]);
+    if (isSupabaseConfigured && !isValidUUID(currentEscolaId)) return [];
+    return allReservas.filter(r => r.escola_id === currentEscolaId);
+  }, [allReservas, currentEscolaId]);
 
   const reservasHoje = useMemo(() => {
     return reservasEscola
-      .filter(r => r.data === hojeStr && (r.status === "confirmada" || r.status === "aprovada"))
+      .filter(r => {
+        let resData = r.data;
+        if (resData.includes('T')) resData = resData.split('T')[0];
+        else if (resData.includes(' ')) resData = resData.split(' ')[0];
+        
+        const status = String(r.status).toLowerCase();
+        const isConfirmed = ["confirmada", "confirmado", "aprovada", "aprovado", "ativo", "ativa"].includes(status);
+        
+        return resData === hojeStr && isConfirmed;
+      })
       .sort((a, b) => a.aula - b.aula);
   }, [reservasEscola, hojeStr]);
 
   const proximasReservas = useMemo(() => {
     return reservasEscola
-      .filter(r => r.data > hojeStr && (r.status === "confirmada" || r.status === "aprovada"))
+      .filter(r => {
+        let resData = r.data;
+        if (resData.includes('T')) resData = resData.split('T')[0];
+        else if (resData.includes(' ')) resData = resData.split(' ')[0];
+        
+        const status = String(r.status).toLowerCase();
+        const isConfirmed = ["confirmada", "confirmado", "aprovada", "aprovado", "ativo", "ativa", "pendente"].includes(status);
+        
+        return resData > hojeStr && isConfirmed;
+      })
       .filter(r => 
         r.nome_professor.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.disciplina.toLowerCase().includes(searchTerm.toLowerCase()) ||
