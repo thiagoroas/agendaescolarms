@@ -114,6 +114,8 @@ const DashboardPage = () => {
       (r.status === "confirmada" || r.status === "aprovada")
     );
     
+    // Admin Lab and Admin Plataforma see all school reservations for today
+    // Only teachers are limited to their own
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
     }
@@ -123,26 +125,26 @@ const DashboardPage = () => {
 
   const proximasReservas = useMemo(() => {
     let list = reservasEscola.filter(r => 
-      r.data >= hojeStr && 
-      r.status !== "cancelada" && 
-      !["manutencao", "bloqueada"].includes(r.status)
+      r.data > hojeStr && 
+      (r.status === "confirmada" || r.status === "aprovada")
     );
     
-    // Para o Dashboard, se for hoje, só mostrar se for uma aula futura? 
-    // O pedido diz: "Dashboard/Início do Professor: [...] card 'Próximas reservas' ou seção compacta mostrando no máximo as 3 próximas reservas confirmadas"
-    // E "não mostrar reservas de hoje em próximas se já estão no card de hoje"
-    // Na verdade, o dashboard atual separa reservasHoje e proximasReservas.
-    // Vamos filtrar as de hoje da lista de próximas para evitar duplicidade visual se estiverem no mesmo dashboard.
-    
-    list = list.filter(r => r.data > hojeStr);
-
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
     }
     
-    const limit = profile?.role === "professor" ? 3 : 5;
+    const limit = profile?.role === "professor" ? 3 : 10;
     return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, limit);
   }, [reservasEscola, hojeStr, profile?.role, user?.id]);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log("[CENTRAL LAB] escola_id usado:", currentEscolaId);
+      console.log("[CENTRAL LAB] hoje calculado:", hojeStr);
+      console.log("[CENTRAL LAB] total reservas hoje:", reservasHoje.length);
+      console.log("[CENTRAL LAB] total próximas reservas:", proximasReservas.length);
+    }
+  }, [currentEscolaId, hojeStr, reservasHoje.length, proximasReservas.length]);
 
   const alertas = useMemo(() => {
     // Bloqueios e manutenções ativos (hoje e futuros)
