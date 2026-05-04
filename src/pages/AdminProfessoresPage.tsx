@@ -269,6 +269,7 @@ const AdminProfessoresPage = () => {
         setLoading(false);
       }
     }
+  };
 
   const getStatusBadge = (status: Usuario["status"]) => {
     switch (status) {
