@@ -259,7 +259,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
         disciplina: initialDisciplina,
         turma: "",
         data: initialDate,
-        recursoId: "",
+        recursoIds: [],
         aulas: initialData?.aula ? [initialData.aula] : [],
         objetivo_pedagogico: "",
         observacao: ""
