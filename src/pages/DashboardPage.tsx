@@ -79,7 +79,15 @@ const DashboardPage = () => {
     return todosRecursos.filter(r => r.escola_id === currentEscolaId);
   }, [todosRecursos, currentEscolaId]);
   
-  const hojeStr = format(new Date(), "yyyy-MM-dd");
+  const getLocalDateString = () => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const hojeStr = getLocalDateString();
   
   const reservasEscola = useMemo(() => {
     if (isSupabaseConfigured && !isValidUUID(currentEscolaId)) return [];
