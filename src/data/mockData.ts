@@ -14,7 +14,7 @@ export interface Usuario {
   email: string;
   escola_id: string;
   papel: "admin_plataforma" | "admin_lab" | "professor";
-  status: "ativo" | "pendente" | "bloqueado";
+  status: "ativo" | "pendente" | "bloqueado" | "removido";
   disciplinas?: string[];
 }
 
