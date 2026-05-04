@@ -188,7 +188,7 @@ const DashboardPage = () => {
       </header>
 
       {/* Grid de Cards Principais */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         <Card 
           className="rounded-3xl border-none shadow-sm bg-blue-50/50 hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-blue-100 transition-all group cursor-pointer"
           onClick={() => {
@@ -295,9 +295,9 @@ const DashboardPage = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {/* Coluna Principal: Próximas Reservas */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="md:col-span-1 xl:col-span-2 space-y-6">
           <div className="flex items-center justify-between px-2">
             <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
               <Clock className="text-blue-600" size={20} />

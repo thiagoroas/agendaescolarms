@@ -142,7 +142,7 @@ const AdminReservasPage = () => {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden hidden md:block">
+      <div className="rounded-xl border bg-white shadow-sm overflow-hidden hidden xl:block">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
@@ -220,7 +220,7 @@ const AdminReservasPage = () => {
         </Table>
       </div>
 
-      <div className="grid gap-4 md:hidden pb-20">
+      <div className="grid gap-4 xl:hidden pb-20">
         {schoolReservas.map((r) => {
           const rec = recursos.find(rec => rec.id === r.recurso_id);
           return (

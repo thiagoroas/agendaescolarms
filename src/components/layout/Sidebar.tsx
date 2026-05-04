@@ -27,26 +27,26 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="fixed left-0 top-0 hidden h-full w-[264px] flex-col border-r bg-white md:flex z-40">
-      <div className="flex flex-col p-5">
+    <aside className="fixed left-0 top-0 hidden h-full w-[80px] lg:w-[264px] flex-col border-r bg-white md:flex z-40 transition-[width] duration-300 group/sidebar overflow-hidden hover:w-[264px] md:hover:shadow-xl lg:hover:shadow-none">
+      <div className="flex flex-col p-4 lg:p-5">
         <div className="flex items-center gap-3 mb-6">
-          <div className="rounded-lg bg-blue-600 p-2 text-white shadow-sm">
+          <div className="rounded-lg bg-blue-600 p-2 text-white shadow-sm shrink-0">
             <Calendar className="h-5 w-5" />
           </div>
-          <span className="text-lg font-bold tracking-tight text-slate-900">Agenda Escolar</span>
+          <span className="text-lg font-bold tracking-tight text-slate-900 truncate lg:block hidden group-hover/sidebar:block transition-all">Agenda Escolar</span>
         </div>
 
         {profile?.role === "admin_plataforma" ? (
-          <div className="mb-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-1.5 block px-1">
+          <div className="mb-2 lg:block hidden group-hover/sidebar:block">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-1.5 block px-1 truncate">
               Escola ativa
             </label>
-            <div className="relative group">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 border border-blue-200 hover:bg-blue-100/50 transition-all duration-200 cursor-pointer shadow-sm group-hover:shadow group-focus-within:ring-2 group-focus-within:ring-blue-100">
+            <div className="relative group/select">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 border border-blue-200 hover:bg-blue-100/50 transition-all duration-200 cursor-pointer shadow-sm group-hover/select:shadow group-focus-within:ring-2 group-focus-within:ring-blue-100">
                 <div className="bg-blue-600 rounded-lg p-2 text-white shrink-0 shadow-sm">
                   <Building className="h-4 w-4" />
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 lg:block hidden group-hover/sidebar:block transition-all">
                   <div className="flex items-center justify-between gap-1">
                     <p className="text-sm font-bold text-slate-900 truncate leading-none">
                       {loading ? "Carregando..." : (escola?.nome || "Selecione...")}
@@ -71,8 +71,8 @@ const Sidebar = () => {
             </div>
           </div>
         ) : (
-          <div className="mb-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block px-1">
+          <div className="mb-2 lg:block hidden group-hover/sidebar:block">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block px-1 truncate">
               Minha escola
             </label>
             <div className={cn(
@@ -87,7 +87,7 @@ const Sidebar = () => {
               )}>
                 <Building className="h-4 w-4" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 lg:block hidden group-hover/sidebar:block">
                 <p className="text-sm font-bold text-slate-900 truncate leading-none">
                   {escola?.nome || "Sem Escola"}
                 </p>
@@ -109,9 +109,9 @@ const Sidebar = () => {
 
       <nav className="flex-1 space-y-6 p-4 overflow-y-auto scrollbar-hide">
         {sections.map((section, idx) => (
-          <div key={section.title || idx} className="space-y-2">
+          <div key={section.title || idx} className="space-y-2 lg:block group-hover/sidebar:block">
             {section.title && (
-              <div className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 mt-4 first:mt-0">
+              <div className="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 mt-4 first:mt-0 lg:block hidden group-hover/sidebar:block truncate">
                 {section.title}
               </div>
             )}
@@ -122,7 +122,7 @@ const Sidebar = () => {
                   to={item.path}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 group border border-transparent",
+                      "flex items-center gap-3 rounded-xl px-2.5 lg:px-3 py-2.5 text-sm transition-all duration-200 group border border-transparent",
                       isActive 
                         ? "bg-blue-50 text-blue-700 font-bold border-blue-100 shadow-sm" 
                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
@@ -137,7 +137,9 @@ const Sidebar = () => {
                       )}>
                         <item.icon className="h-4 w-4" />
                       </div>
-                      {item.label}
+                      <span className="lg:block hidden group-hover/sidebar:block truncate">
+                        {item.label}
+                      </span>
                     </>
                   )}
                 </NavLink>
@@ -147,7 +149,7 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      <div className="mt-auto p-4 border-t border-slate-100">
+      <div className="mt-auto p-4 border-t border-slate-100 bg-white">
         <NavLink
           to="/perfil"
           className={({ isActive }) =>
@@ -157,10 +159,10 @@ const Sidebar = () => {
             )
           }
         >
-          <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-sm group-hover:scale-110 transition-transform">
+          <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-sm group-hover:scale-110 transition-transform shrink-0">
             {profile?.full_name?.charAt(0).toUpperCase()}
           </div>
-          <div className="flex flex-col min-w-0">
+          <div className="flex flex-col min-w-0 lg:flex hidden group-hover/sidebar:flex transition-all">
             <p className="text-xs font-bold text-slate-900 truncate leading-tight group-hover:text-blue-700 transition-colors">{profile?.full_name}</p>
             <p className="text-[10px] font-medium text-slate-500 capitalize truncate">Meu Perfil</p>
           </div>
@@ -170,10 +172,12 @@ const Sidebar = () => {
             logout();
             window.location.href = "/login";
           }}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-red-600 transition-all duration-200 hover:bg-red-50 hover:text-red-700 group"
+          className="flex w-full items-center gap-2 rounded-lg px-2 lg:px-3 py-2 text-xs font-semibold text-red-600 transition-all duration-200 hover:bg-red-50 hover:text-red-700 group justify-center lg:justify-start group-hover/sidebar:justify-start overflow-hidden"
         >
-          <LogOut className="h-4 w-4" />
-          Sair do sistema
+          <LogOut className="h-4 w-4 shrink-0" />
+          <span className="lg:block hidden group-hover/sidebar:block truncate">
+            Sair do sistema
+          </span>
         </button>
       </div>
     </aside>
