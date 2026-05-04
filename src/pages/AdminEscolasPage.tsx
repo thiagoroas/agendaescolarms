@@ -16,15 +16,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 const AdminEscolasPage = () => {
   const { profile } = useAuth();
-  const { escolas, loading, createEscola, updateEscola, toggleEscolaStatus, deleteEscola, getEscolaStats } = useEscolas();
+  const { escolas, loading, createEscola, updateEscola, toggleEscolaStatus, deleteEscola, getEscolaStats, deleteEscolaTeste } = useEscolas();
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isTestDeleteModalOpen, setIsTestDeleteModalOpen] = useState(false);
   const [escolaToDelete, setEscolaToDelete] = useState<Escola | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [loadingStats, setLoadingStats] = useState(false);
   const [stats, setStats] = useState<{users: number, resources: number, reservations: number, announcements: number, schedules: number} | null>(null);
   const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
+  const [confirmName, setConfirmName] = useState("");
 
   const isAdminPlataforma = profile?.role === "admin_plataforma";
 
@@ -97,19 +99,38 @@ const AdminEscolasPage = () => {
     setLoadingStats(false);
   };
 
+  const handleTestDeleteClick = async (escola: Escola) => {
+    setEscolaToDelete(escola);
+    setIsTestDeleteModalOpen(true);
+    setConfirmName("");
+    setLoadingStats(true);
+    const s = await getEscolaStats(escola.id);
+    setStats(s);
+    setLoadingStats(false);
+  };
+
   const handleConfirmDelete = async () => {
     if (!escolaToDelete) return;
-    
-    // Verificar se possui apenas horários (seria bom ter essa info do hook, mas o hook já trata)
-    // A UI pode apenas reforçar a mensagem dependendo do que o hook retornar ou do estado local
     setIsDeleting(true);
     const success = await deleteEscola(escolaToDelete.id);
     setIsDeleting(false);
-    
     if (success) {
       setIsDeleteModalOpen(false);
       setEscolaToDelete(null);
       setStats(null);
+    }
+  };
+
+  const handleConfirmTestDelete = async () => {
+    if (!escolaToDelete || confirmName !== escolaToDelete.nome) return;
+    setIsDeleting(true);
+    const success = await deleteEscolaTeste(escolaToDelete.id);
+    setIsDeleting(false);
+    if (success) {
+      setIsTestDeleteModalOpen(false);
+      setEscolaToDelete(null);
+      setStats(null);
+      setConfirmName("");
     }
   };
 
@@ -192,6 +213,17 @@ const AdminEscolasPage = () => {
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Excluir
+                  </Button>
+                )}
+                {isAdminPlataforma && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex-1 h-10 text-slate-400 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => handleTestDeleteClick(e)}
+                    title="Excluir escola de teste e todos os vínculos"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </CardFooter>
@@ -346,6 +378,86 @@ const AdminEscolasPage = () => {
                 </>
               ) : (
                 "Confirmar Exclusão"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isTestDeleteModalOpen} onOpenChange={(open) => {
+        setIsTestDeleteModalOpen(open);
+        if (!open) { setStats(null); setEscolaToDelete(null); setConfirmName(""); }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="h-5 w-5" />
+              Limpeza Completa de Teste
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              <span className="font-bold text-red-600">AÇÃO IRREVERSÍVEL!</span> Esta ação deve ser usada apenas para escolas criadas por engano ou teste. Todos os dados vinculados serão apagados definitivamente.
+              
+              {loadingStats ? (
+                <div className="flex items-center gap-2 mt-4 text-slate-500">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Calculando impacto da limpeza...</span>
+                </div>
+              ) : stats ? (
+                <div className="mt-4 space-y-4">
+                  <div className="bg-red-50 p-3 rounded-lg border border-red-100 text-xs space-y-1">
+                    <p className="font-semibold text-red-700 mb-2">Serão apagados definitivamente:</p>
+                    <div className="flex justify-between">
+                      <span>Usuários/Professores/Lab:</span>
+                      <span className="font-bold">{stats.users}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Recursos:</span>
+                      <span className="font-bold">{stats.resources}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Reservas:</span>
+                      <span className="font-bold">{stats.reservations}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Avisos:</span>
+                      <span className="font-bold">{stats.announcements}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Horários Padrão:</span>
+                      <span className="font-bold">{stats.schedules}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs">Para confirmar, digite o nome exato da escola:</Label>
+                    <Input 
+                      value={confirmName} 
+                      onChange={e => setConfirmName(e.target.value)}
+                      placeholder={escolaToDelete?.nome}
+                      className="border-red-200 focus:ring-red-500"
+                    />
+                  </div>
+                </div>
+              ) : null}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-4">
+            <Button type="button" variant="outline" onClick={() => setIsTestDeleteModalOpen(false)} disabled={isDeleting}>
+              Cancelar
+            </Button>
+            <Button 
+              type="button" 
+              className="bg-red-600 hover:bg-red-700 text-white" 
+              onClick={handleConfirmTestDelete}
+              disabled={isDeleting || loadingStats || !escolaToDelete || confirmName !== escolaToDelete.nome}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Limpando tudo...
+                </>
+              ) : (
+                "Apagar Tudo e Excluir Escola"
               )}
             </Button>
           </DialogFooter>

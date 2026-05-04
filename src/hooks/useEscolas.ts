@@ -310,6 +310,52 @@ export const useEscolas = () => {
     }
   };
 
+  const deleteEscolaTeste = async (id: string) => {
+    if (!isSupabaseConfigured) return false;
+    try {
+      // Ordem segura de exclusão para limpar tudo
+      // 1. Reservas
+      await supabase.from("reservas").delete().eq("escola_id", id);
+      
+      // 2. Avisos
+      await supabase.from("avisos_laboratorio").delete().eq("escola_id", id);
+      
+      // 3. Horários
+      await supabase.from("horarios_escola").delete().eq("escola_id", id);
+      
+      // 4. Recursos
+      await supabase.from("recursos").delete().eq("escola_id", id);
+      
+      // 5. Profiles (exceto admin_plataforma)
+      // Nota: No Supabase, se profiles tem FK para escolas, precisamos limpar os profiles antes da escola
+      await supabase.from("profiles")
+        .delete()
+        .eq("escola_id", id)
+        .neq("role", "admin_plataforma");
+      
+      // 6. Escola
+      const { error } = await supabase.from("escolas").delete().eq("id", id);
+      if (error) throw error;
+
+      if (selectedEscolaId === id) {
+        const remainingEscolas = escolas.filter(e => e.id !== id && e.status === "ativa");
+        if (remainingEscolas.length > 0) {
+          setSelectedEscolaId(remainingEscolas[0].id);
+        } else {
+          setSelectedEscolaId(null);
+        }
+      }
+
+      setEscolas(prev => prev.filter(e => e.id !== id));
+      toast.success("Escola de teste e todos os vínculos foram removidos permanentemente.");
+      return true;
+    } catch (error: any) {
+      console.error("Error deleting test school:", error.message);
+      toast.error("Erro ao realizar limpeza completa da escola de teste.");
+      return false;
+    }
+  };
+
   return {
     escolas,
     loading,
@@ -318,6 +364,7 @@ export const useEscolas = () => {
     updateEscola,
     toggleEscolaStatus,
     getEscolaStats,
-    deleteEscola
+    deleteEscola,
+    deleteEscolaTeste
   };
 };
