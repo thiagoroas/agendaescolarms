@@ -17,9 +17,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 const AdminRecursosPage = () => {
   const { profile, selectedEscolaId } = useAuth();
-  const { recursos, loading, createRecurso, updateRecurso, toggleRecursoAtivo, deleteRecurso } = useRecursos();
+  const { recursos, loading, createRecurso, updateRecurso, toggleRecursoAtivo, deleteRecurso, getRecursoStats } = useRecursos();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecurso, setEditingRecurso] = useState<Recurso | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [recursoToDelete, setRecursoToDelete] = useState<Recurso | null>(null);
+  const [deleteStats, setDeleteStats] = useState<any>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
   
   const [nome, setNome] = useState("");
   const [tipo, setTipo] = useState("outro");
@@ -130,12 +135,39 @@ const AdminRecursosPage = () => {
   };
 
 
+  const handleOpenDeleteDialog = async (recurso: Recurso) => {
+    setRecursoToDelete(recurso);
+    setIsDeleteModalOpen(true);
+    setIsLoadingStats(true);
+    const stats = await getRecursoStats(recurso.id);
+    setDeleteStats(stats);
+    setIsLoadingStats(false);
+  };
+
+  const filteredRecursos = recursos.filter(r => showInactive ? !r.ativo : r.ativo);
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20 md:pb-8">
       <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
         <div className="space-y-1">
           <h1 className="text-3xl font-black tracking-tight text-slate-900 uppercase">Gestão de Recursos</h1>
-          <p className="text-sm font-medium text-slate-500">Administre laboratórios, projetores e equipamentos da escola.</p>
+          <div className="flex items-center gap-4 mt-1">
+            <p className="text-sm font-medium text-slate-500">Administre laboratórios, projetores e equipamentos da escola.</p>
+            <div className="flex bg-slate-100 p-1 rounded-xl">
+              <button 
+                onClick={() => setShowInactive(false)}
+                className={cn("px-4 py-1 text-[10px] font-black uppercase rounded-lg transition-all", !showInactive ? "bg-white text-blue-600 shadow-sm" : "text-slate-400")}
+              >
+                Ativos
+              </button>
+              <button 
+                onClick={() => setShowInactive(true)}
+                className={cn("px-4 py-1 text-[10px] font-black uppercase rounded-lg transition-all", showInactive ? "bg-white text-red-600 shadow-sm" : "text-slate-400")}
+              >
+                Inativos
+              </button>
+            </div>
+          </div>
         </div>
         <Button className="bg-blue-600 hover:bg-blue-700 h-12 px-6 rounded-2xl shadow-xl shadow-blue-100 font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95" onClick={() => setIsModalOpen(true)}>
           <Plus className="mr-2 h-5 w-5 stroke-[3px]" />
@@ -155,10 +187,12 @@ const AdminRecursosPage = () => {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {loading ? (
           <div className="col-span-full py-20 text-center font-bold text-slate-400">Carregando recursos...</div>
-        ) : recursos.length === 0 ? (
-          <div className="col-span-full py-20 text-center font-bold text-slate-400">Nenhum recurso cadastrado para esta escola.</div>
+        ) : filteredRecursos.length === 0 ? (
+          <div className="col-span-full py-20 text-center font-bold text-slate-400">
+            {showInactive ? "Nenhum recurso inativo encontrado." : "Nenhum recurso ativo cadastrado."}
+          </div>
         ) : (
-          recursos.map((r) => (
+          filteredRecursos.map((r) => (
             <Card key={r.id} className="group overflow-hidden border-slate-100 bg-white rounded-3xl transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 border-2">
               <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
                 <div 
@@ -177,25 +211,15 @@ const AdminRecursosPage = () => {
                   >
                     {r.ativo ? "Ativo" : "Inativo"}
                   </Badge>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-300 hover:text-red-500 transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="rounded-3xl border-none">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle className="text-xl font-black uppercase tracking-tight">Excluir Recurso?</AlertDialogTitle>
-                        <AlertDialogDescription className="font-medium text-slate-500">
-                          Esta ação não pode ser desfeita. O recurso será removido permanentemente.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel className="rounded-xl font-bold uppercase tracking-widest text-[10px]">Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => deleteRecurso(r.id)} className="bg-red-500 hover:bg-red-600 rounded-xl font-bold uppercase tracking-widest text-[10px]">Excluir</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-slate-300 hover:text-red-500 transition-colors"
+                    onClick={() => handleOpenDeleteDialog(r)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="p-6 pt-4">
@@ -297,6 +321,81 @@ const AdminRecursosPage = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <AlertDialogContent className="rounded-3xl border-none shadow-2xl max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-500" />
+              {deleteStats?.total > 0 ? "Inativar Recurso?" : "Excluir Recurso?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="font-medium text-slate-500 space-y-4 pt-2">
+              {isLoadingStats ? (
+                <div className="flex items-center gap-2 py-4">
+                  <div className="h-4 w-4 border-2 border-blue-600 border-t-transparent animate-spin rounded-full"></div>
+                  Verificando histórico...
+                </div>
+              ) : deleteStats?.total > 0 ? (
+                <>
+                  <p>Este recurso possui histórico de uso e não pode ser excluído definitivamente:</p>
+                  <div className="bg-slate-50 p-4 rounded-2xl space-y-1 text-xs font-bold uppercase tracking-wider">
+                    <div className="flex justify-between">
+                      <span>Confirmadas:</span>
+                      <span className="text-blue-600">{deleteStats.confirmada}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Canceladas:</span>
+                      <span className="text-slate-400">{deleteStats.cancelada}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Manutenção:</span>
+                      <span className="text-amber-500">{deleteStats.manutencao}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-slate-200 mt-2 pt-2">
+                      <span>Futuras:</span>
+                      <span className="text-emerald-500">{deleteStats.futuras}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Passadas:</span>
+                      <span className="text-slate-500">{deleteStats.passadas}</span>
+                    </div>
+                  </div>
+                  <p className="text-amber-600 text-xs font-black uppercase">
+                    Recomendação: Inativar o recurso para preservar o histórico.
+                  </p>
+                </>
+              ) : (
+                <p>Este recurso não possui reservas vinculadas e pode ser removido permanentemente.</p>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="pt-6">
+            <AlertDialogCancel className="rounded-xl font-bold uppercase tracking-widest text-[10px] h-10">Cancelar</AlertDialogCancel>
+            {deleteStats?.total > 0 ? (
+              <AlertDialogAction 
+                onClick={() => {
+                  if (recursoToDelete?.id) toggleRecursoAtivo(recursoToDelete.id, true);
+                  setIsDeleteModalOpen(false);
+                }} 
+                className="bg-amber-500 hover:bg-amber-600 rounded-xl font-bold uppercase tracking-widest text-[10px] h-10 px-6"
+              >
+                Inativar Recurso
+              </AlertDialogAction>
+            ) : (
+              <AlertDialogAction 
+                disabled={isLoadingStats}
+                onClick={() => {
+                  if (recursoToDelete?.id) deleteRecurso(recursoToDelete.id);
+                  setIsDeleteModalOpen(false);
+                }} 
+                className="bg-red-500 hover:bg-red-600 rounded-xl font-bold uppercase tracking-widest text-[10px] h-10 px-6"
+              >
+                Excluir Definitivamente
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
