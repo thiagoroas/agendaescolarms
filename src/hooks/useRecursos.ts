@@ -173,19 +173,92 @@ export const useRecursos = (escolaId?: string) => {
     return updateRecurso(id, { ativo: !currentAtivo });
   };
 
+  const getRecursoStats = async (id: string) => {
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error: supabaseError } = await supabase
+          .from("reservas")
+          .select("status, data_reserva")
+          .eq("recurso_id", id);
+
+        if (supabaseError) throw supabaseError;
+
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+
+        const stats = {
+          confirmada: 0,
+          cancelada: 0,
+          manutencao: 0,
+          passadas: 0,
+          futuras: 0,
+          total: data?.length || 0
+        };
+
+        data?.forEach((res: any) => {
+          if (res.status === "confirmada") stats.confirmada++;
+          if (res.status === "cancelada") stats.cancelada++;
+          if (res.status === "manutencao" || res.status === "bloqueio") stats.manutencao++;
+
+          const resDate = new Date(res.data_reserva);
+          resDate.setHours(0, 0, 0, 0);
+
+          if (resDate < now) {
+            stats.passadas++;
+          } else {
+            stats.futuras++;
+          }
+        });
+
+        return stats;
+      } catch (err) {
+        console.error("Error fetching resource stats:", err);
+        return null;
+      }
+    } else {
+      const allMockReservas = getMockReservas();
+      const resourceReservations = allMockReservas.filter(res => res.recurso_id === id);
+      
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      const stats = {
+        confirmada: 0,
+        cancelada: 0,
+        manutencao: 0,
+        passadas: 0,
+        futuras: 0,
+        total: resourceReservations.length
+      };
+
+      resourceReservations.forEach((res: any) => {
+        if (res.status === "confirmada") stats.confirmada++;
+        if (res.status === "cancelada") stats.cancelada++;
+        
+        const resDate = new Date(res.data_reserva);
+        resDate.setHours(0, 0, 0, 0);
+
+        if (resDate < now) {
+          stats.passadas++;
+        } else {
+          stats.futuras++;
+        }
+      });
+
+      return stats;
+    }
+  };
+
   const deleteRecurso = async (id: string) => {
     if (isSupabaseConfigured) {
       try {
-        // Verificar se existem reservas para este recurso
-        const { count, error: countError } = await supabase
-          .from("reservas")
-          .select("id", { count: 'exact', head: true })
-          .eq("recurso_id", id);
-          
-        if (countError) throw countError;
+        const stats = await getRecursoStats(id);
         
-        if (count && count > 0) {
-          toast.error("Não é possível excluir este recurso porque existem reservas vinculadas.");
+        if (stats && stats.total > 0) {
+          // A verificação detalhada agora é feita na UI via getRecursoStats
+          // Mas por segurança no hook bloqueamos se houver qualquer reserva
+          // A menos que a UI passe um flag de "force" (que não vamos implementar agora por segurança)
+          toast.error("Este recurso possui histórico de reservas e não pode ser excluído definitivamente.");
           return false;
         }
 
@@ -205,11 +278,9 @@ export const useRecursos = (escolaId?: string) => {
         return false;
       }
     } else {
-      const allMockReservas = getMockReservas();
-      const hasReservations = allMockReservas.some(res => res.recurso_id === id);
-
-      if (hasReservations) {
-        toast.error("Este recurso possui reservas no histórico do protótipo. Inative o recurso em vez de excluir.");
+      const stats = await getRecursoStats(id);
+      if (stats && stats.total > 0) {
+        toast.error("Este recurso possui histórico no protótipo. Inative em vez de excluir.");
         return false;
       }
 
