@@ -187,10 +187,12 @@ const AdminRecursosPage = () => {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {loading ? (
           <div className="col-span-full py-20 text-center font-bold text-slate-400">Carregando recursos...</div>
-        ) : recursos.length === 0 ? (
-          <div className="col-span-full py-20 text-center font-bold text-slate-400">Nenhum recurso cadastrado para esta escola.</div>
+        ) : filteredRecursos.length === 0 ? (
+          <div className="col-span-full py-20 text-center font-bold text-slate-400">
+            {showInactive ? "Nenhum recurso inativo encontrado." : "Nenhum recurso ativo cadastrado."}
+          </div>
         ) : (
-          recursos.map((r) => (
+          filteredRecursos.map((r) => (
             <Card key={r.id} className="group overflow-hidden border-slate-100 bg-white rounded-3xl transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 border-2">
               <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
                 <div 
@@ -209,25 +211,15 @@ const AdminRecursosPage = () => {
                   >
                     {r.ativo ? "Ativo" : "Inativo"}
                   </Badge>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-300 hover:text-red-500 transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="rounded-3xl border-none">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle className="text-xl font-black uppercase tracking-tight">Excluir Recurso?</AlertDialogTitle>
-                        <AlertDialogDescription className="font-medium text-slate-500">
-                          Esta ação não pode ser desfeita. O recurso será removido permanentemente.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel className="rounded-xl font-bold uppercase tracking-widest text-[10px]">Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => deleteRecurso(r.id)} className="bg-red-500 hover:bg-red-600 rounded-xl font-bold uppercase tracking-widest text-[10px]">Excluir</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-slate-300 hover:text-red-500 transition-colors"
+                    onClick={() => handleOpenDeleteDialog(r)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="p-6 pt-4">
