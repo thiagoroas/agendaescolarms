@@ -493,59 +493,73 @@ const AgendaPage = () => {
                     );
                   }
 
-                  const reserva = getReservaForSlot(date, h.ordem);
-                  const recurso = schoolRecursosList.find(r => r.id === reserva?.recurso_id);
+                  const reservasNoSlot = getReservasForSlot(date, h.ordem);
 
                   return (
                     <div
                       key={dIdx}
                       className="cal-cell"
-                      onClick={() => !reserva && handleSlotClick(date, h)}
+                      onClick={() => reservasNoSlot.length === 0 && handleSlotClick(date, h)}
                     >
-                      {reserva && recurso ? (
-                        <button
-                          className={cn(
-                            "event", 
-                            tipoColor(recurso.tipo),
-                            reserva.status === "pendente" && "border-amber-400 border-2 shadow-amber-100"
-                          )}
-                          onClick={(e) => { e.stopPropagation(); handleSlotClick(date, h); }}
-                          title={`${reserva.nome_professor} • ${reserva.turma} • ${recurso.nome} (${reserva.status})`}
-                        >
-                          <div className="event-title">
-                            <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo) }}>
-                              {initialsOf(reserva.nome_professor)}
-                            </span>
-                            <div className="flex flex-col min-w-0">
-                              <span className="truncate leading-tight">{reserva.nome_professor}</span>
-                              {reserva.status === "pendente" && (
-                                <span className="text-[8px] font-black uppercase text-amber-600 tracking-tighter">Pendente</span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="event-meta">
-                            <span className="truncate flex-1" title={reserva.turma}>{reserva.turma}</span>
-                            <span className="shrink-0">•</span>
-                            <span className="truncate flex-1 font-bold" title={recurso.nome}>{recurso.nome}</span>
-                          </div>
-                          <div className="event-actions">
-                            {(profile?.role === 'admin_plataforma' || 
-                              (profile?.role === 'admin_lab' && reserva.escola_id === profile.escola_id) ||
-                              (profile?.role === 'professor' && reserva.profile_id === user?.id)) && (
-                              <span
-                                className="event-action-btn"
-                                role="button"
-                                aria-label="Excluir"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleExcluirReserva(reserva.id);
+                      {reservasNoSlot.length > 0 ? (
+                        <div className="flex flex-col gap-1 w-full h-full p-1 overflow-y-auto scrollbar-hide">
+                          {reservasNoSlot.map((reserva) => {
+                            const recurso = schoolRecursosList.find(r => r.id === reserva.recurso_id);
+                            if (!recurso) return null;
+                            
+                            return (
+                              <button
+                                key={reserva.id}
+                                className={cn(
+                                  "event", 
+                                  tipoColor(recurso.tipo),
+                                  reserva.status === "pendente" && "border-amber-400 border-2 shadow-amber-100",
+                                  "mb-0.5"
+                                )}
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  setActiveReserva({ reserva, recurso });
+                                  setIsModalDetalhesOpen(true);
                                 }}
+                                title={`${reserva.nome_professor} • ${reserva.turma} • ${recurso.nome} (${reserva.status})`}
                               >
-                                <Trash2 size={12} />
-                              </span>
-                            )}
-                          </div>
-                        </button>
+                                <div className="event-title">
+                                  <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo) }}>
+                                    {initialsOf(reserva.nome_professor)}
+                                  </span>
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="truncate leading-tight">{reserva.nome_professor}</span>
+                                    {reserva.status === "pendente" && (
+                                      <span className="text-[8px] font-black uppercase text-amber-600 tracking-tighter">Pendente</span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="event-meta">
+                                  <span className="truncate flex-1" title={reserva.turma}>{reserva.turma}</span>
+                                  <span className="shrink-0">•</span>
+                                  <span className="truncate flex-1 font-bold" title={recurso.nome}>{recurso.nome}</span>
+                                </div>
+                                <div className="event-actions">
+                                  {(profile?.role === 'admin_plataforma' || 
+                                    (profile?.role === 'admin_lab' && reserva.escola_id === profile.escola_id) ||
+                                    (profile?.role === 'professor' && reserva.profile_id === user?.id)) && (
+                                    <span
+                                      className="event-action-btn"
+                                      role="button"
+                                      aria-label="Excluir"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleExcluirReserva(reserva.id);
+                                      }}
+                                    >
+                                      <Trash2 size={12} />
+                                    </span>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
                       ) : (
                         <div className="add-hint">
                           <Plus size={14} /> Reservar
