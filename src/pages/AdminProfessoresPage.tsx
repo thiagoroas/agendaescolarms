@@ -712,6 +712,7 @@ const AdminProfessoresPage = () => {
                     <SelectItem value="ativo">Ativo</SelectItem>
                     <SelectItem value="pendente">Pendente</SelectItem>
                     <SelectItem value="bloqueado">Bloqueado</SelectItem>
+                    <SelectItem value="removido">Arquivado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
