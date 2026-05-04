@@ -615,75 +615,150 @@ const AgendaPage = () => {
           </div>
         ) : (
           <div className="mobile-timeline">
-            <div className="mobile-day-header w-full box-border">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <CalendarIcon size={18} className="text-blue-600 shrink-0" />
-                <span className="mobile-day-label truncate text-sm sm:text-base">
-                  {format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
-                </span>
-              </div>
-              <button 
-                className="text-[11px] font-black uppercase tracking-widest text-blue-600 px-2 py-1 rounded-md bg-blue-50"
-                onClick={() => setCurrentDate(getTodayDate())}
-              >
-                Hoje
-              </button>
-            </div>
-
-            {escolaHorarios.map((h, hIdx) => {
-              const reservasNoSlot = getReservasForSlot(currentDate, h.ordem);
-
-              return (
-                <div key={hIdx} className={`mobile-slot ${h.tipo === 'intervalo' ? 'is-break' : ''}`}>
-                  <div className="mobile-slot-time">
-                    <span className="mobile-slot-label">{h.nome.replace("Aula ", "A")}</span>
-                    <span className="mobile-slot-hour">{h.hora_inicio.substring(0, 5)}</span>
+            {mobileView === "dia" ? (
+              <>
+                <div className="mobile-day-header w-full box-border">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <CalendarIcon size={18} className="text-blue-600 shrink-0" />
+                    <span className="mobile-day-label truncate text-sm sm:text-base">
+                      {format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
+                    </span>
                   </div>
-                  <div className="mobile-slot-content">
-                    {h.tipo === 'intervalo' ? (
-                      <span className="break-label text-[10px] font-black uppercase text-slate-300 tracking-[0.2em]">{h.nome}</span>
-                    ) : reservasNoSlot.length > 0 ? (
-                      <div className="flex flex-col gap-2 w-full">
-                        {reservasNoSlot.map((reserva) => {
-                          const recurso = schoolRecursosList.find(r => r.id === reserva.recurso_id);
-                          if (!recurso) return null;
-
-                          return (
-                            <button 
-                              key={reserva.id}
-                              className={`mobile-card-event ${tipoColor(recurso.tipo)}`}
-                              onClick={() => {
-                                setActiveReserva({ reserva, recurso });
-                                setIsModalDetalhesOpen(true);
-                              }}
-                            >
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo), width: '22px', height: '22px', fontSize: '10px' }}>
-                                  {initialsOf(reserva.nome_professor)}
-                                </span>
-                                <span className="text-[13px] font-bold text-slate-900 leading-none truncate block">{reserva.nome_professor}</span>
-                              </div>
-                              <div className="flex items-center gap-2 mt-auto min-w-0">
-                                <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md shrink-0">{reserva.turma}</span>
-                                <span className="text-[11px] font-medium text-slate-500 truncate">• {recurso.nome}</span>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <button 
-                        className="mobile-card-available"
-                        onClick={() => handleSlotClick(currentDate, h)}
-                      >
-                        <Plus size={14} className="mr-2 text-blue-400" />
-                        Disponível — toque para reservar
-                      </button>
-                    )}
-                  </div>
+                  <button 
+                    className="text-[11px] font-black uppercase tracking-widest text-blue-600 px-2 py-1 rounded-md bg-blue-50"
+                    onClick={() => setCurrentDate(getTodayDate())}
+                  >
+                    Hoje
+                  </button>
                 </div>
-              );
-            })}
+
+                {escolaHorarios.map((h, hIdx) => {
+                  const reservasNoSlot = getReservasForSlot(currentDate, h.ordem);
+
+                  return (
+                    <div key={hIdx} className={`mobile-slot ${h.tipo === 'intervalo' ? 'is-break' : ''}`}>
+                      <div className="mobile-slot-time">
+                        <span className="mobile-slot-label">{h.nome.replace("Aula ", "A")}</span>
+                        <span className="mobile-slot-hour">{h.hora_inicio.substring(0, 5)}</span>
+                      </div>
+                      <div className="mobile-slot-content">
+                        {h.tipo === 'intervalo' ? (
+                          <span className="break-label text-[10px] font-black uppercase text-slate-300 tracking-[0.2em]">{h.nome}</span>
+                        ) : reservasNoSlot.length > 0 ? (
+                          <div className="flex flex-col gap-2 w-full">
+                            {reservasNoSlot.map((reserva) => {
+                              const recurso = schoolRecursosList.find(r => r.id === reserva.recurso_id);
+                              if (!recurso) return null;
+
+                              return (
+                                <button 
+                                  key={reserva.id}
+                                  className={`mobile-card-event ${tipoColor(recurso.tipo)}`}
+                                  onClick={() => {
+                                    setActiveReserva({ reserva, recurso });
+                                    setIsModalDetalhesOpen(true);
+                                  }}
+                                >
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo), width: '22px', height: '22px', fontSize: '10px' }}>
+                                      {initialsOf(reserva.nome_professor)}
+                                    </span>
+                                    <span className="text-[13px] font-bold text-slate-900 leading-none truncate block">{reserva.nome_professor}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 mt-auto min-w-0">
+                                    <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md shrink-0">{reserva.turma}</span>
+                                    <span className="text-[11px] font-medium text-slate-500 truncate">• {recurso.nome}</span>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <button 
+                            className="mobile-card-available"
+                            onClick={() => handleSlotClick(currentDate, h)}
+                          >
+                            <Plus size={14} className="mr-2 text-blue-400" />
+                            Disponível — toque para reservar
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            ) : (
+              <div className="mobile-week-summary p-4 space-y-4">
+                {weekDates.map((date, i) => {
+                  const reservasDoDia = escolaHorarios
+                    .filter(h => h.tipo !== 'intervalo')
+                    .flatMap(h => getReservasForSlot(date, h.ordem));
+                  
+                  const isToday = isSameDay(date, new Date());
+
+                  return (
+                    <div 
+                      key={i} 
+                      className={cn(
+                        "bg-white border rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-all",
+                        isToday ? "border-blue-200 bg-blue-50/30" : "border-slate-100"
+                      )}
+                      onClick={() => {
+                        setCurrentDate(date);
+                        setMobileView("dia");
+                      }}
+                    >
+                      <div className="flex justify-between items-center mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-10 h-10 rounded-xl flex flex-col items-center justify-center font-bold",
+                            isToday ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600"
+                          )}>
+                            <span className="text-[10px] uppercase leading-none mb-0.5">{diasSemana[i].substring(0, 3)}</span>
+                            <span className="text-lg leading-none">{format(date, "dd")}</span>
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-sm">{diasSemana[i]}</h4>
+                            <p className="text-[11px] font-medium text-slate-500">
+                              {reservasDoDia.length} {reservasDoDia.length === 1 ? 'reserva' : 'reservas'}
+                            </p>
+                          </div>
+                        </div>
+                        <button className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg">
+                          Ver dia
+                        </button>
+                      </div>
+
+                      {reservasDoDia.length > 0 ? (
+                        <div className="space-y-2">
+                          {reservasDoDia.slice(0, 3).map((res, idx) => {
+                            const recurso = schoolRecursosList.find(r => r.id === res.recurso_id);
+                            const h = escolaHorarios.find(hor => hor.ordem === res.aula);
+                            return (
+                              <div key={idx} className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
+                                <span className="text-[10px] font-bold text-slate-400 w-8 shrink-0">{h?.nome.replace("Aula ", "A")}</span>
+                                <div className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: tipoSwatch(recurso?.tipo || "") }} />
+                                <span className="text-[11px] font-bold text-slate-700 truncate flex-1">{res.nome_professor}</span>
+                                <span className="text-[10px] font-medium text-slate-400 shrink-0">{recurso?.nome}</span>
+                              </div>
+                            );
+                          })}
+                          {reservasDoDia.length > 3 && (
+                            <p className="text-[10px] text-center font-bold text-slate-400 py-1">
+                              + {reservasDoDia.length - 3} outras reservas
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center py-4 border border-dashed border-slate-200 rounded-xl">
+                          <span className="text-[11px] font-bold text-slate-400">Sem reservas agendadas</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
