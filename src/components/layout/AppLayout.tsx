@@ -10,13 +10,13 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const isAgenda = location.pathname === "/agenda" || location.pathname === "/";
 
   return (
-    <div className="h-screen flex overflow-hidden" style={{ backgroundColor: '#f7f8fb' }}>
+    <div className="h-screen flex overflow-hidden bg-[#f7f8fb]">
       <Sidebar />
-      <main className="flex-1 md:ml-[264px] relative flex flex-col min-h-0 h-full">
+      <main className="flex-1 lg:ml-[264px] md:ml-[80px] relative flex flex-col min-h-0 h-full transition-[margin] duration-300">
         <TopHeader />
         <div className={cn(
           "flex-1 w-full min-h-0",
-          isAgenda ? "flex flex-col overflow-hidden" : "mx-auto max-w-7xl p-4 md:p-8 overflow-y-auto"
+          isAgenda ? "flex flex-col overflow-hidden" : "mx-auto max-w-7xl p-4 md:p-6 lg:p-8 overflow-y-auto"
         )}>
           {children}
         </div>
