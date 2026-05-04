@@ -57,7 +57,7 @@ const AgendaPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const { escolas: allEscolas, loading: loadingEscolas } = useEscolas();
-  const [currentDate, setCurrentDate] = useState(() => {
+  const getTodayDate = () => {
     const today = new Date();
     const day = today.getDay();
     // Se for final de semana (Sábado=6, Domingo=0), inicia na Segunda-feira da próxima semana
@@ -65,7 +65,9 @@ const AgendaPage = () => {
       return addDays(today, (8 - day) % 7);
     }
     return today;
-  });
+  };
+
+  const [currentDate, setCurrentDate] = useState(getTodayDate);
   const [selectedRecurso, setSelectedRecurso] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const onlyBlocks = searchParams.get("view") === "blocks";
@@ -91,11 +93,12 @@ const AgendaPage = () => {
   // Avisos are now loaded via useAvisos hook
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkMobile = () => setIsMobile(window.innerWidth <= 1024);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
   const [isModalDetalhesOpen, setIsModalDetalhesOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{date: string, aula: number, turno: "manha" | "tarde"} | null>(null);
   const [activeReserva, setActiveReserva] = useState<{reserva: Reserva, recurso: Recurso} | null>(null);
@@ -124,7 +127,18 @@ const AgendaPage = () => {
     setCurrentDate(prev => {
       // No mobile, navega dia a dia. No desktop, navega semana a semana (7 dias).
       const step = isMobile ? 1 : 7;
-      return addDays(prev, direction === 'prev' ? -step : step);
+      let nextDate = addDays(prev, direction === 'prev' ? -step : step);
+      
+      // Se estiver no mobile, vamos pular finais de semana para ser mais fluido na rotina escolar
+      if (isMobile) {
+        if (nextDate.getDay() === 0) { // Domingo
+          nextDate = addDays(nextDate, direction === 'prev' ? -2 : 1);
+        } else if (nextDate.getDay() === 6) { // Sábado
+          nextDate = addDays(nextDate, direction === 'prev' ? -1 : 2);
+        }
+      }
+      
+      return nextDate;
     });
   };
 
@@ -220,7 +234,7 @@ const AgendaPage = () => {
     }
   };
 
-  const weekLabel = `${format(monday, "d 'de' MMM", { locale: ptBR })} – ${format(weekDates[4], "d 'de' MMM", { locale: ptBR })}`;
+  const weekLabel = `${format(monday, "d 'de' MMMM", { locale: ptBR })} – ${format(weekDates[4], "d 'de' MMMM", { locale: ptBR })}`;
 
   return (
     <div className="agenda-proto overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-8 flex-1 flex flex-col min-h-0">
@@ -235,7 +249,7 @@ const AgendaPage = () => {
           </div>
         </div>
         <div className="topbar-actions">
-          <button className="btn btn-ghost" onClick={() => setCurrentDate(new Date())}>Hoje</button>
+          <button className="btn btn-ghost" onClick={() => setCurrentDate(getTodayDate())}>Hoje</button>
           
           <Popover>
             <PopoverTrigger asChild>
@@ -582,7 +596,7 @@ const AgendaPage = () => {
               </div>
               <button 
                 className="text-[11px] font-black uppercase tracking-widest text-blue-600 px-2 py-1 rounded-md bg-blue-50"
-                onClick={() => setCurrentDate(new Date())}
+                onClick={() => setCurrentDate(getTodayDate())}
               >
                 Hoje
               </button>
