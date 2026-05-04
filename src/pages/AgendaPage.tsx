@@ -596,7 +596,7 @@ const AgendaPage = () => {
               </div>
               <button 
                 className="text-[11px] font-black uppercase tracking-widest text-blue-600 px-2 py-1 rounded-md bg-blue-50"
-                onClick={() => setCurrentDate(new Date())}
+                onClick={() => setCurrentDate(getTodayDate())}
               >
                 Hoje
               </button>
