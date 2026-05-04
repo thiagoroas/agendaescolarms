@@ -487,6 +487,12 @@
 
 /* Responsive adjustments */
 @media (max-width: 767px) {
+  .agenda-proto {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+  }
+
   .agenda-proto .topbar {
     flex-direction: column;
     align-items: flex-start;
