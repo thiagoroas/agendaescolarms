@@ -534,61 +534,83 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           </div>
 
           <div className="space-y-3">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Selecione o Recurso</Label>
-            <RadioGroup value={formData.recursoId} onValueChange={v => setFormData({...formData, recursoId: v})} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {availableRecursos.map(r => (
-                <div key={r.id} className="relative">
-                  <RadioGroupItem value={r.id} id={`rec-${r.id}`} className="peer sr-only" />
-                  <Label 
-                    htmlFor={`rec-${r.id}`} 
-                    style={{ 
-                      borderColor: formData.recursoId === r.id ? r.cor_borda : '#f1f5f9',
-                      backgroundColor: formData.recursoId === r.id ? `${r.cor_fundo}40` : 'white'
-                    }}
-                    className={cn(
-                      "flex flex-col p-3 rounded-2xl border-2 cursor-pointer transition-all hover:bg-slate-50 peer-checked:ring-2 peer-checked:ring-offset-1 peer-checked:ring-blue-500",
-                      formData.recursoId === r.id ? "shadow-md scale-[1.02]" : "shadow-sm border-slate-100"
-                    )}
-                  >
-                    <span className="text-xs font-black text-slate-900">{r.nome}</span>
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{r.tipo}</span>
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Selecione os Recursos</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {availableRecursos.map(r => {
+                const isSelected = formData.recursoIds.includes(r.id);
+                return (
+                  <div key={r.id} className="relative">
+                    <div 
+                      onClick={() => {
+                        const newRecursos = isSelected 
+                          ? formData.recursoIds.filter(id => id !== r.id)
+                          : [...formData.recursoIds, r.id];
+                        setFormData({...formData, recursoIds: newRecursos});
+                      }}
+                      style={{ 
+                        borderColor: isSelected ? r.cor_borda : '#f1f5f9',
+                        backgroundColor: isSelected ? `${r.cor_fundo}40` : 'white'
+                      }}
+                      className={cn(
+                        "flex flex-col p-3 rounded-2xl border-2 cursor-pointer transition-all hover:bg-slate-50 relative",
+                        isSelected ? "shadow-md scale-[1.02] border-opacity-100" : "shadow-sm border-slate-100"
+                      )}
+                    >
+                      <div className="flex justify-between items-start">
+                        <span className="text-xs font-black text-slate-900">{r.nome}</span>
+                        {isSelected && (
+                          <div className="bg-blue-600 rounded-full p-0.5">
+                            <svg className="h-2 w-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{r.tipo}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[10px] font-bold text-slate-400 italic">Você pode selecionar um ou mais recursos.</p>
           </div>
 
           <div className="space-y-4">
             <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Horários das Aulas</Label>
             
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {allHorarios.map(h => (
-                <div 
-                  key={h.ordem} 
-                  className={cn(
-                    "flex items-center space-x-3 p-3 rounded-xl border-2 transition-all",
-                    formData.aulas.includes(h.ordem) ? "bg-blue-50 border-blue-200 shadow-sm" : "bg-white border-slate-50 hover:bg-slate-50",
-                    conflictingAulas.includes(h.ordem) && "bg-red-50 border-red-200"
-                  )}
-                >
-                  <Checkbox 
-                    id={`aula-${h.ordem}`}
-                    checked={formData.aulas.includes(h.ordem)}
-                    onCheckedChange={(checked) => {
-                      const newAulas = checked 
-                        ? [...formData.aulas, h.ordem] 
-                        : formData.aulas.filter(a => a !== h.ordem);
-                      setFormData({...formData, aulas: newAulas});
-                    }}
-                  />
-                  <div className="flex flex-col min-w-0">
-                    <Label htmlFor={`aula-${h.ordem}`} className={cn("text-[11px] font-black cursor-pointer truncate", conflictingAulas.includes(h.ordem) ? "text-red-600" : "text-slate-900")}>{h.nome}</Label>
-                    <span className={cn("text-[9px] font-bold whitespace-nowrap", conflictingAulas.includes(h.ordem) ? "text-red-400" : "text-slate-400")}>
-                      {conflictingAulas.includes(h.ordem) ? "Indisponível" : `${h.hora_inicio.substring(0, 5)} - ${h.hora_fim.substring(0, 5)}`}
-                    </span>
+              {allHorarios.map(h => {
+                const isConflicting = conflictingAulas.some(c => c.aula === h.ordem);
+                const isSelected = formData.aulas.includes(h.ordem);
+                
+                return (
+                  <div 
+                    key={h.ordem} 
+                    className={cn(
+                      "flex items-center space-x-3 p-3 rounded-xl border-2 transition-all",
+                      isSelected ? "bg-blue-50 border-blue-200 shadow-sm" : "bg-white border-slate-50 hover:bg-slate-50",
+                      isConflicting && "bg-red-50 border-red-200"
+                    )}
+                  >
+                    <Checkbox 
+                      id={`aula-${h.ordem}`}
+                      checked={isSelected}
+                      onCheckedChange={(checked) => {
+                        const newAulas = checked 
+                          ? [...formData.aulas, h.ordem] 
+                          : formData.aulas.filter(a => a !== h.ordem);
+                        setFormData({...formData, aulas: newAulas});
+                      }}
+                    />
+                    <div className="flex flex-col min-w-0">
+                      <Label htmlFor={`aula-${h.ordem}`} className={cn("text-[11px] font-black cursor-pointer truncate", isConflicting ? "text-red-600" : "text-slate-900")}>{h.nome}</Label>
+                      <span className={cn("text-[9px] font-bold whitespace-nowrap", isConflicting ? "text-red-400" : "text-slate-400")}>
+                        {isConflicting ? "Indisponível" : `${h.hora_inicio.substring(0, 5)} - ${h.hora_fim.substring(0, 5)}`}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
