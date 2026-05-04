@@ -203,6 +203,42 @@ const DashboardPage = () => {
 
   return (
     <div className="space-y-8 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-8 animate-in fade-in duration-500">
+      {/* Painel de Debug - Visível apenas em desenvolvimento para Admin Lab/Plataforma */}
+      {process.env.NODE_ENV === 'development' && (profile?.role === 'admin_lab' || profile?.role === 'admin_plataforma') && (
+        <Card className="border-2 border-dashed border-blue-200 bg-blue-50/30 rounded-3xl overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4 text-blue-600">
+              <Info size={20} />
+              <h2 className="font-black uppercase tracking-widest text-xs">Painel de Diagnóstico (Debug)</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-[10px] font-mono">
+              <div className="space-y-1 bg-white p-3 rounded-xl border border-blue-100">
+                <p><span className="text-slate-400">Usuário:</span> {debugData.email}</p>
+                <p><span className="text-slate-400">Papel:</span> {debugData.role}</p>
+                <p><span className="text-slate-400">Profile ID:</span> {debugData.profileId}</p>
+              </div>
+              <div className="space-y-1 bg-white p-3 rounded-xl border border-blue-100">
+                <p><span className="text-slate-400">Escola Profile:</span> {debugData.profileEscolaId}</p>
+                <p><span className="text-slate-400">Escola Selecionada:</span> {debugData.selectedEscolaId || 'Nenhuma'}</p>
+                <p><span className="text-slate-400 font-bold text-blue-600">ID Final Usado:</span> {debugData.escolaIdFinalUsado}</p>
+              </div>
+              <div className="space-y-1 bg-white p-3 rounded-xl border border-blue-100">
+                <p><span className="text-slate-400">Hoje Local:</span> {debugData.hojeLocal}</p>
+                <p><span className="text-slate-400">Total Bruto:</span> <span className="font-bold text-blue-600">{debugData.totalReservasBrutas}</span></p>
+                <p><span className="text-slate-400">Status no Banco:</span> {debugData.statusEncontrados.join(', ') || 'Nenhum'}</p>
+              </div>
+              <div className="space-y-1 bg-white p-3 rounded-xl border border-blue-100">
+                <p><span className="text-slate-400">Hoje (Bruto/Filt):</span> {debugData.reservasHojeBrutas} / <span className="font-bold text-emerald-600">{debugData.reservasHojeFiltradas}</span></p>
+                <p><span className="text-slate-400">Futuro (Bruto/Filt):</span> {debugData.reservasFuturasBrutas} / <span className="font-bold text-emerald-600">{debugData.reservasFuturasFiltradas}</span></p>
+              </div>
+              <div className="md:col-span-2 space-y-1 bg-white p-3 rounded-xl border border-blue-100 overflow-x-auto whitespace-pre">
+                <p><span className="text-slate-400">Primeira Reserva:</span> {debugData.primeiraReserva ? JSON.stringify(debugData.primeiraReserva, null, 2) : 'Nenhuma'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="h-12 w-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-100">
