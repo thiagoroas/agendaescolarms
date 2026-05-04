@@ -135,6 +135,17 @@ const AdminRecursosPage = () => {
   };
 
 
+  const handleOpenDeleteDialog = async (recurso: Recurso) => {
+    setRecursoToDelete(recurso);
+    setIsDeleteModalOpen(true);
+    setIsLoadingStats(true);
+    const stats = await getRecursoStats(recurso.id);
+    setDeleteStats(stats);
+    setIsLoadingStats(false);
+  };
+
+  const filteredRecursos = recursos.filter(r => showInactive ? !r.ativo : r.ativo);
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20 md:pb-8">
       <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
