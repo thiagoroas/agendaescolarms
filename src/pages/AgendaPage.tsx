@@ -419,12 +419,13 @@ const AgendaPage = () => {
             </div>
           )}
 
-        <div className="toolbar-meta">
-          <span><strong>{filteredReservationsCount}</strong> reservas</span>
-          <div className="legend">
-            <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--accent-blue)' }} />Lab</span>
-            <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--accent-green)' }} />Projetor</span>
-            <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--danger)' }} />Conflito</span>
+          <div className="toolbar-meta">
+            <span><strong>{filteredReservationsCount}</strong> reservas</span>
+            <div className="legend">
+              <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--accent-blue)' }} />Lab</span>
+              <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--accent-green)' }} />Projetor</span>
+              <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--danger)' }} />Conflito</span>
+            </div>
           </div>
         </div>
       </div>
