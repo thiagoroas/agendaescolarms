@@ -232,33 +232,8 @@ const DashboardPage = () => {
 
   return (
     <div className="space-y-8 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-8 animate-in fade-in duration-500">
-      {/* Painel de Diagnóstico (Debug) - Visível para Admin Lab/Plataforma */}
-      {(profile?.role === 'admin_lab' || profile?.role === 'admin_plataforma') && (
-        <Card className="border-2 border-dashed border-blue-200 bg-blue-50/30 rounded-3xl overflow-hidden mb-6">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2 mb-4 text-blue-600">
-              <Info size={20} />
-              <h2 className="font-black uppercase tracking-widest text-xs">Diagnóstico: Central do Laboratório</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-[10px] font-mono">
-              <div className="space-y-1 bg-white p-3 rounded-xl border border-blue-100">
-                <p className="font-bold text-blue-600 underline mb-1">Fonte: Supabase / useReservas</p>
-                <p><span className="text-slate-400">Escola ID:</span> <span className="font-bold">{debugData.escolaIdFinalUsado}</span></p>
-                <p><span className="text-slate-400">Total Bruto:</span> <span className="font-bold">{debugData.totalReservasBrutas}</span></p>
-              </div>
-              <div className="space-y-1 bg-white p-3 rounded-xl border border-blue-100">
-                <p><span className="text-slate-400">Hoje Local:</span> {debugData.hojeLocal}</p>
-                <p><span className="text-slate-400">Reservas Hoje:</span> <span className="font-bold text-emerald-600">{debugData.reservasHojeFiltradas}</span></p>
-                <p><span className="text-slate-400">Reservas Futuras:</span> <span className="font-bold text-emerald-600">{debugData.reservasFuturasFiltradas}</span></p>
-              </div>
-              <div className="md:col-span-2 space-y-1 bg-white p-3 rounded-xl border border-blue-100 overflow-x-auto whitespace-pre">
-                <p><span className="text-slate-400">Status no Banco:</span> {debugData.statusEncontrados.join(', ') || 'Nenhum'}</p>
-                <p><span className="text-slate-400">Primeira Reserva (Data/Status):</span> {debugData.primeiraReserva ? `${debugData.primeiraReserva.data} / ${debugData.primeiraReserva.status}` : 'Nenhuma'}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Dashboard principal */}
+
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
         <div className="flex items-center gap-4">
