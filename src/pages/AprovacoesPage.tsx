@@ -73,7 +73,7 @@ const AprovacoesPage = () => {
         else if (resData.includes(' ')) resData = resData.split(' ')[0];
         
         const status = String(r.status).toLowerCase();
-        const isConfirmed = ["confirmada", "confirmado", "aprovada", "aprovado", "ativo", "ativa"].includes(status);
+        const isConfirmed = ["confirmada", "confirmado", "aprovada", "aprovado", "ativo", "ativa", "pendente"].includes(status);
         
         return resData === hojeStr && isConfirmed;
       })
