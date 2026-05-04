@@ -383,39 +383,41 @@ const AgendaPage = () => {
               </div>
             </div>
           ) : (
-          <>
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2 w-full sm:w-auto">
-              <button
-                className={`chip ${!selectedRecurso ? 'active' : ''}`}
-                onClick={() => setSelectedRecurso(null)}
-              >
-                Todos
-              </button>
-              {schoolRecursos.map(r => (
+            <div className="flex items-center justify-between gap-4 w-full">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2 w-full sm:w-auto">
                 <button
-                  key={r.id}
-                  className={`chip ${selectedRecurso === r.id ? 'active' : ''}`}
-                  onClick={() => setSelectedRecurso(r.id)}
+                  className={`chip ${!selectedRecurso ? 'active' : ''}`}
+                  onClick={() => setSelectedRecurso(null)}
                 >
-                  <span className="chip-dot" style={{ background: r.cor_borda }} />
-                  {r.nome}
+                  Todos
                 </button>
-              ))}
-            </div>
+                {schoolRecursos.map(r => (
+                  <button
+                    key={r.id}
+                    className={`chip ${selectedRecurso === r.id ? 'active' : ''}`}
+                    onClick={() => setSelectedRecurso(r.id)}
+                  >
+                    <span className="chip-dot" style={{ background: r.cor_borda }} />
+                    {r.nome}
+                  </button>
+                ))}
+              </div>
 
-            <div className="toolbar-divider" />
+              <div className="flex items-center gap-4">
+                <div className="toolbar-divider" />
 
-            <div className="search w-full sm:w-auto mt-2 sm:mt-0">
-              <span className="search-icon"><Search size={14} /></span>
-              <input
-                className="w-full sm:w-[220px]"
-                placeholder="Buscar professor, turma…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+                <div className="search w-full sm:w-auto mt-2 sm:mt-0">
+                  <span className="search-icon"><Search size={14} /></span>
+                  <input
+                    className="w-full sm:w-[220px]"
+                    placeholder="Buscar professor, turma…"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
-          </>
-        )}
+          )}
 
         <div className="toolbar-meta">
           <span><strong>{filteredReservationsCount}</strong> reservas</span>
