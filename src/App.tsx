@@ -154,11 +154,15 @@ const AppContent = () => {
     );
   }
 
-  if (profile?.status === "bloqueado") {
+  if (profile?.status === "bloqueado" || profile?.status === "removido") {
     return (
       <div className="flex h-screen flex-col items-center justify-center p-4 text-center bg-background">
-        <h1 className="mb-2 text-2xl font-bold text-destructive">Acesso bloqueado</h1>
-        <p className="text-muted-foreground">Seu acesso foi desativado pela coordenação.</p>
+        <h1 className="mb-2 text-2xl font-bold text-destructive">Acesso negado</h1>
+        <p className="text-muted-foreground">
+          {profile?.status === "bloqueado" 
+            ? "Seu acesso foi desativado pela coordenação." 
+            : "Este usuário não faz mais parte desta escola."}
+        </p>
         <button onClick={() => logout()} className="mt-6 px-4 py-2 bg-primary text-white rounded-md">
           Sair
         </button>

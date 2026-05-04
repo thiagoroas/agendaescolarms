@@ -5,7 +5,7 @@ import { Usuario } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
 import { getMockUsuarios, saveMockUsuarios } from "../data/storage";
 import { Button } from "@/components/ui/button";
-import { Plus, UserPlus, UserCheck, Search, Info, Building2, Trash2, Edit2, Loader2, Key, Power } from "lucide-react";
+import { Plus, UserPlus, UserCheck, Search, Info, Building2, Trash2, Edit2, Loader2, Key, Power, ArchiveX } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -35,7 +35,8 @@ const AdminProfessoresPage = () => {
   const [papel, setPapel] = useState<"professor" | "admin_lab">("professor");
   const [escolaId, setEscolaId] = useState("");
   const [disciplinas, setDisciplinas] = useState("");
-  const [status, setStatus] = useState<"ativo" | "pendente" | "bloqueado">("ativo");
+  const [status, setStatus] = useState<"ativo" | "pendente" | "bloqueado" | "removido">("ativo");
+  const [statusFilter, setStatusFilter] = useState<string>("ativos");
 
   const fetchUsers = async () => {
     if (isSupabaseConfigured) {
@@ -93,6 +94,10 @@ const AdminProfessoresPage = () => {
     // Tab filter
     if (activeTab === "professores" && u.papel !== "professor") return false;
     if (activeTab === "usuarios_lab" && u.papel !== "admin_lab") return false;
+
+    // Status filter
+    if (statusFilter === "ativos" && (u.status === "removido")) return false;
+    if (statusFilter !== "todos" && statusFilter !== "ativos" && u.status !== statusFilter) return false;
 
     // Search filter
     const matchesSearch = u.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -224,7 +229,7 @@ const AdminProfessoresPage = () => {
           status: "ativo",
           disciplinas: papel === "professor" ? disciplinasArray : undefined
         };
-        const updated = [{ ...novoUsuario, senha }, ...localUsers];
+        const updated = [{ ...novoUsuario, senha } as any, ...localUsers];
         saveMockUsuarios(updated as any);
         setLocalUsers(updated);
         toast.success("Cadastrado com sucesso!");
@@ -234,11 +239,44 @@ const AdminProfessoresPage = () => {
     }
   };
 
+  const handleRemoverUsuario = async (u: Usuario) => {
+    const isProfessor = u.papel === 'professor';
+    const message = isProfessor 
+      ? `Deseja remover este professor da escola? Ele não aparecerá mais na lista de professores ativos e não poderá realizar novas reservas. O histórico será preservado.`
+      : `Deseja remover este administrador da escola? O histórico será preservado.`;
+
+    if (confirm(message)) {
+      setLoading(true);
+      if (isSupabaseConfigured) {
+        try {
+          const { error } = await supabase.functions.invoke('manage-user', {
+            body: { action: 'update', userData: { id: u.id, status: 'removido' } }
+          });
+          if (error) throw error;
+          toast.success("Usuário removido da escola.");
+          fetchUsers();
+        } catch (err: any) {
+          console.error("Error removing user:", err.message);
+          toast.error("Erro ao remover usuário");
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        const updated = localUsers.map(usr => usr.id === u.id ? { ...usr, status: "removido" as const } : usr);
+        saveMockUsuarios(updated as any);
+        setLocalUsers(updated);
+        toast.success("Usuário removido da escola.");
+        setLoading(false);
+      }
+    }
+  };
+
   const getStatusBadge = (status: Usuario["status"]) => {
     switch (status) {
       case "ativo": return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Ativo</Badge>;
       case "pendente": return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">Pendente</Badge>;
       case "bloqueado": return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Bloqueado</Badge>;
+      case "removido": return <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-100">Arquivado</Badge>;
     }
   };
 
@@ -251,10 +289,12 @@ const AdminProfessoresPage = () => {
           <h1 className="text-2xl font-bold text-slate-900">Usuários do Sistema</h1>
           <p className="text-sm text-slate-500">Gerencie professores e administradores de laboratório.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => openModal()}>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Novo Usuário
-        </Button>
+        {(isAdminPlataforma || (isAdminLab && activeTab === "professores")) && (
+          <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => openModal()}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Novo {activeTab === "professores" ? "Professor" : "Administrador"}
+          </Button>
+        )}
       </header>
 
 
@@ -264,14 +304,30 @@ const AdminProfessoresPage = () => {
           <TabsTrigger value="usuarios_lab" className="data-[state=active]:bg-white">Usuários Laboratório</TabsTrigger>
         </TabsList>
 
-        <div className="relative mt-4">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input 
-            className="pl-10" 
-            placeholder={`Buscar ${activeTab === "professores" ? "professores" : "usuários"} por nome ou e-mail...`} 
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
+        <div className="flex flex-col sm:flex-row gap-4 mt-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input 
+              className="pl-10" 
+              placeholder={`Buscar ${activeTab === "professores" ? "professores" : "usuários"} por nome ou e-mail...`} 
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="w-full sm:w-48">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ativos">Ativos</SelectItem>
+                <SelectItem value="pendente">Pendentes</SelectItem>
+                <SelectItem value="bloqueado">Bloqueados</SelectItem>
+                <SelectItem value="removido">Arquivados</SelectItem>
+                <SelectItem value="todos">Todos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {!isSupabaseConfigured && (
@@ -344,6 +400,7 @@ const AdminProfessoresPage = () => {
                               variant="outline" 
                               size="sm" 
                               disabled={loading}
+                              title="Aprovar"
                               onClick={async () => {
                                 if (isSupabaseConfigured) {
                                   setLoading(true);
@@ -371,44 +428,69 @@ const AdminProfessoresPage = () => {
                               <UserCheck className="h-4 w-4" />
                             </Button>
                           )}
-                          <Button variant="outline" size="sm" onClick={() => openModal(u)} className="h-8 w-8 p-0" disabled={loading}>
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            disabled={loading}
-                            className="text-red-600 hover:bg-red-50 border-red-100 h-8 w-8 p-0"
-                            onClick={async () => {
-                              const actionName = u.status === 'bloqueado' ? 'Ativar' : 'Bloquear';
-                              if (confirm(`Deseja ${actionName} o professor ${u.nome}?`)) {
-                                if (isSupabaseConfigured) {
-                                  setLoading(true);
-                                  try {
-                                    const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
-                                    const { error } = await supabase.functions.invoke('manage-user', {
-                                      body: { action: 'update', userData: { id: u.id, status: nextStatus } }
-                                    });
-                                    if (error) throw error;
-                                    toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'} com sucesso.`);
-                                    fetchUsers();
-                                  } catch (err: any) {
-                                    toast.error("Erro ao alterar status do usuário");
-                                  } finally {
-                                    setLoading(false);
+                          
+                          {(isAdminPlataforma || (isAdminLab && u.papel === "professor")) && (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => openModal(u)} 
+                                className="h-8 w-8 p-0" 
+                                disabled={loading}
+                                title="Editar"
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                              
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                disabled={loading}
+                                title={u.status === 'bloqueado' ? 'Ativar' : 'Bloquear'}
+                                className="text-amber-600 hover:bg-amber-50 border-amber-100 h-8 w-8 p-0"
+                                onClick={async () => {
+                                  const actionName = u.status === 'bloqueado' ? 'Ativar' : 'Bloquear';
+                                  if (confirm(`Deseja ${actionName} o professor ${u.nome}?`)) {
+                                    if (isSupabaseConfigured) {
+                                      setLoading(true);
+                                      try {
+                                        const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
+                                        const { error } = await supabase.functions.invoke('manage-user', {
+                                          body: { action: 'update', userData: { id: u.id, status: nextStatus } }
+                                        });
+                                        if (error) throw error;
+                                        toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'} com sucesso.`);
+                                        fetchUsers();
+                                      } catch (err: any) {
+                                        toast.error("Erro ao alterar status do usuário");
+                                      } finally {
+                                        setLoading(false);
+                                      }
+                                    } else {
+                                      const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
+                                      const updated = localUsers.map(usr => usr.id === u.id ? { ...usr, status: nextStatus as any } : usr);
+                                      saveMockUsuarios(updated as any);
+                                      setLocalUsers(updated);
+                                      toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'}.`);
+                                    }
                                   }
-                                } else {
-                                  const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
-                                  const updated = localUsers.map(usr => usr.id === u.id ? { ...usr, status: nextStatus as any } : usr);
-                                  saveMockUsuarios(updated as any);
-                                  setLocalUsers(updated);
-                                  toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'}.`);
-                                }
-                              }
-                            }}
-                          >
-                            <Power className="h-4 w-4" />
-                          </Button>
+                                }}
+                              >
+                                <Power className="h-4 w-4" />
+                              </Button>
+
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                disabled={loading || u.status === 'removido'}
+                                title="Remover da escola"
+                                className="text-red-600 hover:bg-red-50 border-red-100 h-8 w-8 p-0"
+                                onClick={() => handleRemoverUsuario(u)}
+                              >
+                                <ArchiveX className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -435,26 +517,88 @@ const AdminProfessoresPage = () => {
                   </div>
                 )}
                 <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="flex-1" onClick={() => openModal(u)}>
-                    Editar
-                  </Button>
                   {u.status === "pendente" && (
                     <Button 
                       size="sm" 
                       className="flex-1 bg-emerald-600 hover:bg-emerald-700" 
-                      onClick={() => {
-                        setLocalUsers(prev => {
-                          const updated = prev.map(usr => usr.id === u.id ? { ...usr, status: "ativo" as const } : usr);
-                          if (!isSupabaseConfigured) {
-                            saveMockUsuarios(updated as any);
+                      onClick={async () => {
+                        if (isSupabaseConfigured) {
+                          setLoading(true);
+                          try {
+                            const { error } = await supabase.functions.invoke('manage-user', {
+                              body: { action: 'update', userData: { id: u.id, status: 'ativo' } }
+                            });
+                            if (error) throw error;
+                            toast.success("Acesso aprovado!");
+                            fetchUsers();
+                          } catch (err: any) {
+                            toast.error("Erro ao aprovar usuário");
+                          } finally {
+                            setLoading(false);
                           }
-                          return updated;
-                        });
-                        toast.success("Acesso aprovado!");
+                        } else {
+                          const updated = localUsers.map(usr => usr.id === u.id ? { ...usr, status: "ativo" as const } : usr);
+                          saveMockUsuarios(updated as any);
+                          setLocalUsers(updated);
+                          toast.success("Acesso aprovado!");
+                        }
                       }}
                     >
                       Aprovar
                     </Button>
+                  )}
+
+                  {(isAdminPlataforma || (isAdminLab && u.papel === "professor")) && (
+                    <>
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => openModal(u)}>
+                        Editar
+                      </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1 text-amber-600 border-amber-100"
+                        onClick={async () => {
+                          const actionName = u.status === 'bloqueado' ? 'Ativar' : 'Bloquear';
+                          if (confirm(`Deseja ${actionName} o professor ${u.nome}?`)) {
+                            if (isSupabaseConfigured) {
+                              setLoading(true);
+                              try {
+                                const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
+                                const { error } = await supabase.functions.invoke('manage-user', {
+                                  body: { action: 'update', userData: { id: u.id, status: nextStatus } }
+                                });
+                                if (error) throw error;
+                                toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'} com sucesso.`);
+                                fetchUsers();
+                              } catch (err: any) {
+                                toast.error("Erro ao alterar status do usuário");
+                              } finally {
+                                setLoading(false);
+                              }
+                            } else {
+                              const nextStatus = u.status === 'bloqueado' ? 'ativo' : 'bloqueado';
+                              const updated = localUsers.map(usr => usr.id === u.id ? { ...usr, status: nextStatus as any } : usr);
+                              saveMockUsuarios(updated as any);
+                              setLocalUsers(updated);
+                              toast.success(`Usuário ${nextStatus === 'bloqueado' ? 'bloqueado' : 'ativado'}.`);
+                            }
+                          }
+                        }}
+                      >
+                        {u.status === 'bloqueado' ? 'Ativar' : 'Bloquear'}
+                      </Button>
+
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        disabled={u.status === 'removido'}
+                        className="flex-1 text-red-600 border-red-100"
+                        onClick={() => handleRemoverUsuario(u)}
+                      >
+                        Remover
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
@@ -568,6 +712,7 @@ const AdminProfessoresPage = () => {
                     <SelectItem value="ativo">Ativo</SelectItem>
                     <SelectItem value="pendente">Pendente</SelectItem>
                     <SelectItem value="bloqueado">Bloqueado</SelectItem>
+                    <SelectItem value="removido">Arquivado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
