@@ -139,18 +139,7 @@ const AprovacoesPage = () => {
 
   return (
     <div className="space-y-8 pb-20 md:pb-8 animate-in fade-in duration-500">
-      {/* Debug logs em ambiente de desenvolvimento */}
-      {useEffect(() => {
-        if (process.env.NODE_ENV === 'development') {
-          console.log("[CENTRAL LAB DEBUG]", {
-            escolaId: currentEscolaId,
-            totalBruto: allReservas.length,
-            hoje: reservasHoje.length,
-            futuro: proximasReservas.length,
-            isSupabase: isSupabaseConfigured
-          });
-        }
-      }, [allReservas, reservasHoje, proximasReservas, currentEscolaId])}
+      {/* Os logs de debug foram movidos para um useEffect no topo do componente */}
 
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
