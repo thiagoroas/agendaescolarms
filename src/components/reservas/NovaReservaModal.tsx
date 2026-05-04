@@ -299,7 +299,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     if (!formData.disciplina) { toast.error("Informe a disciplina"); return; }
     if (!formData.turma) { toast.error("Selecione a turma"); return; }
     if (!formData.data) { toast.error("Selecione uma data"); return; }
-    if (!formData.recursoId) { toast.error("Selecione um recurso"); return; }
+    if (formData.recursoIds.length === 0) { toast.error("Selecione pelo menos um recurso"); return; }
     if (formData.aulas.length === 0) { toast.error("Selecione pelo menos uma aula"); return; }
     
     if (profile?.role === 'professor' && !formData.objetivo_pedagogico) {
@@ -308,66 +308,65 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
     }
     
     if (conflictingAulas.length > 0) {
-      toast.error(`Este recurso já está reservado nesta data para a(s) aula(s): ${conflictingAulas.join(', ')}.`);
+      const conflictMessages = conflictingAulas.map(c => {
+        const rec = availableRecursos.find(r => r.id === c.recursoId);
+        return `${rec?.nome || "Recurso"} (Aula ${c.aula})`;
+      });
+      toast.error(`Conflito detectado: ${conflictMessages.join(', ')} já estão reservados.`);
       return;
     }
 
     const avisoConfirmado = avisosAtivos.find(a => a.exigir_confirmacao);
     
     try {
-      const isProfessor = profile?.role === 'professor';
-      
-      // Validação de escola_id do professor
+      // Validação de escola_id
       if (!profile?.escola_id) {
-        toast.error("Seu usuário não está vinculado a uma escola. Peça ao administrador para configurar seu perfil.");
+        toast.error("Seu usuário não está vinculado a uma escola.");
         return;
       }
 
-      // Validação de recurso
-      const recurso = availableRecursos.find(r => r.id === formData.recursoId);
-      if (!recurso) {
-        toast.error("Recurso não encontrado.");
-        return;
-      }
+      // Para cada recurso e cada aula, cria uma reserva
+      for (const recursoId of formData.recursoIds) {
+        const recurso = availableRecursos.find(r => r.id === recursoId);
+        if (!recurso) continue;
 
-      if (recurso.escola_id !== profile.escola_id) {
-        toast.error("Este recurso não pertence à sua escola.");
-        return;
-      }
+        if (recurso.escola_id !== profile.escola_id) {
+          toast.error(`O recurso ${recurso.nome} não pertence à sua escola.`);
+          return;
+        }
 
-      if (!recurso.ativo) {
-        toast.error("Este recurso está inativo.");
-        return;
-      }
+        if (!recurso.ativo) {
+          toast.error(`O recurso ${recurso.nome} está inativo.`);
+          return;
+        }
 
-      for (const aula of formData.aulas) {
-        const h = allHorarios.find(hour => hour.ordem === aula);
-        
-        const payload = {
-          escola_id: profile.escola_id,
-          recurso_id: formData.recursoId,
-          profile_id: formData.professorId,
-          criado_por: user?.id || "",
-          nome_professor: selectedProfessor?.nome || profile?.full_name || "",
-          disciplina: formData.disciplina,
-          turma: formData.turma,
-          data: formData.data,
-          turno: h ? (h.turno as "manha" | "tarde") : (aula <= 4 ? "manha" : "tarde"),
-          aula: aula,
-          horario: h ? `${h.hora_inicio.substring(0, 5)} – ${h.hora_fim.substring(0, 5)}` : "",
-          objetivo_pedagogico: formData.objetivo_pedagogico,
-          observacao: formData.observacao,
-          status: "confirmada" as const,
-          aviso_confirmado_id: avisoConfirmado?.id,
-          aviso_confirmado_em: avisoConfirmado ? new Date().toISOString() : undefined
-        };
+        for (const aula of formData.aulas) {
+          const h = allHorarios.find(hour => hour.ordem === aula);
+          
+          const payload = {
+            escola_id: profile.escola_id,
+            recurso_id: recursoId,
+            profile_id: formData.professorId,
+            criado_por: user?.id || "",
+            nome_professor: selectedProfessor?.nome || profile?.full_name || "",
+            disciplina: formData.disciplina,
+            turma: formData.turma,
+            data: formData.data,
+            turno: h ? (h.turno as "manha" | "tarde") : (aula <= 4 ? "manha" : "tarde"),
+            aula: aula,
+            horario: h ? `${h.hora_inicio.substring(0, 5)} – ${h.hora_fim.substring(0, 5)}` : "",
+            objetivo_pedagogico: formData.objetivo_pedagogico,
+            observacao: formData.observacao,
+            status: "confirmada" as const,
+            aviso_confirmado_id: avisoConfirmado?.id,
+            aviso_confirmado_em: avisoConfirmado ? new Date().toISOString() : undefined
+          };
 
-        console.log("[RESERVA PAYLOAD]", payload);
-        
-        const result = await createReserva(payload);
-        if (!result) {
-          // Se falhou um (e não foi conflito), interrompe
-          break;
+          const result = await createReserva(payload);
+          if (!result) {
+            // Se falhou, interrompe para evitar dados inconsistentes
+            return;
+          }
         }
       }
       onClose();
