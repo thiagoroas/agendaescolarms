@@ -110,21 +110,34 @@ const DashboardPage = () => {
   }, [reservationsSource]);
 
   const reservasHoje = useMemo(() => {
-    // Para Admin Lab e Admin Plataforma, mostramos todas as reservas confirmadas da escola para hoje
+    // Diagnóstico via logs internos para entender o que está acontecendo no filter
     let list = reservationsSource.filter(r => {
-      // Normalização da data para comparação YYYY-MM-DD
-      const resData = r.data.split('T')[0];
+      // Normalização da data: tenta YYYY-MM-DD ou extrai do timestamp
+      let resData = r.data;
+      if (resData.includes('T')) {
+        resData = resData.split('T')[0];
+      } else if (resData.includes(' ')) {
+        resData = resData.split(' ')[0];
+      }
+      
       const isToday = resData === hojeStr;
       
-      // Filtro de status flexível para abranger variações de banco
-      // Usamos type assertion para evitar erros de TS com valores fora do enum em ambiente de dev/mock
-      const status = r.status as string;
-      const isConfirmed = status === "confirmada" || status === "aprovada" || status === "ativo" || status === "ativa";
+      const status = String(r.status).toLowerCase();
+      // Status válidos para exibição na Central (confirmados ou em uso)
+      const isConfirmed = [
+        "confirmada", 
+        "confirmado", 
+        "aprovada", 
+        "aprovado", 
+        "ativo", 
+        "ativa", 
+        "realizada",
+        "pendente" // Incluindo pendente para diagnóstico se nada aparecer
+      ].includes(status);
       
       return isToday && isConfirmed;
     });
     
-    // Se for professor, ele vê apenas as próprias reservas de hoje
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
     }
@@ -134,10 +147,26 @@ const DashboardPage = () => {
 
   const proximasReservas = useMemo(() => {
     let list = reservationsSource.filter(r => {
-      const resData = r.data.split('T')[0];
+      let resData = r.data;
+      if (resData.includes('T')) {
+        resData = resData.split('T')[0];
+      } else if (resData.includes(' ')) {
+        resData = resData.split(' ')[0];
+      }
+      
       const isFuture = resData > hojeStr;
-      const status = r.status as string;
-      const isConfirmed = status === "confirmada" || status === "aprovada" || status === "ativo" || status === "ativa";
+      
+      const status = String(r.status).toLowerCase();
+      const isConfirmed = [
+        "confirmada", 
+        "confirmado", 
+        "aprovada", 
+        "aprovado", 
+        "ativo", 
+        "ativa", 
+        "realizada",
+        "pendente"
+      ].includes(status);
       
       return isFuture && isConfirmed;
     });
@@ -150,22 +179,31 @@ const DashboardPage = () => {
     return list.sort((a, b) => a.data.localeCompare(b.data) || a.aula - b.aula).slice(0, limit);
   }, [reservationsSource, hojeStr, profile?.role, user?.id]);
 
+  const debugData = useMemo(() => {
+    return {
+      email: user?.email,
+      role: profile?.role,
+      profileId: user?.id,
+      profileEscolaId: profile?.escola_id,
+      selectedEscolaId: selectedEscolaId,
+      escolaIdFinalUsado: currentEscolaId,
+      hojeLocal: hojeStr,
+      totalReservasBrutas: reservationsSource.length,
+      statusEncontrados: statusEncontrados,
+      datasEncontradas: Array.from(new Set(reservationsSource.map(r => r.data.split('T')[0]))).sort(),
+      reservasHojeBrutas: reservationsSource.filter(r => r.data.split('T')[0] === hojeStr).length,
+      reservasHojeFiltradas: reservasHoje.length,
+      reservasFuturasBrutas: reservationsSource.filter(r => r.data.split('T')[0] > hojeStr).length,
+      reservasFuturasFiltradas: proximasReservas.length,
+      primeiraReserva: reservationsSource[0] || null
+    };
+  }, [user, profile, selectedEscolaId, currentEscolaId, hojeStr, reservationsSource, statusEncontrados, reservasHoje, proximasReservas]);
+
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log("[CENTRAL LAB] profile.role:", profile?.role);
-      console.log("[CENTRAL LAB] profile.escola_id:", profile?.escola_id);
-      console.log("[CENTRAL LAB] selectedEscolaId:", selectedEscolaId);
-      console.log("[CENTRAL LAB] escolaIdFinalUsado:", currentEscolaId);
-      console.log("[CENTRAL LAB] hojeLocal:", hojeStr);
-      console.log("[CENTRAL LAB] totalReservasCarregadas (raw):", reservationsSource.length);
-      console.log("[CENTRAL LAB] statusEncontrados:", statusEncontrados);
-      console.log("[CENTRAL LAB] reservasHojeFiltradas:", reservasHoje.length);
-      console.log("[CENTRAL LAB] reservasFuturasFiltradas:", proximasReservas.length);
-      if (reservasHoje.length > 0) {
-        console.log("[CENTRAL LAB] primeiraReservaExemplo:", reservasHoje[0]);
-      }
+      console.log("[CENTRAL LAB DEBUG]", debugData);
     }
-  }, [profile?.role, profile?.escola_id, selectedEscolaId, currentEscolaId, hojeStr, reservationsSource, statusEncontrados, reservasHoje, proximasReservas]);
+  }, [debugData]);
 
   const alertas = useMemo(() => {
     return reservationsSource.filter(r => 
@@ -194,6 +232,42 @@ const DashboardPage = () => {
 
   return (
     <div className="space-y-8 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-8 animate-in fade-in duration-500">
+      {/* Painel de Debug - Visível apenas em desenvolvimento para Admin Lab/Plataforma */}
+      {process.env.NODE_ENV === 'development' && (profile?.role === 'admin_lab' || profile?.role === 'admin_plataforma') && (
+        <Card className="border-2 border-dashed border-blue-200 bg-blue-50/30 rounded-3xl overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4 text-blue-600">
+              <Info size={20} />
+              <h2 className="font-black uppercase tracking-widest text-xs">Painel de Diagnóstico (Debug)</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-[10px] font-mono">
+              <div className="space-y-1 bg-white p-3 rounded-xl border border-blue-100">
+                <p><span className="text-slate-400">Usuário:</span> {debugData.email}</p>
+                <p><span className="text-slate-400">Papel:</span> {debugData.role}</p>
+                <p><span className="text-slate-400">Profile ID:</span> {debugData.profileId}</p>
+              </div>
+              <div className="space-y-1 bg-white p-3 rounded-xl border border-blue-100">
+                <p><span className="text-slate-400">Escola Profile:</span> {debugData.profileEscolaId}</p>
+                <p><span className="text-slate-400">Escola Selecionada:</span> {debugData.selectedEscolaId || 'Nenhuma'}</p>
+                <p><span className="text-slate-400 font-bold text-blue-600">ID Final Usado:</span> {debugData.escolaIdFinalUsado}</p>
+              </div>
+              <div className="space-y-1 bg-white p-3 rounded-xl border border-blue-100">
+                <p><span className="text-slate-400">Hoje Local:</span> {debugData.hojeLocal}</p>
+                <p><span className="text-slate-400">Total Bruto:</span> <span className="font-bold text-blue-600">{debugData.totalReservasBrutas}</span></p>
+                <p><span className="text-slate-400">Status no Banco:</span> {debugData.statusEncontrados.join(', ') || 'Nenhum'}</p>
+              </div>
+              <div className="space-y-1 bg-white p-3 rounded-xl border border-blue-100">
+                <p><span className="text-slate-400">Hoje (Bruto/Filt):</span> {debugData.reservasHojeBrutas} / <span className="font-bold text-emerald-600">{debugData.reservasHojeFiltradas}</span></p>
+                <p><span className="text-slate-400">Futuro (Bruto/Filt):</span> {debugData.reservasFuturasBrutas} / <span className="font-bold text-emerald-600">{debugData.reservasFuturasFiltradas}</span></p>
+              </div>
+              <div className="md:col-span-2 space-y-1 bg-white p-3 rounded-xl border border-blue-100 overflow-x-auto whitespace-pre">
+                <p><span className="text-slate-400">Primeira Reserva:</span> {debugData.primeiraReserva ? JSON.stringify(debugData.primeiraReserva, null, 2) : 'Nenhuma'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="h-12 w-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-100">
