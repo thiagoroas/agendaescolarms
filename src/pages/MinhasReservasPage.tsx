@@ -107,10 +107,6 @@ const MinhasReservasPage = () => {
 
           {!isCanceled && (
             <div className="flex gap-2 mt-4 pt-4 border-t">
-              <Button variant="outline" size="sm" className="flex-1" onClick={() => toast.info("Funcionalidade de edição em breve.")}>
-                <Edit className="mr-2 h-4 w-4" />
-                Editar
-              </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -118,7 +114,7 @@ const MinhasReservasPage = () => {
                 onClick={() => setReservaParaCancelar(r)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Cancelar
+                Cancelar reserva
               </Button>
             </div>
           )}
