@@ -634,9 +634,32 @@ const AgendaPage = () => {
               {weekDates.map((date, i) => {
                 const isToday = isSameDay(date, new Date());
                 return (
-                  <div key={i} className={`cal-header-cell ${isToday ? 'today' : ''}`}>
-                    <div className="cal-day-label">{diasSemana[i].substring(0, 3)}</div>
-                    <div className={`cal-day-num ${isToday ? 'today' : ''}`}>{format(date, "d")}</div>
+                  <div 
+                    key={i} 
+                    className={cn(
+                      "cal-header-cell",
+                      isToday && "today bg-gradient-to-b from-blue-50 to-white border-blue-200 shadow-[inset_0_-2px_0_0_#2563eb]"
+                    )}
+                  >
+                    <div className={cn(
+                      "cal-day-label",
+                      isToday && "text-blue-700 font-black"
+                    )}>
+                      {diasSemana[i].substring(0, 3)}
+                    </div>
+                    <div className={cn(
+                      "cal-day-num",
+                      isToday && "today scale-110"
+                    )}>
+                      {format(date, "d")}
+                    </div>
+                    {isToday && (
+                      <div className="absolute top-1 right-1">
+                        <span className="bg-blue-600 text-[8px] font-black text-white px-1.5 py-0.5 rounded-full uppercase tracking-tighter shadow-sm animate-pulse">
+                          Hoje
+                        </span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -661,13 +684,16 @@ const AgendaPage = () => {
                   const reservasNoSlot = getReservasForSlot(date, h.ordem);
                   const status = getSlotStatus(date, h.hora_inicio, h.hora_fim);
 
+                  const isToday = isSameDay(date, new Date());
+
                   return (
                     <div
                       key={dIdx}
                       className={cn(
                         "cal-cell",
                         status === "ended" && "ended",
-                        status === "ongoing" && "ongoing"
+                        status === "ongoing" && "ongoing",
+                        isToday && "bg-blue-50/20"
                       )}
                       onClick={() => (reservasNoSlot.length === 0 || status === "ended") ? handleSlotClick(date, h) : null}
                     >
@@ -777,12 +803,23 @@ const AgendaPage = () => {
           <div className="mobile-timeline">
             {mobileView === "dia" ? (
               <>
-                <div className="mobile-day-header w-full box-border">
+                <div className={cn(
+                  "mobile-day-header w-full box-border",
+                  isSameDay(currentDate, new Date()) && "bg-blue-50 border-blue-200"
+                )}>
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <CalendarIcon size={18} className="text-blue-600 shrink-0" />
-                    <span className="mobile-day-label truncate text-sm sm:text-base">
-                      {format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
-                    </span>
+                    <CalendarIcon size={18} className={cn("shrink-0", isSameDay(currentDate, new Date()) ? "text-blue-700" : "text-blue-600")} />
+                    <div className="flex flex-col">
+                      {isSameDay(currentDate, new Date()) && (
+                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 leading-none mb-1">Hoje</span>
+                      )}
+                      <span className={cn(
+                        "mobile-day-label truncate text-sm sm:text-base",
+                        isSameDay(currentDate, new Date()) && "font-black text-blue-900"
+                      )}>
+                        {format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
+                      </span>
+                    </div>
                   </div>
                   <button 
                     className="text-[11px] font-black uppercase tracking-widest text-blue-600 px-2 py-1 rounded-md bg-blue-50"
@@ -917,8 +954,8 @@ const AgendaPage = () => {
                     <div 
                       key={i} 
                       className={cn(
-                        "bg-white border rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-all",
-                        isToday ? "border-blue-200 bg-blue-50/30" : "border-slate-100",
+                        "bg-white border rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-all relative overflow-hidden",
+                        isToday ? "border-blue-400 bg-blue-50/50 ring-2 ring-blue-100" : "border-slate-100",
                         isPast && "opacity-75 grayscale-[0.3]"
                       )}
                       onClick={() => {
@@ -926,6 +963,13 @@ const AgendaPage = () => {
                         setMobileView("dia");
                       }}
                     >
+                      {isToday && (
+                        <div className="absolute top-0 right-0">
+                          <div className="bg-blue-600 text-[9px] font-black text-white px-3 py-1 rounded-bl-xl uppercase tracking-widest shadow-sm">
+                            Hoje
+                          </div>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center mb-3">
                         <div className="flex items-center gap-3">
                           <div className={cn(
