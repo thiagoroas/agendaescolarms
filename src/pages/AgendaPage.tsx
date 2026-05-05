@@ -854,11 +854,14 @@ const AgendaPage = () => {
                           >
                             {status === "ended" ? (
                               <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[11px] font-black uppercase tracking-widest text-red-500">Encerrado</span>
-                                  <span className="text-[10px] text-slate-400 font-medium">— Horário já passou</span>
+                                <div className="flex flex-col">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-red-500">Encerrado</span>
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Sem reserva</span>
+                                  </div>
+                                  <span className="text-[9px] text-slate-400 font-medium">Este horário já passou</span>
                                 </div>
-                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Ver detalhes</span>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Ver horário</span>
                               </div>
                             ) : status === "ongoing" ? (
                               <div className="flex items-center gap-2">
