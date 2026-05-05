@@ -181,14 +181,25 @@ const AdminProfessoresPage = () => {
         }
 
         console.log("[DEBUG] Invocando manage-user action:", action);
-        const { data, error } = await supabase.functions.invoke('manage-user', {
+        const { data, error: invokeError } = await supabase.functions.invoke('manage-user', {
           body: { action, userData }
         });
 
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
+        if (invokeError) throw invokeError;
+        if (data?.error) {
+          if (data.code === 'ALREADY_LINKED') {
+            toast.error(data.error);
+            setIsModalOpen(false);
+            return;
+          }
+          throw new Error(data.error);
+        }
 
-        toast.success(editingUserId ? "Usuário atualizado!" : "Usuário cadastrado!");
+        if (data?.isNewUser === false && action === 'create') {
+          toast.info("Este usuário já existe. Foi adicionado vínculo com esta escola.");
+        } else {
+          toast.success(editingUserId ? "Usuário atualizado!" : "Usuário cadastrado!");
+        }
         setIsModalOpen(false);
         fetchUsers();
       } catch (err: any) {
@@ -250,7 +261,7 @@ const AdminProfessoresPage = () => {
       if (isSupabaseConfigured) {
         try {
           const { error } = await supabase.functions.invoke('manage-user', {
-            body: { action: 'update', userData: { id: u.id, status: 'removido' } }
+            body: { action: 'update', userData: { id: u.id, escola_id: u.escola_id, status: 'removido' } }
           });
           if (error) throw error;
           toast.success("Usuário removido da escola.");
