@@ -31,7 +31,11 @@ export const useReservas = (escolaId?: string) => {
         console.log("[RESERVAS] escolaId usado:", targetEscolaId);
         const { data, error: supabaseError } = await supabase
           .from("reservas")
-          .select("*")
+          .select(`
+            *,
+            professor:profiles!reservas_profile_id_fkey(id, nome, email),
+            recurso:recursos!reservas_recurso_id_fkey(id, nome, tipo)
+          `)
           .eq("escola_id", targetEscolaId);
 
         if (supabaseError) throw supabaseError;
