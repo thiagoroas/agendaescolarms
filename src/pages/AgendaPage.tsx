@@ -241,24 +241,26 @@ const AgendaPage = () => {
     const status = getSlotStatus(date, h.hora_inicio, h.hora_fim);
     const resList = getReservasForSlot(date, h.ordem);
     
-    // Se o horário está encerrado
+    // 1. Primeiro verificar se existe reserva no slot (mesmo se encerrado)
+    if (resList.length > 0) {
+      const res = resList[0];
+      const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
+      setActiveReserva({ reserva: res, recurso: rec! });
+      setIsModalDetalhesOpen(true);
+      return;
+    }
+
+    // 2. Se não existe reserva e o horário está encerrado
     if (status === "ended") {
-      if (resList.length > 0) {
-        const res = resList[0];
-        const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
-        setActiveReserva({ reserva: res, recurso: rec! });
-        setIsModalDetalhesOpen(true);
-      } else {
-        setSelectedHorarioData({
-          escola: escola?.nome || "Escola não identificada",
-          data: format(date, "yyyy-MM-dd"),
-          aula: h.ordem,
-          horarioInicio: h.hora_inicio,
-          horarioFim: h.hora_fim,
-          turno: h.turno
-        });
-        setIsModalHorarioOpen(true);
-      }
+      setSelectedHorarioData({
+        escola: escola?.nome || "Escola não identificada",
+        data: format(date, "yyyy-MM-dd"),
+        aula: h.ordem,
+        horarioInicio: h.hora_inicio,
+        horarioFim: h.hora_fim,
+        turno: h.turno
+      });
+      setIsModalHorarioOpen(true);
       return;
     }
 
