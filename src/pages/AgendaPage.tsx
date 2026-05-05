@@ -684,13 +684,16 @@ const AgendaPage = () => {
                   const reservasNoSlot = getReservasForSlot(date, h.ordem);
                   const status = getSlotStatus(date, h.hora_inicio, h.hora_fim);
 
+                  const isToday = isSameDay(date, new Date());
+
                   return (
                     <div
                       key={dIdx}
                       className={cn(
                         "cal-cell",
                         status === "ended" && "ended",
-                        status === "ongoing" && "ongoing"
+                        status === "ongoing" && "ongoing",
+                        isToday && "bg-blue-50/20"
                       )}
                       onClick={() => (reservasNoSlot.length === 0 || status === "ended") ? handleSlotClick(date, h) : null}
                     >
