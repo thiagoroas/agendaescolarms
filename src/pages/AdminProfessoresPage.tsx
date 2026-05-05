@@ -44,14 +44,26 @@ const AdminProfessoresPage = () => {
       try {
         let query = supabase.from("profile_escolas").select("*, profile:profiles(*)");
         
-        // Filter by role in the link
-        query = query.in("papel", ["professor", "admin_lab"]);
+        const isAdminPlataforma = profile?.role === "admin_plataforma";
+        const isAdminLab = profile?.role === "admin_lab";
 
-        // Permission filtering - must be linked to the current school
-        if (profile?.role === "admin_lab") {
-          query = query.eq("escola_id", profile.escola_id);
-        } else if (profile?.role === "admin_plataforma" && selectedEscolaId) {
-          query = query.eq("escola_id", selectedEscolaId);
+        // Filtering based on role and context
+        if (isAdminLab) {
+          // Admin Lab: only see professors from their own school
+          query = query.eq("escola_id", profile.escola_id).eq("papel", "professor");
+        } else if (isAdminPlataforma) {
+          // Admin Plataforma:
+          // Filter by role based on tab
+          if (activeTab === "professores") {
+            query = query.eq("papel", "professor");
+          } else if (activeTab === "usuarios_lab") {
+            query = query.eq("papel", "admin_lab");
+          }
+
+          // Filter by selected school if applicable
+          if (selectedEscolaId && selectedEscolaId !== "todas") {
+            query = query.eq("escola_id", selectedEscolaId);
+          }
         }
 
         const { data, error } = await query;
@@ -89,7 +101,8 @@ const AdminProfessoresPage = () => {
   const isAdminLab = profile?.role === "admin_lab";
   
   const filteredUsers = localUsers.filter(u => {
-    // Tab filter
+    // Note: Database query already filters by papel for activeTab in Supabase mode.
+    // This frontend filter is kept for mock mode and extra safety.
     if (activeTab === "professores" && u.papel !== "professor") return false;
     if (activeTab === "usuarios_lab" && u.papel !== "admin_lab") return false;
 
@@ -308,10 +321,12 @@ const AdminProfessoresPage = () => {
 
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-slate-100 p-1 mb-2">
-          <TabsTrigger value="professores" className="data-[state=active]:bg-white">Professores</TabsTrigger>
-          <TabsTrigger value="usuarios_lab" className="data-[state=active]:bg-white">Usuários Laboratório</TabsTrigger>
-        </TabsList>
+        {isAdminPlataforma && (
+          <TabsList className="bg-slate-100 p-1 mb-2">
+            <TabsTrigger value="professores" className="data-[state=active]:bg-white">Professores</TabsTrigger>
+            <TabsTrigger value="usuarios_lab" className="data-[state=active]:bg-white">Usuários Laboratório</TabsTrigger>
+          </TabsList>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
           <div className="relative flex-1">
