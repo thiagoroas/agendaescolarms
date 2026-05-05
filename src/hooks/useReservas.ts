@@ -70,10 +70,15 @@ export const useReservas = (escolaId?: string) => {
           setReservas(reservasBasicas);
         }
       } catch (err: any) {
-        console.error("[RESERVAS] Error fetching reservas:", err.message, err);
+        console.error("[RESERVAS] Error fetching reservas:", {
+          message: err.message,
+          code: err.code,
+          details: err.details,
+          hint: err.hint
+        });
         setError(err.message);
         
-        toast.error("Erro ao carregar reservas", {
+        toast.error("Erro ao carregar reservas. Verifique o console para detalhes.", {
           id: "erro-carregar-reservas"
         });
       } finally {
