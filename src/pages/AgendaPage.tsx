@@ -590,12 +590,17 @@ const AgendaPage = () => {
                   }
 
                   const reservasNoSlot = getReservasForSlot(date, h.ordem);
+                  const status = getSlotStatus(date, h.hora_inicio, h.hora_fim);
 
                   return (
                     <div
                       key={dIdx}
-                      className="cal-cell"
-                      onClick={() => reservasNoSlot.length === 0 && handleSlotClick(date, h)}
+                      className={cn(
+                        "cal-cell",
+                        status === "ended" && "ended",
+                        status === "ongoing" && "ongoing"
+                      )}
+                      onClick={() => (reservasNoSlot.length === 0 || status === "ended") ? handleSlotClick(date, h) : null}
                     >
                       {reservasNoSlot.length > 0 ? (
                         <div className="flex flex-col gap-1 w-full h-full p-1 overflow-y-auto scrollbar-hide">
@@ -610,6 +615,8 @@ const AgendaPage = () => {
                                   "event", 
                                   tipoColor(recurso.tipo),
                                   reserva.status === "pendente" && "border-amber-400 border-2 shadow-amber-100",
+                                  status === "ended" && "ended",
+                                  status === "ongoing" && "ongoing",
                                   "mb-0.5"
                                 )}
                                 onClick={(e) => { 
@@ -624,7 +631,15 @@ const AgendaPage = () => {
                                     {initialsOf(reserva.nome_professor)}
                                   </span>
                                   <div className="flex flex-col min-w-0">
-                                    <span className="truncate leading-tight">{reserva.nome_professor}</span>
+                                    <div className="flex items-center gap-1">
+                                      <span className="truncate leading-tight">{reserva.nome_professor}</span>
+                                      {status === "ended" && (
+                                        <span className="px-1 bg-red-100 text-[8px] font-black uppercase text-red-600 rounded shrink-0">Encerrada</span>
+                                      )}
+                                      {status === "ongoing" && (
+                                        <span className="px-1 bg-amber-100 text-[8px] font-black uppercase text-amber-600 rounded shrink-0 animate-pulse">Em andamento</span>
+                                      )}
+                                    </div>
                                     {reserva.status === "pendente" && (
                                       <span className="text-[8px] font-black uppercase text-amber-600 tracking-tighter">Pendente</span>
                                     )}
@@ -636,7 +651,7 @@ const AgendaPage = () => {
                                   <span className="truncate flex-1 font-bold" title={recurso.nome}>{recurso.nome}</span>
                                 </div>
                                 <div className="event-actions">
-                                  {(profile?.role === 'admin_plataforma' || 
+                                  {status !== "ended" && (profile?.role === 'admin_plataforma' || 
                                     (profile?.role === 'admin_lab' && reserva.escola_id === profile.escola_id) ||
                                     (profile?.role === 'professor' && reserva.profile_id === user?.id)) && (
                                     <span
@@ -657,9 +672,23 @@ const AgendaPage = () => {
                           })}
                         </div>
                       ) : (
-                        <div className="add-hint">
-                          <Plus size={14} /> Reservar
-                        </div>
+                        status === "ended" ? (
+                          <div className="flex flex-col items-center justify-center h-full opacity-40">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-red-500">Encerrado</span>
+                            <span className="text-[8px] font-medium text-slate-400">Horário já passou</span>
+                          </div>
+                        ) : status === "ongoing" ? (
+                          <div className="flex flex-col items-center justify-center h-full">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">Em andamento</span>
+                            <div className="add-hint mt-1">
+                              <Plus size={14} /> Reservar
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="add-hint">
+                            <Plus size={14} /> Reservar
+                          </div>
+                        )
                       )}
                     </div>
                   );
