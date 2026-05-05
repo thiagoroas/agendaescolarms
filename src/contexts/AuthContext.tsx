@@ -172,8 +172,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Se o usuário não tem vínculos em profile_escolas, tentamos o fallback do profile.escola_id
         const fallbackEscolaId = data.escola_id;
         const fallbackRole = data.papel as UserRole;
-        const activeEscolaId = userVinculos.length > 0 ? userVinculos[0].escola_id : fallbackEscolaId;
-        const activeRole = userVinculos.length > 0 ? userVinculos[0].papel : fallbackRole;
+        
+        // Determinar escola e papel iniciais
+        let activeEscolaId = userVinculos.length > 0 ? userVinculos[0].escola_id : fallbackEscolaId;
+        let activeRole = userVinculos.length > 0 ? userVinculos[0].papel : fallbackRole;
+        let activeDisciplinas = userVinculos.length > 0 ? userVinculos[0].disciplinas : data.disciplinas;
+
+        // Valida se o ID salvo no localStorage é compatível
+        const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
+        if (savedEscolaId && isValidUUID(savedEscolaId)) {
+          // Verifica se o savedEscolaId está entre os vínculos permitidos ou é o fallback
+          const matchedVinculo = userVinculos.find(v => v.escola_id === savedEscolaId);
+          const isFallback = (fallbackEscolaId === savedEscolaId);
+          const isPlatformAdmin = (data.papel === "admin_plataforma");
+          
+          if (matchedVinculo) {
+            activeEscolaId = savedEscolaId;
+            activeRole = matchedVinculo.papel;
+            activeDisciplinas = matchedVinculo.disciplinas;
+          } else if (isFallback || isPlatformAdmin) {
+            activeEscolaId = savedEscolaId;
+            // Se for fallback e não tiver vínculo explícito, usamos o papel do profile
+            // Se for admin plataforma, o papel já é admin_plataforma
+          }
+        } else if (savedEscolaId && !isValidUUID(savedEscolaId)) {
+          localStorage.removeItem("agenda_selected_escola_id");
+        }
 
         const mappedProfile: Profile = {
           id: data.id,
@@ -181,30 +205,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           escola_id: activeEscolaId,
           role: activeRole,
           status: data.status as "ativo" | "pendente" | "bloqueado",
-          disciplinas: userVinculos.length > 0 ? userVinculos[0].disciplinas : data.disciplinas
+          disciplinas: activeDisciplinas
         };
         
         setProfile(mappedProfile);
+        setVinculos(userVinculos);
+        setSelectedEscolaIdState(activeEscolaId);
         setError(null);
-        
-        // Valida se o ID salvo é compatível com o modo atual
-        const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
-        if (isSupabaseConfigured && savedEscolaId && !isValidUUID(savedEscolaId)) {
-          if (selectedEscolaId !== activeEscolaId) {
-            setSelectedEscolaIdState(activeEscolaId);
-          }
-          localStorage.removeItem("agenda_selected_escola_id");
-        } else if (savedEscolaId && selectedEscolaId !== savedEscolaId) {
-          // Verifica se o savedEscolaId está entre os vínculos permitidos
-          const hasVinculo = userVinculos.some(v => v.escola_id === savedEscolaId) || (fallbackEscolaId === savedEscolaId) || (data.papel === "admin_plataforma");
-          if (hasVinculo) {
-            setSelectedEscolaIdState(savedEscolaId);
-          } else {
-            setSelectedEscolaIdState(activeEscolaId);
-          }
-        } else if (!savedEscolaId && activeEscolaId && selectedEscolaId !== activeEscolaId) {
-          setSelectedEscolaIdState(activeEscolaId);
-        }
       }
     } catch (err) {
       console.error("[AUTH] loadSessionAndProfile error", err);
