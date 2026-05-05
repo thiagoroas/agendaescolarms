@@ -249,6 +249,7 @@ const AgendaPage = () => {
     
     const targetReserva = specificReserva || (resList.length > 0 ? resList[0] : null);
 
+    console.log('[RESERVA CARD CLICK]', targetReserva);
     console.log('[AGENDA CLICK]', {
       hasReserva: !!targetReserva,
       slotStatus: status,
