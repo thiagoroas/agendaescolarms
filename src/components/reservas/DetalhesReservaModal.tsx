@@ -69,6 +69,13 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
               </div>
               <p className="text-sm font-black text-slate-900 truncate tracking-tight">{reserva.nome_professor}</p>
             </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <BookOpen className="h-3 w-3" /> Disciplina
+              </div>
+              <p className="text-sm font-black text-slate-900 truncate tracking-tight">{reserva.disciplina || "Não informada"}</p>
+            </div>
             
             <div className="space-y-1">
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
