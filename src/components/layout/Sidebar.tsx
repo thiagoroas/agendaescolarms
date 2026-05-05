@@ -50,11 +50,11 @@ const Sidebar = () => {
               "flex items-center gap-3 p-3 rounded-2xl border transition-all duration-300 shadow-lg backdrop-blur-md cursor-pointer",
               !escola 
                 ? "bg-red-500/20 border-red-400/30" 
-                : "bg-white/10 border-white/20 hover:bg-white/15 hover:border-white/30"
+                : "bg-white/10 border-white/20 hover:bg-white/20 hover:border-white/30"
             )}>
               <div className={cn(
                 "rounded-xl p-2 text-white shrink-0 shadow-inner",
-                !escola ? "bg-red-500" : "bg-blue-500/50 backdrop-blur-sm"
+                !escola ? "bg-red-500" : "bg-blue-500/60 backdrop-blur-sm"
               )}>
                 <Building className="h-5 w-5" />
               </div>
