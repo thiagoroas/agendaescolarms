@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import NovaReservaModal from "../components/reservas/NovaReservaModal";
 import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
 import RelatorioReservasModal from "../components/reservas/RelatorioReservasModal";
+import DetalhesHorarioModal from "../components/reservas/DetalhesHorarioModal";
 import "./agenda.css";
 
 const tipoColor = (tipo: string) => {
@@ -104,6 +105,15 @@ const AgendaPage = () => {
   const [isModalDetalhesOpen, setIsModalDetalhesOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{date: string, aula: number, turno: "manha" | "tarde"} | null>(null);
   const [activeReserva, setActiveReserva] = useState<{reserva: Reserva, recurso: Recurso} | null>(null);
+  const [isModalHorarioOpen, setIsModalHorarioOpen] = useState(false);
+  const [selectedHorarioData, setSelectedHorarioData] = useState<{
+    escola: string;
+    data: string;
+    aula: number;
+    horarioInicio: string;
+    horarioFim: string;
+    turno: string;
+  } | null>(null);
 
   const getSlotStatus = (date: Date, horaInicio: string, horaFim: string) => {
     const now = new Date();
@@ -229,10 +239,26 @@ const AgendaPage = () => {
 
   const handleSlotClick = (date: Date, h: HorarioEscola) => {
     const status = getSlotStatus(date, h.hora_inicio, h.hora_fim);
+    const resList = getReservasForSlot(date, h.ordem);
     
-    // Bloquear reserva em horários encerrados
+    // Se o horário está encerrado
     if (status === "ended") {
-      toast.error("Não é possível reservar um horário que já passou.");
+      if (resList.length > 0) {
+        const res = resList[0];
+        const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
+        setActiveReserva({ reserva: res, recurso: rec! });
+        setIsModalDetalhesOpen(true);
+      } else {
+        setSelectedHorarioData({
+          escola: escola?.nome || "Escola não identificada",
+          data: format(date, "yyyy-MM-dd"),
+          aula: h.ordem,
+          horarioInicio: h.hora_inicio,
+          horarioFim: h.hora_fim,
+          turno: h.turno
+        });
+        setIsModalHorarioOpen(true);
+      }
       return;
     }
 
@@ -242,7 +268,6 @@ const AgendaPage = () => {
       return;
     }
 
-    const resList = getReservasForSlot(date, h.ordem);
     if (resList.length > 0) {
       const res = resList[0];
       const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
