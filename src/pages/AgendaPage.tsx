@@ -90,6 +90,7 @@ const AgendaPage = () => {
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
   const [isModalRelatorioOpen, setIsModalRelatorioOpen] = useState(false);
   const [showAllAvisos, setShowAllAvisos] = useState(false);
+  const [showLegend, setShowLegend] = useState(false);
   
   // Avisos are now loaded via useAvisos hook
 
