@@ -103,11 +103,18 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
               </div>
             </div>
 
-            <div className="space-y-1 col-span-2">
+            <div className="space-y-1">
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                 <BookOpen className="h-3 w-3" /> Recurso
               </div>
               <p className="text-sm font-black text-slate-900 tracking-tight">{recurso?.nome}</p>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <Info className="h-3 w-3" /> Status
+              </div>
+              <p className="text-sm font-black text-slate-900 tracking-tight capitalize">{reserva.status || "Pendente"}</p>
             </div>
           </div>
 
