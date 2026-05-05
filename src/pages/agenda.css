@@ -721,9 +721,16 @@
   white-space: normal;
   word-break: break-word;
   overflow: hidden;
+  transition: all 0.2s;
 }
-
-.agenda-proto .mobile-card-available:active {
+.agenda-proto .mobile-card-available.ended {
+  border-style: solid;
+  border-color: #fee2e2; /* red-100 */
+  background: #fef2f2; /* red-50 */
+  color: var(--danger-text);
+  cursor: not-allowed;
+}
+.agenda-proto .mobile-card-available:not(.ended):active {
   background: var(--primary-soft);
   border-color: var(--primary);
   color: var(--primary);
