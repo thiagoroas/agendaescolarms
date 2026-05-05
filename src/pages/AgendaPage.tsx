@@ -708,6 +708,12 @@ const AgendaPage = () => {
                                 </div>
                                 <div className="event-meta">
                                   <span className="truncate flex-1" title={reserva.turma}>{reserva.turma}</span>
+                                  {reserva.disciplina && (
+                                    <>
+                                      <span className="shrink-0">•</span>
+                                      <span className="truncate flex-1" title={reserva.disciplina}>{reserva.disciplina}</span>
+                                    </>
+                                  )}
                                   <span className="shrink-0">•</span>
                                   <span className="truncate flex-1 font-bold" title={recurso.nome}>{recurso.nome}</span>
                                 </div>
