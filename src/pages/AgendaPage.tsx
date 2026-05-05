@@ -227,12 +227,22 @@ const AgendaPage = () => {
   }, [avisosState, currentSchoolId]);
 
   const handleSlotClick = (date: Date, h: HorarioEscola) => {
+    const status = getSlotStatus(date, h.hora_inicio, h.hora_fim);
+    
+    // Bloquear reserva em horários encerrados
+    if (status === "ended") {
+      toast.error("Não é possível reservar um horário que já passou.");
+      return;
+    }
+
+    // Bloquear reserva em aulas em andamento (opcional, mas solicitado pelo usuário)
+    if (status === "ongoing") {
+      toast.error("Não é possível reservar uma aula que já está em andamento.");
+      return;
+    }
+
     const resList = getReservasForSlot(date, h.ordem);
     if (resList.length > 0) {
-      // Se tiver apenas uma reserva, abre direto. Se tiver várias, poderíamos abrir um menu,
-      // mas por simplicidade vamos abrir a primeira ou permitir que o usuário veja todas na agenda.
-      // O requisito diz que na visualização "Todos" podemos agrupar ou mostrar separadas.
-      // Por enquanto, vamos pegar a primeira para o modal de detalhes.
       const res = resList[0];
       const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
       setActiveReserva({ reserva: res, recurso: rec! });
