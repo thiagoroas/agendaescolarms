@@ -809,10 +809,7 @@ const AgendaPage = () => {
                                     status === "ended" && "ended",
                                     status === "ongoing" && "ongoing"
                                   )}
-                                  onClick={() => {
-                                    setActiveReserva({ reserva, recurso });
-                                    setIsModalDetalhesOpen(true);
-                                  }}
+                                  onClick={() => handleSlotClick(currentDate, h)}
                                 >
                                   <div className="flex items-center justify-between gap-2 mb-1">
                                     <div className="flex items-center gap-2">
@@ -831,6 +828,10 @@ const AgendaPage = () => {
                                   <div className="flex items-center gap-2 mt-auto min-w-0">
                                     <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md shrink-0">{reserva.turma}</span>
                                     <span className="text-[11px] font-medium text-slate-500 truncate">• {recurso.nome}</span>
+                                  </div>
+                                  <div className="mt-2 pt-1.5 border-t border-slate-900/5 flex items-center justify-between">
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Ver detalhes da reserva</span>
+                                    <ChevronRight size={12} className="text-slate-400" />
                                   </div>
                                 </button>
                               );
