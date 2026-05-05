@@ -33,11 +33,13 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
             {recurso?.tipo}
           </Badge>
           <div className="flex flex-col gap-1 mt-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-3xl font-black leading-tight tracking-tight uppercase">{reserva.disciplina}</h2>
+            <div className="flex flex-col gap-1">
+              <h2 className="text-3xl font-black leading-tight tracking-tight uppercase">
+                {isPast ? "Detalhes da Reserva" : reserva.disciplina || "Reserva"}
+              </h2>
               {reserva.status && (
                 <Badge className={cn(
-                  "px-2 py-0.5 text-[9px] font-black uppercase tracking-widest border-none",
+                  "px-2 py-0.5 text-[9px] font-black uppercase tracking-widest border-none w-fit",
                   (reserva.status === "confirmada" || reserva.status === "aprovada") ? "bg-green-500 text-white" :
                   reserva.status === "pendente" ? "bg-amber-500 text-white" :
                   reserva.status === "recusada" ? "bg-red-500 text-white" :
