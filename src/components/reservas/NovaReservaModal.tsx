@@ -25,7 +25,8 @@ import { AlertTriangle, Info } from "lucide-react";
 interface NovaReservaModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialData?: { date?: string; aula?: number; turno?: "manha" | "tarde" };
+  onSuccess?: () => void;
+  initialData?: { date?: string; aula?: number; turno?: \"manha\" | \"tarde\" };
 }
 
 const TURMAS_OPCOES = [
