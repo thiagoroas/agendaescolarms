@@ -60,14 +60,14 @@ const Sidebar = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1">
-                  <p className="text-sm font-bold text-white truncate leading-none">
+                  <p className="text-sm font-bold text-[#FFFFFF] truncate leading-none">
                     {loading ? "Carregando..." : (escola?.nome || "Sem escola")}
                   </p>
-                  <ChevronDown className="h-3.5 w-3.5 text-blue-100/50 shrink-0" />
+                  <ChevronDown className="h-3.5 w-3.5 text-[#DBEAFE] shrink-0" />
                 </div>
                 <p className={cn(
-                  "text-[10px] mt-1.5 font-semibold truncate leading-none uppercase tracking-wide",
-                  !escola ? "text-red-300" : "text-blue-100/70"
+                  "text-[10px] mt-1.5 font-bold truncate leading-none uppercase tracking-wide",
+                  !escola ? "text-red-300" : "text-[#BFDBFE]"
                 )}>
                   {!escola ? "Vínculo ausente" : "Trocar escola"}
                 </p>
