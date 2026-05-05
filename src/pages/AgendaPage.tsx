@@ -826,16 +826,23 @@ const AgendaPage = () => {
                                   <div className="flex items-center justify-between gap-2 mb-1">
                                     <div className="flex items-center gap-2">
                                       <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo), width: '22px', height: '22px', fontSize: '10px' }}>
-                                        {initialsOf(reserva.nome_professor)}
+                                        {initialsOf(reserva.professor?.nome || reserva.nome_professor || "P")}
                                       </span>
-                                      <span className="text-[13px] font-bold text-slate-900 leading-none truncate block">{reserva.nome_professor}</span>
+                                      <div className="flex flex-col min-w-0">
+                                        <span className="text-[13px] font-bold text-slate-900 leading-none truncate block">
+                                          {reserva.professor?.nome || reserva.nome_professor || "Professor não encontrado"}
+                                        </span>
+                                        <span className="text-[10px] text-slate-500 truncate">{reserva.disciplina || "Sem disciplina"}</span>
+                                      </div>
                                     </div>
-                                    {status === "ended" && (
-                                      <span className="px-1.5 py-0.5 bg-red-100 text-[9px] font-black uppercase text-red-600 rounded">Encerrada</span>
-                                    )}
-                                    {status === "ongoing" && (
-                                      <span className="px-1.5 py-0.5 bg-amber-100 text-[9px] font-black uppercase text-amber-600 rounded animate-pulse">Em andamento</span>
-                                    )}
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      {status === "ended" && (
+                                        <span className="px-1.5 py-0.5 bg-red-100 text-[9px] font-black uppercase text-red-600 rounded">Encerrada</span>
+                                      )}
+                                      {status === "ongoing" && (
+                                        <span className="px-1.5 py-0.5 bg-amber-100 text-[9px] font-black uppercase text-amber-600 rounded animate-pulse">Em andamento</span>
+                                      )}
+                                    </div>
                                   </div>
                                   <div className="flex items-center gap-2 mt-auto min-w-0 flex-wrap">
                                     <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md shrink-0">{reserva.turma}</span>
