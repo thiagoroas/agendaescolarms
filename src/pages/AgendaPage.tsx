@@ -947,6 +947,7 @@ const AgendaPage = () => {
       <NovaReservaModal
         isOpen={isModalNovaOpen}
         onClose={() => { setIsModalNovaOpen(false); setSelectedSlot(null); }}
+        onSuccess={refreshReservas}
         initialData={selectedSlot || undefined}
       />
 
