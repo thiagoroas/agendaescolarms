@@ -370,6 +370,7 @@ const NovaReservaModal = ({ isOpen, onClose, onSuccess, initialData }: NovaReser
           }
         }
       }
+      onSuccess?.();
       onClose();
     } catch (err: any) {
       console.error("Erro no fluxo de criação de reserva:", err);
