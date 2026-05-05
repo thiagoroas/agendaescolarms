@@ -314,7 +314,7 @@ const AdminProfessoresPage = () => {
         {(isAdminPlataforma || (isAdminLab && activeTab === "professores")) && (
           <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => openModal()}>
             <UserPlus className="mr-2 h-4 w-4" />
-            Novo {activeTab === "professores" ? "Professor" : "Administrador"}
+            Novo {papel === "professor" ? "Professor" : "Administrador"}
           </Button>
         )}
       </header>
@@ -370,7 +370,7 @@ const AdminProfessoresPage = () => {
                 <TableRow className="bg-slate-50">
                   <TableHead>Nome</TableHead>
                   <TableHead>E-mail</TableHead>
-                  {isAdminPlataforma && <TableHead>Escola</TableHead>}
+                  {isAdminPlataforma && (selectedEscolaId === "todas" || !selectedEscolaId) && <TableHead>Escola</TableHead>}
                   {activeTab === "professores" && <TableHead>Disciplinas</TableHead>}
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -397,7 +397,7 @@ const AdminProfessoresPage = () => {
                     <TableRow key={u.id}>
                       <TableCell className="font-medium text-slate-900">{u.nome}</TableCell>
                       <TableCell className="text-slate-500">{u.email}</TableCell>
-                      {isAdminPlataforma && (
+                      {isAdminPlataforma && (selectedEscolaId === "todas" || !selectedEscolaId) && (
                         <TableCell className="text-slate-500">
                           <div className="flex items-center gap-1">
                             <Building2 className="h-3 w-3 text-slate-400" />
