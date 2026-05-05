@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAvisos } from "@/hooks/useAvisos";
-import { format, addDays, startOfWeek, isSameDay, parseISO, isWithinInterval, parse } from "date-fns";
+import { format, addDays, startOfWeek, isSameDay, parseISO, isWithinInterval, parse, isBefore, isAfter, startOfDay, setHours, setMinutes, setSeconds } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon, Info, FileText, CheckCircle, XCircle, LayoutDashboard, ClipboardList, CalendarDays, AlertTriangle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -103,6 +103,27 @@ const AgendaPage = () => {
   const [isModalDetalhesOpen, setIsModalDetalhesOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{date: string, aula: number, turno: "manha" | "tarde"} | null>(null);
   const [activeReserva, setActiveReserva] = useState<{reserva: Reserva, recurso: Recurso} | null>(null);
+
+  const getSlotStatus = (date: Date, horaInicio: string, horaFim: string) => {
+    const now = new Date();
+    const slotDate = startOfDay(date);
+    const today = startOfDay(now);
+
+    if (isBefore(slotDate, today)) return "ended";
+    if (isAfter(slotDate, today)) return "future";
+
+    // It's today
+    // Suportar formatos HH:mm e HH:mm:ss
+    const [hStart, mStart] = horaInicio.split(':').map(Number);
+    const [hEnd, mEnd] = horaFim.split(':').map(Number);
+    
+    const startTime = setSeconds(setMinutes(setHours(new Date(now), hStart), mStart), 0);
+    const endTime = setSeconds(setMinutes(setHours(new Date(now), hEnd), mEnd), 0);
+
+    if (isBefore(now, startTime)) return "future";
+    if (isAfter(now, endTime)) return "ended";
+    return "ongoing";
+  };
 
   const currentSchoolId = selectedEscolaId || profile?.escola_id;
 
@@ -206,12 +227,22 @@ const AgendaPage = () => {
   }, [avisosState, currentSchoolId]);
 
   const handleSlotClick = (date: Date, h: HorarioEscola) => {
+    const status = getSlotStatus(date, h.hora_inicio, h.hora_fim);
+    
+    // Bloquear reserva em horários encerrados
+    if (status === "ended") {
+      toast.error("Não é possível reservar um horário que já passou.");
+      return;
+    }
+
+    // Bloquear reserva em aulas em andamento (opcional, mas solicitado pelo usuário)
+    if (status === "ongoing") {
+      toast.error("Não é possível reservar uma aula que já está em andamento.");
+      return;
+    }
+
     const resList = getReservasForSlot(date, h.ordem);
     if (resList.length > 0) {
-      // Se tiver apenas uma reserva, abre direto. Se tiver várias, poderíamos abrir um menu,
-      // mas por simplicidade vamos abrir a primeira ou permitir que o usuário veja todas na agenda.
-      // O requisito diz que na visualização "Todos" podemos agrupar ou mostrar separadas.
-      // Por enquanto, vamos pegar a primeira para o modal de detalhes.
       const res = resList[0];
       const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
       setActiveReserva({ reserva: res, recurso: rec! });
@@ -559,12 +590,17 @@ const AgendaPage = () => {
                   }
 
                   const reservasNoSlot = getReservasForSlot(date, h.ordem);
+                  const status = getSlotStatus(date, h.hora_inicio, h.hora_fim);
 
                   return (
                     <div
                       key={dIdx}
-                      className="cal-cell"
-                      onClick={() => reservasNoSlot.length === 0 && handleSlotClick(date, h)}
+                      className={cn(
+                        "cal-cell",
+                        status === "ended" && "ended",
+                        status === "ongoing" && "ongoing"
+                      )}
+                      onClick={() => (reservasNoSlot.length === 0 || status === "ended") ? handleSlotClick(date, h) : null}
                     >
                       {reservasNoSlot.length > 0 ? (
                         <div className="flex flex-col gap-1 w-full h-full p-1 overflow-y-auto scrollbar-hide">
@@ -579,6 +615,8 @@ const AgendaPage = () => {
                                   "event", 
                                   tipoColor(recurso.tipo),
                                   reserva.status === "pendente" && "border-amber-400 border-2 shadow-amber-100",
+                                  status === "ended" && "ended",
+                                  status === "ongoing" && "ongoing",
                                   "mb-0.5"
                                 )}
                                 onClick={(e) => { 
@@ -593,7 +631,15 @@ const AgendaPage = () => {
                                     {initialsOf(reserva.nome_professor)}
                                   </span>
                                   <div className="flex flex-col min-w-0">
-                                    <span className="truncate leading-tight">{reserva.nome_professor}</span>
+                                    <div className="flex items-center gap-1">
+                                      <span className="truncate leading-tight">{reserva.nome_professor}</span>
+                                      {status === "ended" && (
+                                        <span className="px-1 bg-red-100 text-[8px] font-black uppercase text-red-600 rounded shrink-0">Encerrada</span>
+                                      )}
+                                      {status === "ongoing" && (
+                                        <span className="px-1 bg-amber-100 text-[8px] font-black uppercase text-amber-600 rounded shrink-0 animate-pulse">Em andamento</span>
+                                      )}
+                                    </div>
                                     {reserva.status === "pendente" && (
                                       <span className="text-[8px] font-black uppercase text-amber-600 tracking-tighter">Pendente</span>
                                     )}
@@ -605,7 +651,7 @@ const AgendaPage = () => {
                                   <span className="truncate flex-1 font-bold" title={recurso.nome}>{recurso.nome}</span>
                                 </div>
                                 <div className="event-actions">
-                                  {(profile?.role === 'admin_plataforma' || 
+                                  {status !== "ended" && (profile?.role === 'admin_plataforma' || 
                                     (profile?.role === 'admin_lab' && reserva.escola_id === profile.escola_id) ||
                                     (profile?.role === 'professor' && reserva.profile_id === user?.id)) && (
                                     <span
@@ -626,9 +672,23 @@ const AgendaPage = () => {
                           })}
                         </div>
                       ) : (
-                        <div className="add-hint">
-                          <Plus size={14} /> Reservar
-                        </div>
+                        status === "ended" ? (
+                          <div className="flex flex-col items-center justify-center h-full opacity-40">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-red-500">Encerrado</span>
+                            <span className="text-[8px] font-medium text-slate-400">Horário já passou</span>
+                          </div>
+                        ) : status === "ongoing" ? (
+                          <div className="flex flex-col items-center justify-center h-full">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">Em andamento</span>
+                            <div className="add-hint mt-1">
+                              <Plus size={14} /> Reservar
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="add-hint">
+                            <Plus size={14} /> Reservar
+                          </div>
+                        )
                       )}
                     </div>
                   );
@@ -657,9 +717,15 @@ const AgendaPage = () => {
 
                 {escolaHorarios.map((h, hIdx) => {
                   const reservasNoSlot = getReservasForSlot(currentDate, h.ordem);
+                  const status = getSlotStatus(currentDate, h.hora_inicio, h.hora_fim);
 
                   return (
-                    <div key={hIdx} className={`mobile-slot ${h.tipo === 'intervalo' ? 'is-break' : ''}`}>
+                    <div key={hIdx} className={cn(
+                      "mobile-slot",
+                      h.tipo === 'intervalo' ? 'is-break' : '',
+                      status === "ended" && "ended",
+                      status === "ongoing" && "ongoing"
+                    )}>
                       <div className="mobile-slot-time">
                         <span className="mobile-slot-label">{h.nome.replace("Aula ", "A")}</span>
                         <span className="mobile-slot-hour">{h.hora_inicio.substring(0, 5)}</span>
@@ -676,17 +742,30 @@ const AgendaPage = () => {
                               return (
                                 <button 
                                   key={reserva.id}
-                                  className={`mobile-card-event ${tipoColor(recurso.tipo)}`}
+                                  className={cn(
+                                    "mobile-card-event",
+                                    tipoColor(recurso.tipo),
+                                    status === "ended" && "ended",
+                                    status === "ongoing" && "ongoing"
+                                  )}
                                   onClick={() => {
                                     setActiveReserva({ reserva, recurso });
                                     setIsModalDetalhesOpen(true);
                                   }}
                                 >
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo), width: '22px', height: '22px', fontSize: '10px' }}>
-                                      {initialsOf(reserva.nome_professor)}
-                                    </span>
-                                    <span className="text-[13px] font-bold text-slate-900 leading-none truncate block">{reserva.nome_professor}</span>
+                                  <div className="flex items-center justify-between gap-2 mb-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo), width: '22px', height: '22px', fontSize: '10px' }}>
+                                        {initialsOf(reserva.nome_professor)}
+                                      </span>
+                                      <span className="text-[13px] font-bold text-slate-900 leading-none truncate block">{reserva.nome_professor}</span>
+                                    </div>
+                                    {status === "ended" && (
+                                      <span className="px-1.5 py-0.5 bg-red-100 text-[9px] font-black uppercase text-red-600 rounded">Encerrada</span>
+                                    )}
+                                    {status === "ongoing" && (
+                                      <span className="px-1.5 py-0.5 bg-amber-100 text-[9px] font-black uppercase text-amber-600 rounded animate-pulse">Em andamento</span>
+                                    )}
                                   </div>
                                   <div className="flex items-center gap-2 mt-auto min-w-0">
                                     <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md shrink-0">{reserva.turma}</span>
@@ -698,11 +777,29 @@ const AgendaPage = () => {
                           </div>
                         ) : (
                           <button 
-                            className="mobile-card-available"
+                            className={cn(
+                              "mobile-card-available",
+                              status === "ended" && "ended"
+                            )}
                             onClick={() => handleSlotClick(currentDate, h)}
+                            disabled={status === "ended"}
                           >
-                            <Plus size={14} className="mr-2 text-blue-400" />
-                            Disponível — toque para reservar
+                            {status === "ended" ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-black uppercase tracking-widest text-red-500">Encerrado</span>
+                                <span className="text-[10px] text-slate-400 font-medium">— Horário já passou</span>
+                              </div>
+                            ) : status === "ongoing" ? (
+                              <div className="flex items-center gap-2">
+                                <Plus size={14} className="text-amber-500" />
+                                <span className="text-[11px] font-black uppercase tracking-widest text-amber-600">Em andamento</span>
+                              </div>
+                            ) : (
+                              <>
+                                <Plus size={14} className="mr-2 text-blue-400" />
+                                Disponível — toque para reservar
+                              </>
+                            )}
                           </button>
                         )}
                       </div>
@@ -718,13 +815,15 @@ const AgendaPage = () => {
                     .flatMap(h => getReservasForSlot(date, h.ordem));
                   
                   const isToday = isSameDay(date, new Date());
+                  const isPast = isBefore(startOfDay(date), startOfDay(new Date()));
 
                   return (
                     <div 
                       key={i} 
                       className={cn(
                         "bg-white border rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-all",
-                        isToday ? "border-blue-200 bg-blue-50/30" : "border-slate-100"
+                        isToday ? "border-blue-200 bg-blue-50/30" : "border-slate-100",
+                        isPast && "opacity-75 grayscale-[0.3]"
                       )}
                       onClick={() => {
                         setCurrentDate(date);
@@ -735,13 +834,17 @@ const AgendaPage = () => {
                         <div className="flex items-center gap-3">
                           <div className={cn(
                             "w-10 h-10 rounded-xl flex flex-col items-center justify-center font-bold",
-                            isToday ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600"
+                            isToday ? "bg-blue-600 text-white" : isPast ? "bg-slate-200 text-slate-500" : "bg-slate-100 text-slate-600"
                           )}>
                             <span className="text-[10px] uppercase leading-none mb-0.5">{diasSemana[i].substring(0, 3)}</span>
                             <span className="text-lg leading-none">{format(date, "dd")}</span>
                           </div>
                           <div>
-                            <h4 className="font-bold text-slate-900 text-sm">{diasSemana[i]}</h4>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-bold text-slate-900 text-sm">{diasSemana[i]}</h4>
+                              {isPast && <span className="px-1.5 py-0.5 bg-slate-100 text-[8px] font-black uppercase text-slate-500 rounded">Encerrado</span>}
+                              {isToday && <span className="px-1.5 py-0.5 bg-blue-100 text-[8px] font-black uppercase text-blue-600 rounded">Hoje</span>}
+                            </div>
                             <p className="text-[11px] font-medium text-slate-500">
                               {reservasDoDia.length} {reservasDoDia.length === 1 ? 'reserva' : 'reservas'}
                             </p>

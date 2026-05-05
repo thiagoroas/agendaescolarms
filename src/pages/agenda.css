@@ -352,6 +352,17 @@
 }
 .agenda-proto .cal-cell:first-of-type { border-left: none; }
 .agenda-proto .cal-cell:hover { background: var(--primary-soft); }
+.agenda-proto .cal-cell.ended {
+  background: #f8fafc; /* slate-50 */
+  cursor: not-allowed;
+  border-left: 1px solid var(--border);
+}
+.agenda-proto .cal-cell.ended:hover {
+  background: #fee2e2; /* red-100 soft */
+}
+.agenda-proto .cal-cell.ongoing {
+  background: #fffbeb; /* amber-50 */
+}
 .agenda-proto .cal-cell .add-hint {
   position: absolute;
   inset: 6px;
@@ -395,15 +406,29 @@
   background: var(--c-soft, var(--accent-blue-soft));
   color: var(--c-text, var(--accent-blue-text));
   overflow: hidden;
-  transition: transform 0.12s, box-shadow 0.12s;
+  transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s;
   user-select: none;
   text-align: left;
   width: 100%;
+}
+.agenda-proto .event.ended {
+  opacity: 0.6;
+  border-left-color: var(--danger) !important;
+  background: #f1f5f9 !important; /* slate-100 */
+  color: var(--text-muted) !important;
+}
+.agenda-proto .event.ongoing {
+  border-left-color: var(--accent-amber) !important;
+  box-shadow: 0 0 0 1px var(--accent-amber) inset, 0 4px 12px rgba(245, 158, 11, 0.1);
 }
 .agenda-proto .event:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
   z-index: 2;
+}
+.agenda-proto .event.ended:hover {
+  transform: none;
+  box-shadow: none;
 }
 .agenda-proto .event.conflict {
   border-left-color: var(--danger);
@@ -631,6 +656,15 @@
   border-radius: 12px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
+  transition: opacity 0.2s, background 0.2s;
+}
+.agenda-proto .mobile-slot.ended {
+  opacity: 0.8;
+  background: #f8fafc; /* slate-50 */
+}
+.agenda-proto .mobile-slot.ongoing {
+  background: #fffbeb; /* amber-50 */
+  border-color: var(--accent-amber);
 }
 
 .agenda-proto .mobile-slot-time {
@@ -687,9 +721,16 @@
   white-space: normal;
   word-break: break-word;
   overflow: hidden;
+  transition: all 0.2s;
 }
-
-.agenda-proto .mobile-card-available:active {
+.agenda-proto .mobile-card-available.ended {
+  border-style: solid;
+  border-color: #fee2e2; /* red-100 */
+  background: #fef2f2; /* red-50 */
+  color: var(--danger-text);
+  cursor: not-allowed;
+}
+.agenda-proto .mobile-card-available:not(.ended):active {
   background: var(--primary-soft);
   border-color: var(--primary);
   color: var(--primary);
@@ -711,6 +752,17 @@
   gap: 4px;
   text-align: left;
   overflow: hidden;
+  transition: opacity 0.2s, background 0.2s;
+}
+.agenda-proto .mobile-card-event.ended {
+  opacity: 0.6;
+  border-left-color: var(--danger) !important;
+  background: #f1f5f9 !important;
+  color: var(--text-muted) !important;
+}
+.agenda-proto .mobile-card-event.ongoing {
+  border-left-color: var(--accent-amber) !important;
+  box-shadow: 0 0 0 1px var(--accent-amber) inset;
 }
 
 .agenda-proto .mobile-slot.is-break {
