@@ -161,12 +161,12 @@ const Sidebar = () => {
         
         <button
           onClick={async () => {
-            const { error } = await logout();
-            if (error) {
+            try {
+              await logout();
+              navigate("/login", { replace: true });
+            } catch (error) {
               toast.error("Erro ao sair do sistema");
-              return;
             }
-            navigate("/login", { replace: true });
           }}
           className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-xs font-bold text-white transition-all duration-300 hover:bg-red-500/20 group justify-center lg:justify-start group-hover/sidebar:justify-start overflow-hidden border border-transparent hover:border-red-500/30"
         >
