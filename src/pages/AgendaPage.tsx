@@ -237,15 +237,23 @@ const AgendaPage = () => {
     });
   }, [avisosState, currentSchoolId]);
 
-  const handleSlotClick = (date: Date, h: HorarioEscola) => {
+  const handleSlotClick = (date: Date, h: HorarioEscola, specificReserva?: Reserva) => {
     const status = getSlotStatus(date, h.hora_inicio, h.hora_fim);
     const resList = getReservasForSlot(date, h.ordem);
     
+    const targetReserva = specificReserva || (resList.length > 0 ? resList[0] : null);
+
+    console.log('[AGENDA CLICK]', {
+      hasReserva: !!targetReserva,
+      slotStatus: status,
+      reservaId: targetReserva?.id,
+      action: targetReserva ? 'open-reserva-details' : (status === 'ended' ? 'open-horario-details' : 'open-new-reserva')
+    });
+
     // 1. Primeiro verificar se existe reserva no slot (mesmo se encerrado)
-    if (resList.length > 0) {
-      const res = resList[0];
-      const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
-      setActiveReserva({ reserva: res, recurso: rec! });
+    if (targetReserva) {
+      const rec = schoolRecursosList.find(r => r.id === targetReserva.recurso_id);
+      setActiveReserva({ reserva: targetReserva, recurso: rec! });
       setIsModalDetalhesOpen(true);
       return;
     }
@@ -270,19 +278,13 @@ const AgendaPage = () => {
       return;
     }
 
-    if (resList.length > 0) {
-      const res = resList[0];
-      const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
-      setActiveReserva({ reserva: res, recurso: rec! });
-      setIsModalDetalhesOpen(true);
-    } else {
-      setSelectedSlot({
-        date: format(date, "yyyy-MM-dd"),
-        aula: h.ordem,
-        turno: h.turno as "manha" | "tarde"
-      });
-      setIsModalNovaOpen(true);
-    }
+    setSelectedSlot({
+      date: format(date, "yyyy-MM-dd"),
+      aula: h.ordem,
+      turno: h.turno as "manha" | "tarde"
+    });
+    setIsModalNovaOpen(true);
+  };
   };
 
   const [reservaParaCancelar, setReservaParaCancelar] = useState<Reserva | null>(null);
