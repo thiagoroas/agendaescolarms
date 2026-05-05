@@ -838,8 +838,11 @@ const AgendaPage = () => {
                                       <span className="px-1.5 py-0.5 bg-amber-100 text-[9px] font-black uppercase text-amber-600 rounded animate-pulse">Em andamento</span>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-2 mt-auto min-w-0">
+                                  <div className="flex items-center gap-2 mt-auto min-w-0 flex-wrap">
                                     <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md shrink-0">{reserva.turma}</span>
+                                    {reserva.disciplina && (
+                                      <span className="text-[11px] font-medium text-slate-500 truncate">• {reserva.disciplina}</span>
+                                    )}
                                     <span className="text-[11px] font-medium text-slate-500 truncate">• {recurso.nome}</span>
                                   </div>
                                   <div className="mt-2 pt-1.5 border-t border-slate-900/5 flex items-center justify-between">
