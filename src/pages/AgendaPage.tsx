@@ -237,15 +237,23 @@ const AgendaPage = () => {
     });
   }, [avisosState, currentSchoolId]);
 
-  const handleSlotClick = (date: Date, h: HorarioEscola) => {
+  const handleSlotClick = (date: Date, h: HorarioEscola, specificReserva?: Reserva) => {
     const status = getSlotStatus(date, h.hora_inicio, h.hora_fim);
     const resList = getReservasForSlot(date, h.ordem);
     
+    const targetReserva = specificReserva || (resList.length > 0 ? resList[0] : null);
+
+    console.log('[AGENDA CLICK]', {
+      hasReserva: !!targetReserva,
+      slotStatus: status,
+      reservaId: targetReserva?.id,
+      action: targetReserva ? 'open-reserva-details' : (status === 'ended' ? 'open-horario-details' : 'open-new-reserva')
+    });
+
     // 1. Primeiro verificar se existe reserva no slot (mesmo se encerrado)
-    if (resList.length > 0) {
-      const res = resList[0];
-      const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
-      setActiveReserva({ reserva: res, recurso: rec! });
+    if (targetReserva) {
+      const rec = schoolRecursosList.find(r => r.id === targetReserva.recurso_id);
+      setActiveReserva({ reserva: targetReserva, recurso: rec! });
       setIsModalDetalhesOpen(true);
       return;
     }
@@ -270,19 +278,12 @@ const AgendaPage = () => {
       return;
     }
 
-    if (resList.length > 0) {
-      const res = resList[0];
-      const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
-      setActiveReserva({ reserva: res, recurso: rec! });
-      setIsModalDetalhesOpen(true);
-    } else {
-      setSelectedSlot({
-        date: format(date, "yyyy-MM-dd"),
-        aula: h.ordem,
-        turno: h.turno as "manha" | "tarde"
-      });
-      setIsModalNovaOpen(true);
-    }
+    setSelectedSlot({
+      date: format(date, "yyyy-MM-dd"),
+      aula: h.ordem,
+      turno: h.turno as "manha" | "tarde"
+    });
+    setIsModalNovaOpen(true);
   };
 
   const [reservaParaCancelar, setReservaParaCancelar] = useState<Reserva | null>(null);
@@ -682,7 +683,7 @@ const AgendaPage = () => {
                                 )}
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
-                                  handleSlotClick(date, h);
+                                  handleSlotClick(date, h, reserva);
                                 }}
                                 title={`${reserva.nome_professor} • ${reserva.turma} • ${recurso.nome} (${reserva.status})`}
                               >
@@ -811,7 +812,10 @@ const AgendaPage = () => {
                                     status === "ended" && "ended",
                                     status === "ongoing" && "ongoing"
                                   )}
-                                  onClick={() => handleSlotClick(currentDate, h)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSlotClick(currentDate, h, reserva);
+                                  }}
                                 >
                                   <div className="flex items-center justify-between gap-2 mb-1">
                                     <div className="flex items-center gap-2">
@@ -989,7 +993,7 @@ const AgendaPage = () => {
         onDelete={handleExcluirReserva}
         reserva={activeReserva?.reserva || null}
         recurso={activeReserva?.recurso || null}
-        isPast={getSlotStatus(activeReserva?.reserva.data ? new Date(activeReserva.reserva.data + 'T12:00:00') : new Date(), activeReserva?.reserva.horario.split(' - ')[0] || "00:00", activeReserva?.reserva.horario.split(' - ')[1] || "23:59") === "ended"}
+        isPast={activeReserva?.reserva ? getSlotStatus(new Date(activeReserva.reserva.data + 'T12:00:00'), activeReserva.reserva.horario.split(' - ')[0] || "00:00", activeReserva.reserva.horario.split(' - ')[1] || "23:59") === "ended" : false}
         canEdit={
           (activeReserva?.reserva.profile_id === user?.id || profile?.role !== 'professor') &&
           !(profile?.role === 'professor' && (activeReserva?.reserva.status === 'manutencao' || activeReserva?.reserva.status === 'bloqueada'))
