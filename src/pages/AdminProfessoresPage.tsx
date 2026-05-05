@@ -47,6 +47,8 @@ const AdminProfessoresPage = () => {
         const isAdminPlataforma = profile?.role === "admin_plataforma";
         const isAdminLab = profile?.role === "admin_lab";
 
+        console.log("[DEBUG] Fetching users. Profile:", profile?.role, "SelectedEscola:", selectedEscolaId, "Tab:", activeTab);
+
         // Filtering based on role and context
         if (isAdminLab) {
           // Admin Lab: only see professors from their own school
@@ -67,12 +69,26 @@ const AdminProfessoresPage = () => {
         }
 
         const { data, error } = await query;
-        if (error) throw error;
+        if (error) {
+          console.error("[SUPABASE ERROR]", {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint
+          });
+          throw error;
+        }
 
-        const mapped: Usuario[] = (data || []).map(link => ({
-          id: link.profile.id,
-          nome: link.profile.nome,
-          email: link.profile.email || "",
+        if (!data || data.length === 0) {
+          console.log("[DEBUG] No users found for the current filters.");
+          setLocalUsers([]);
+          return;
+        }
+
+        const mapped: Usuario[] = data.map(link => ({
+          id: link.profile?.id || link.profile_id,
+          nome: link.profile?.nome || "Usuário sem perfil",
+          email: link.profile?.email || "",
           escola_id: link.escola_id,
           papel: link.papel,
           status: link.status,
