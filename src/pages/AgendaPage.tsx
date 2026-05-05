@@ -737,9 +737,10 @@ const AgendaPage = () => {
                         </div>
                       ) : (
                         status === "ended" ? (
-                          <div className="flex flex-col items-center justify-center h-full opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
+                          <div className="flex flex-col items-center justify-center h-full opacity-60 hover:opacity-100 transition-opacity cursor-pointer text-center px-1">
                             <span className="text-[10px] font-black uppercase tracking-widest text-red-500">Encerrado</span>
-                            <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Ver detalhes</span>
+                            <span className="text-[9px] font-bold text-slate-500 mt-0.5 uppercase tracking-tighter">Sem reserva</span>
+                            <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Ver horário</span>
                           </div>
                         ) : status === "ongoing" ? (
                           <div className="flex flex-col items-center justify-center h-full">
