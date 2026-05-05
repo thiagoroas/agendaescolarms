@@ -682,8 +682,7 @@ const AgendaPage = () => {
                                 )}
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
-                                  setActiveReserva({ reserva, recurso });
-                                  setIsModalDetalhesOpen(true);
+                                  handleSlotClick(date, h);
                                 }}
                                 title={`${reserva.nome_professor} • ${reserva.turma} • ${recurso.nome} (${reserva.status})`}
                               >
@@ -712,6 +711,9 @@ const AgendaPage = () => {
                                   <span className="truncate flex-1 font-bold" title={recurso.nome}>{recurso.nome}</span>
                                 </div>
                                 <div className="event-actions">
+                                  {status === "ended" ? (
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Ver detalhes</span>
+                                  ) : null}
                                   {status !== "ended" && (profile?.role === 'admin_plataforma' || 
                                     (profile?.role === 'admin_lab' && reserva.escola_id === profile.escola_id) ||
                                     (profile?.role === 'professor' && reserva.profile_id === user?.id)) && (
