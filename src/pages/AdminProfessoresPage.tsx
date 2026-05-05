@@ -126,16 +126,15 @@ const AdminProfessoresPage = () => {
       setConfirmarSenha("");
       setPapel(u.papel as any);
       setEscolaId(u.escola_id);
-      setDisciplinas(u.disciplinas?.join(", ") || "");
-      setStatus(u.status);
     } else {
+      const defaultPapel = activeTab === "usuarios_lab" ? "admin_lab" : "professor";
       setEditingUserId(null);
       setNome("");
       setEmail("");
       setSenha("");
       setConfirmarSenha("");
-      setPapel(activeTab === "professores" ? "professor" : "admin_lab");
-      setEscolaId(isAdminLab ? (profile?.escola_id || "") : (selectedEscolaId || ""));
+      setPapel(defaultPapel);
+      setEscolaId(isAdminLab ? (profile?.escola_id || "") : (selectedEscolaId && selectedEscolaId !== "todas" ? selectedEscolaId : ""));
       setDisciplinas("");
       setStatus("ativo");
     }
