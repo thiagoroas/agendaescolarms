@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAvisos } from "@/hooks/useAvisos";
-import { format, addDays, startOfWeek, isSameDay, parseISO, isWithinInterval, parse } from "date-fns";
+import { format, addDays, startOfWeek, isSameDay, parseISO, isWithinInterval, parse, isBefore, isAfter, startOfDay, setHours, setMinutes, setSeconds } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, Search, Bell, Trash2, Calendar as CalendarIcon, Info, FileText, CheckCircle, XCircle, LayoutDashboard, ClipboardList, CalendarDays, AlertTriangle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
