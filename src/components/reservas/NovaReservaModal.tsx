@@ -26,7 +26,7 @@ interface NovaReservaModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-  initialData?: { date?: string; aula?: number; turno?: \"manha\" | \"tarde\" };
+  initialData?: { date?: string; aula?: number; turno?: "manha" | "tarde" };
 }
 
 const TURMAS_OPCOES = [
