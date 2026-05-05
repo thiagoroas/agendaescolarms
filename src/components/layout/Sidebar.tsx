@@ -93,7 +93,7 @@ const Sidebar = () => {
         {sections.map((section, idx) => (
           <div key={section.title || idx} className="space-y-3">
             {section.title && (
-              <div className="px-4 text-[10px] font-bold uppercase tracking-[0.3em] text-blue-100/40 lg:block hidden group-hover/sidebar:block truncate">
+              <div className="px-4 text-[10px] font-bold uppercase tracking-[0.3em] text-[#C7D2FE] lg:block hidden group-hover/sidebar:block truncate">
                 {section.title}
               </div>
             )}
@@ -104,10 +104,10 @@ const Sidebar = () => {
                   to={item.path}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-300 group border border-transparent",
+                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-300 group border border-transparent font-medium",
                       isActive 
-                        ? "bg-white/15 text-white font-bold border-white/10 shadow-lg backdrop-blur-sm" 
-                        : "text-blue-100/70 hover:bg-white/5 hover:text-white"
+                        ? "bg-white/20 text-[#FFFFFF] font-bold border-white/22 shadow-lg backdrop-blur-sm" 
+                        : "text-[#DBEAFE] hover:bg-white/10 hover:text-white"
                     )
                   }
                 >
