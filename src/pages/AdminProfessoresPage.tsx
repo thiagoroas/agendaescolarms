@@ -338,6 +338,19 @@ const AdminProfessoresPage = () => {
             />
           </div>
           <div className="w-full sm:w-48">
+            {isAdminPlataforma && (
+              <Select value={selectedEscolaId || "todas"} onValueChange={(val) => setSelectedEscolaId(val === "todas" ? "todas" : val)}>
+                <SelectTrigger className="mb-2">
+                  <SelectValue placeholder="Filtrar por Escola" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas as escolas</SelectItem>
+                  {escolas.map(e => (
+                    <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Status" />
