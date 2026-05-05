@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import NovaReservaModal from "../components/reservas/NovaReservaModal";
 import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
 import RelatorioReservasModal from "../components/reservas/RelatorioReservasModal";
+import DetalhesHorarioModal from "../components/reservas/DetalhesHorarioModal";
 import "./agenda.css";
 
 const tipoColor = (tipo: string) => {
@@ -104,6 +105,15 @@ const AgendaPage = () => {
   const [isModalDetalhesOpen, setIsModalDetalhesOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{date: string, aula: number, turno: "manha" | "tarde"} | null>(null);
   const [activeReserva, setActiveReserva] = useState<{reserva: Reserva, recurso: Recurso} | null>(null);
+  const [isModalHorarioOpen, setIsModalHorarioOpen] = useState(false);
+  const [selectedHorarioData, setSelectedHorarioData] = useState<{
+    escola: string;
+    data: string;
+    aula: number;
+    horarioInicio: string;
+    horarioFim: string;
+    turno: string;
+  } | null>(null);
 
   const getSlotStatus = (date: Date, horaInicio: string, horaFim: string) => {
     const now = new Date();
@@ -229,10 +239,26 @@ const AgendaPage = () => {
 
   const handleSlotClick = (date: Date, h: HorarioEscola) => {
     const status = getSlotStatus(date, h.hora_inicio, h.hora_fim);
+    const resList = getReservasForSlot(date, h.ordem);
     
-    // Bloquear reserva em horários encerrados
+    // Se o horário está encerrado
     if (status === "ended") {
-      toast.error("Não é possível reservar um horário que já passou.");
+      if (resList.length > 0) {
+        const res = resList[0];
+        const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
+        setActiveReserva({ reserva: res, recurso: rec! });
+        setIsModalDetalhesOpen(true);
+      } else {
+        setSelectedHorarioData({
+          escola: escola?.nome || "Escola não identificada",
+          data: format(date, "yyyy-MM-dd"),
+          aula: h.ordem,
+          horarioInicio: h.hora_inicio,
+          horarioFim: h.hora_fim,
+          turno: h.turno
+        });
+        setIsModalHorarioOpen(true);
+      }
       return;
     }
 
@@ -242,7 +268,6 @@ const AgendaPage = () => {
       return;
     }
 
-    const resList = getReservasForSlot(date, h.ordem);
     if (resList.length > 0) {
       const res = resList[0];
       const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
@@ -707,9 +732,9 @@ const AgendaPage = () => {
                         </div>
                       ) : (
                         status === "ended" ? (
-                          <div className="flex flex-col items-center justify-center h-full opacity-40">
+                          <div className="flex flex-col items-center justify-center h-full opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
                             <span className="text-[10px] font-black uppercase tracking-widest text-red-500">Encerrado</span>
-                            <span className="text-[8px] font-medium text-slate-400">Horário já passou</span>
+                            <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Ver detalhes</span>
                           </div>
                         ) : status === "ongoing" ? (
                           <div className="flex flex-col items-center justify-center h-full">
@@ -813,15 +838,17 @@ const AgendaPage = () => {
                           <button 
                             className={cn(
                               "mobile-card-available",
-                              status === "ended" && "ended"
+                              status === "ended" && "ended cursor-pointer"
                             )}
                             onClick={() => handleSlotClick(currentDate, h)}
-                            disabled={status === "ended"}
                           >
                             {status === "ended" ? (
-                              <div className="flex items-center gap-2">
-                                <span className="text-[11px] font-black uppercase tracking-widest text-red-500">Encerrado</span>
-                                <span className="text-[10px] text-slate-400 font-medium">— Horário já passou</span>
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[11px] font-black uppercase tracking-widest text-red-500">Encerrado</span>
+                                  <span className="text-[10px] text-slate-400 font-medium">— Horário já passou</span>
+                                </div>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Ver detalhes</span>
                               </div>
                             ) : status === "ongoing" ? (
                               <div className="flex items-center gap-2">
@@ -957,10 +984,17 @@ const AgendaPage = () => {
         onDelete={handleExcluirReserva}
         reserva={activeReserva?.reserva || null}
         recurso={activeReserva?.recurso || null}
+        isPast={getSlotStatus(activeReserva?.reserva.data ? new Date(activeReserva.reserva.data + 'T12:00:00') : new Date(), activeReserva?.reserva.horario.split(' - ')[0] || "00:00", activeReserva?.reserva.horario.split(' - ')[1] || "23:59") === "ended"}
         canEdit={
           (activeReserva?.reserva.profile_id === user?.id || profile?.role !== 'professor') &&
           !(profile?.role === 'professor' && (activeReserva?.reserva.status === 'manutencao' || activeReserva?.reserva.status === 'bloqueada'))
         }
+      />
+
+      <DetalhesHorarioModal
+        isOpen={isModalHorarioOpen}
+        onClose={() => setIsModalHorarioOpen(false)}
+        data={selectedHorarioData}
       />
 
       <RelatorioReservasModal
