@@ -48,7 +48,7 @@ const formatDateLocal = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
-const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProps) => {
+const NovaReservaModal = ({ isOpen, onClose, onSuccess, initialData }: NovaReservaModalProps) => {
   const { user, profile } = useAuth();
   const { recursos: availableRecursos } = useRecursos();
   const { createReserva } = useReservas();
