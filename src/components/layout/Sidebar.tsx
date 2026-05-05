@@ -35,13 +35,13 @@ const Sidebar = () => {
             <Calendar className="h-5 w-5" />
           </div>
           <div className="lg:block hidden group-hover/sidebar:block transition-all overflow-hidden">
-            <h1 className="text-lg font-bold tracking-tight text-white leading-none">Agenda Escolar</h1>
-            <p className="text-[10px] font-medium text-blue-100/70 mt-1 uppercase tracking-wider">Laboratório de Informática</p>
+            <h1 className="text-lg font-bold tracking-tight text-[#FFFFFF] leading-none">Agenda Escolar</h1>
+            <p className="text-[10px] font-bold text-[#BFDBFE] mt-1 uppercase tracking-wider">Laboratório de Informática</p>
           </div>
         </div>
 
         <div className="mb-2 lg:block hidden group-hover/sidebar:block">
-          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-100/50 mb-3 block px-1">
+          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C7D2FE] mb-3 block px-1">
             {profile?.role === "admin_plataforma" ? "Plataforma" : "Minha escola"}
           </label>
           
