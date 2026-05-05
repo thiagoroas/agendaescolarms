@@ -47,35 +47,36 @@ const AdminProfessoresPage = () => {
         const isAdminPlataforma = profile?.role === "admin_plataforma";
         const isAdminLab = profile?.role === "admin_lab";
 
-        console.log("[DEBUG] Fetching users. Profile:", profile?.role, "SelectedEscola:", selectedEscolaId, "Tab:", activeTab);
+        console.log("[DEBUG] Fetching users. Profile:", profile?.role, "UserEmail:", user?.email, "SelectedEscola:", selectedEscolaId, "Tab:", activeTab);
 
         // Filtering based on role and context
         if (isAdminLab) {
-          // Admin Lab: only see professors from their own school
           query = query.eq("escola_id", profile.escola_id).eq("papel", "professor");
         } else if (isAdminPlataforma) {
-          // Admin Plataforma:
-          // Filter by role based on tab
           if (activeTab === "professores") {
             query = query.eq("papel", "professor");
           } else if (activeTab === "usuarios_lab") {
             query = query.eq("papel", "admin_lab");
           }
 
-          // Filter by selected school if applicable
           if (selectedEscolaId && selectedEscolaId !== "todas") {
             query = query.eq("escola_id", selectedEscolaId);
           }
         }
 
         const { data, error } = await query;
+        
         if (error) {
           console.error("[SUPABASE ERROR]", {
             code: error.code,
             message: error.message,
             details: error.details,
-            hint: error.hint
+            hint: error.hint,
+            userId: user?.id,
+            userEmail: user?.email,
+            userRole: profile?.role
           });
+          toast.error(`Erro Supabase: [${error.code}] ${error.message}`);
           throw error;
         }
 
