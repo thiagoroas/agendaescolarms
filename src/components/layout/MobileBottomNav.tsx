@@ -73,27 +73,33 @@ const MobileBottomNav = () => {
             <span className="text-[10px] tracking-tight uppercase font-bold">Menu</span>
           </button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-[min(88vw,380px)] p-0 border-l-0 bg-slate-50 shadow-2xl overflow-hidden">
-          <div className="flex flex-col h-full bg-slate-50">
-            {/* Bloco 1: Área do Usuário */}
-            <SheetHeader className="p-5 text-left bg-white shrink-0 shadow-sm border-b border-slate-100">
-              <div className="flex items-center gap-4 mb-5">
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white text-xl font-bold shadow-lg ring-4 ring-blue-50">
-                  {profile?.full_name?.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <SheetTitle className="text-lg font-extrabold text-slate-900 truncate leading-tight">
-                    {profile?.full_name}
-                  </SheetTitle>
-                  <SheetDescription className="sr-only">
-                    Menu de navegação e configurações do usuário
-                  </SheetDescription>
-                  <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider mt-0.5 bg-blue-50 self-start px-2 py-0.5 rounded-full">
-                    {profile?.role === "admin_plataforma" ? "Admin Plataforma" : 
-                     profile?.role === "admin_lab" ? "Admin Lab" : "Professor"}
-                  </p>
-                </div>
+        <SheetContent side="right" className="w-[min(85vw,360px)] p-0 border-l-0 bg-slate-50 shadow-2xl overflow-hidden flex flex-col">
+          {/* Header com Degradê similar à Sidebar */}
+          <div className="bg-gradient-to-br from-[#1E3A8A] to-[#2563EB] p-6 pb-8 text-white relative shrink-0">
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-xl font-bold shadow-lg border border-white/20">
+                {profile?.full_name?.charAt(0).toUpperCase()}
               </div>
+              <div className="flex flex-col min-w-0">
+                <SheetTitle className="text-xl font-black text-white truncate leading-tight">
+                  {profile?.full_name}
+                </SheetTitle>
+                <SheetDescription className="sr-only">
+                  Menu de navegação e configurações do usuário
+                </SheetDescription>
+                <p className="text-[10px] font-bold text-blue-100/70 uppercase tracking-[0.2em] mt-1 flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {profile?.role === "admin_plataforma" ? "Admin Plataforma" : 
+                   profile?.role === "admin_lab" ? "Admin Laboratório" : "Professor"}
+                </p>
+              </div>
+            </div>
+            {/* Elemento decorativo */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl" />
+          </div>
+
+          <div className="flex-1 flex flex-col min-h-0 bg-slate-50 -mt-4 rounded-t-2xl relative z-20">
+
 
               {/* Unidade Ativa Card */}
               <div className="space-y-2">
