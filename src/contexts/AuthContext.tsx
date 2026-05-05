@@ -266,9 +266,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
     sessionStorage.clear();
     
-    console.log("[AUTH] logout finalizado, redirecionando");
+    console.log("[AUTH] logout finalizado");
     setLoading(false);
-    window.location.href = "/login";
   };
 
   const updateProfile = (updatedProfile: Partial<Profile>) => {

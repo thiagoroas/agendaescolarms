@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useEscolas } from "@/hooks/useEscolas";
 import { 
@@ -26,6 +26,7 @@ import { toast } from "sonner";
 
 const MobileBottomNav = () => {
   const { profile, logout, selectedEscolaId, setSelectedEscolaId } = useAuth();
+  const navigate = useNavigate();
   const { escolas, loading } = useEscolas();
   const { sections } = useNavigation();
   
@@ -193,9 +194,9 @@ const MobileBottomNav = () => {
             {/* Bloco 4: Ação de Sair */}
             <div className="p-5 bg-white border-t border-slate-100 shrink-0 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
               <button
-                onClick={() => {
-                  logout();
-                  window.location.href = "/login";
+                onClick={async () => {
+                  await logout();
+                  navigate("/login", { replace: true });
                 }}
                 className="flex w-full items-center justify-center gap-3 rounded-2xl bg-red-50 px-4 py-4.5 text-[15px] font-extrabold text-red-600 transition-all active:scale-[0.98] border border-red-100 hover:bg-red-100/50 shadow-sm"
               >
