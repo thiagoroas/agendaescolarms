@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useEscolas } from "@/hooks/useEscolas";
 import { 
@@ -14,6 +14,7 @@ import { useNavigation } from "@/hooks/useNavigation";
 
 const Sidebar = () => {
   const { profile, logout, selectedEscolaId, setSelectedEscolaId } = useAuth();
+  const navigate = useNavigate();
   const { escolas, loading } = useEscolas();
   const { sections } = useNavigation();
   const escola = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
@@ -168,9 +169,9 @@ const Sidebar = () => {
           </div>
         </NavLink>
         <button
-          onClick={() => {
-            logout();
-            window.location.href = "/login";
+          onClick={async () => {
+            await logout();
+            navigate("/login", { replace: true });
           }}
           className="flex w-full items-center gap-2 rounded-lg px-2 lg:px-3 py-2 text-xs font-semibold text-red-600 transition-all duration-200 hover:bg-red-50 hover:text-red-700 group justify-center lg:justify-start group-hover/sidebar:justify-start overflow-hidden"
         >
