@@ -104,6 +104,27 @@ const AgendaPage = () => {
   const [selectedSlot, setSelectedSlot] = useState<{date: string, aula: number, turno: "manha" | "tarde"} | null>(null);
   const [activeReserva, setActiveReserva] = useState<{reserva: Reserva, recurso: Recurso} | null>(null);
 
+  const getSlotStatus = (date: Date, horaInicio: string, horaFim: string) => {
+    const now = new Date();
+    const slotDate = startOfDay(date);
+    const today = startOfDay(now);
+
+    if (isBefore(slotDate, today)) return "ended";
+    if (isAfter(slotDate, today)) return "future";
+
+    // It's today
+    // Suportar formatos HH:mm e HH:mm:ss
+    const [hStart, mStart] = horaInicio.split(':').map(Number);
+    const [hEnd, mEnd] = horaFim.split(':').map(Number);
+    
+    const startTime = setSeconds(setMinutes(setHours(new Date(now), hStart), mStart), 0);
+    const endTime = setSeconds(setMinutes(setHours(new Date(now), hEnd), mEnd), 0);
+
+    if (isBefore(now, startTime)) return "future";
+    if (isAfter(now, endTime)) return "ended";
+    return "ongoing";
+  };
+
   const currentSchoolId = selectedEscolaId || profile?.escola_id;
 
   const reservasHoje = useMemo(() => {
