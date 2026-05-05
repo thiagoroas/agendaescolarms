@@ -684,7 +684,7 @@ const AgendaPage = () => {
                                 )}
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
-                                  handleSlotClick(date, h);
+                                  handleSlotClick(date, h, reserva);
                                 }}
                                 title={`${reserva.nome_professor} • ${reserva.turma} • ${recurso.nome} (${reserva.status})`}
                               >
@@ -813,7 +813,10 @@ const AgendaPage = () => {
                                     status === "ended" && "ended",
                                     status === "ongoing" && "ongoing"
                                   )}
-                                  onClick={() => handleSlotClick(currentDate, h)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSlotClick(currentDate, h, reserva);
+                                  }}
                                 >
                                   <div className="flex items-center justify-between gap-2 mb-1">
                                     <div className="flex items-center gap-2">
