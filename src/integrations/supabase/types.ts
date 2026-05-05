@@ -457,6 +457,10 @@ export type Database = {
         Args: { p_escola_id: string }
         Returns: Json
       }
+      has_school_link: {
+        Args: { p_escola_id: string; p_papel?: string }
+        Returns: boolean
+      }
       is_admin_lab: { Args: never; Returns: boolean }
       is_admin_plataforma: { Args: never; Returns: boolean }
       my_escola_id: { Args: never; Returns: string }
