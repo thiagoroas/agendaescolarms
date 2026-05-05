@@ -13,6 +13,7 @@ import {
   LucideIcon
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAvisos } from "@/hooks/useAvisos";
 
 export interface MenuItem {
   icon: LucideIcon;
