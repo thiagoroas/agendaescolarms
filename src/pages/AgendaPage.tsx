@@ -183,7 +183,7 @@ const AgendaPage = () => {
 
     if (isSupabaseConfigured && !isValidUUID(currentSchoolId)) return [];
 
-    return reservasState.filter(r =>
+    const filtered = reservasState.filter(r =>
       r.data === dateStr &&
       r.aula === aula &&
       r.escola_id === currentSchoolId &&
@@ -191,10 +191,16 @@ const AgendaPage = () => {
       (!onlyBlocks || r.status === "manutencao" || r.status === "bloqueada") &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
       (!searchQuery ||
-        r.nome_professor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (r.professor?.nome || r.nome_professor || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.turma.toLowerCase().includes(searchQuery.toLowerCase())
       )
     );
+
+    if (filtered.length > 0) {
+      console.log('[AGENDA RESERVAS SAMPLE]', filtered[0]);
+    }
+
+    return filtered;
   };
 
   const filteredReservationsCount = useMemo(() => {
