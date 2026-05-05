@@ -154,8 +154,8 @@ const AdminProfessoresPage = () => {
       toast.error("A nova senha deve ter no mínimo 6 caracteres"); return;
     }
 
-    if (!escolaId) {
-      toast.error("Vínculo com escola é obrigatório");
+    if (!escolaId || escolaId === "todas") {
+      toast.error("Vínculo com uma escola específica é obrigatório");
       return;
     }
 
