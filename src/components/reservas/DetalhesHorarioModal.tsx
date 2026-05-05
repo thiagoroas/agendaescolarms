@@ -77,7 +77,7 @@ const DetalhesHorarioModal = ({ isOpen, onClose, data }: DetalhesHorarioModalPro
               <Info className="h-3 w-3" /> Status
             </div>
             <p className="text-sm text-red-700 font-medium leading-relaxed italic">
-              Este horário já passou e não pode mais receber novas reservas.
+              Este horário já passou e não teve reserva registrada.
             </p>
           </div>
 

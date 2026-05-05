@@ -708,12 +708,18 @@ const AgendaPage = () => {
                                 </div>
                                 <div className="event-meta">
                                   <span className="truncate flex-1" title={reserva.turma}>{reserva.turma}</span>
+                                  {reserva.disciplina && (
+                                    <>
+                                      <span className="shrink-0">•</span>
+                                      <span className="truncate flex-1" title={reserva.disciplina}>{reserva.disciplina}</span>
+                                    </>
+                                  )}
                                   <span className="shrink-0">•</span>
                                   <span className="truncate flex-1 font-bold" title={recurso.nome}>{recurso.nome}</span>
                                 </div>
                                 <div className="event-actions">
                                   {status === "ended" ? (
-                                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Ver detalhes</span>
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Ver detalhes da reserva</span>
                                   ) : null}
                                   {status !== "ended" && (profile?.role === 'admin_plataforma' || 
                                     (profile?.role === 'admin_lab' && reserva.escola_id === profile.escola_id) ||
@@ -737,9 +743,10 @@ const AgendaPage = () => {
                         </div>
                       ) : (
                         status === "ended" ? (
-                          <div className="flex flex-col items-center justify-center h-full opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
+                          <div className="flex flex-col items-center justify-center h-full opacity-60 hover:opacity-100 transition-opacity cursor-pointer text-center px-1">
                             <span className="text-[10px] font-black uppercase tracking-widest text-red-500">Encerrado</span>
-                            <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Ver detalhes</span>
+                            <span className="text-[9px] font-bold text-slate-500 mt-0.5 uppercase tracking-tighter">Sem reserva</span>
+                            <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Ver horário</span>
                           </div>
                         ) : status === "ongoing" ? (
                           <div className="flex flex-col items-center justify-center h-full">
@@ -831,8 +838,11 @@ const AgendaPage = () => {
                                       <span className="px-1.5 py-0.5 bg-amber-100 text-[9px] font-black uppercase text-amber-600 rounded animate-pulse">Em andamento</span>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-2 mt-auto min-w-0">
+                                  <div className="flex items-center gap-2 mt-auto min-w-0 flex-wrap">
                                     <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md shrink-0">{reserva.turma}</span>
+                                    {reserva.disciplina && (
+                                      <span className="text-[11px] font-medium text-slate-500 truncate">• {reserva.disciplina}</span>
+                                    )}
                                     <span className="text-[11px] font-medium text-slate-500 truncate">• {recurso.nome}</span>
                                   </div>
                                   <div className="mt-2 pt-1.5 border-t border-slate-900/5 flex items-center justify-between">
@@ -853,11 +863,14 @@ const AgendaPage = () => {
                           >
                             {status === "ended" ? (
                               <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[11px] font-black uppercase tracking-widest text-red-500">Encerrado</span>
-                                  <span className="text-[10px] text-slate-400 font-medium">— Horário já passou</span>
+                                <div className="flex flex-col">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-red-500">Encerrado</span>
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Sem reserva</span>
+                                  </div>
+                                  <span className="text-[9px] text-slate-400 font-medium">Este horário já passou</span>
                                 </div>
-                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Ver detalhes</span>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Ver horário</span>
                               </div>
                             ) : status === "ongoing" ? (
                               <div className="flex items-center gap-2">
@@ -993,8 +1006,9 @@ const AgendaPage = () => {
         onDelete={handleExcluirReserva}
         reserva={activeReserva?.reserva || null}
         recurso={activeReserva?.recurso || null}
-        isPast={activeReserva?.reserva ? getSlotStatus(new Date(activeReserva.reserva.data + 'T12:00:00'), activeReserva.reserva.horario.split(' - ')[0] || "00:00", activeReserva.reserva.horario.split(' - ')[1] || "23:59") === "ended" : false}
+        isPast={activeReserva?.reserva ? getSlotStatus(parseISO(activeReserva.reserva.data), activeReserva.reserva.horario.split(' - ')[0] || "00:00", activeReserva.reserva.horario.split(' - ')[1] || "23:59") === "ended" : false}
         canEdit={
+          ! (activeReserva?.reserva && getSlotStatus(parseISO(activeReserva.reserva.data), activeReserva.reserva.horario.split(' - ')[0] || "00:00", activeReserva.reserva.horario.split(' - ')[1] || "23:59") === "ended") &&
           (activeReserva?.reserva.profile_id === user?.id || profile?.role !== 'professor') &&
           !(profile?.role === 'professor' && (activeReserva?.reserva.status === 'manutencao' || activeReserva?.reserva.status === 'bloqueada'))
         }

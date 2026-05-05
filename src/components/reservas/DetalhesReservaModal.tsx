@@ -33,11 +33,13 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
             {recurso?.tipo}
           </Badge>
           <div className="flex flex-col gap-1 mt-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-3xl font-black leading-tight tracking-tight uppercase">{reserva.disciplina}</h2>
+            <div className="flex flex-col gap-1">
+              <h2 className="text-3xl font-black leading-tight tracking-tight uppercase">
+                {isPast ? "Detalhes da Reserva" : reserva.disciplina || "Reserva"}
+              </h2>
               {reserva.status && (
                 <Badge className={cn(
-                  "px-2 py-0.5 text-[9px] font-black uppercase tracking-widest border-none",
+                  "px-2 py-0.5 text-[9px] font-black uppercase tracking-widest border-none w-fit",
                   (reserva.status === "confirmada" || reserva.status === "aprovada") ? "bg-green-500 text-white" :
                   reserva.status === "pendente" ? "bg-amber-500 text-white" :
                   reserva.status === "recusada" ? "bg-red-500 text-white" :
@@ -67,6 +69,13 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
               </div>
               <p className="text-sm font-black text-slate-900 truncate tracking-tight">{reserva.nome_professor}</p>
             </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <BookOpen className="h-3 w-3" /> Disciplina
+              </div>
+              <p className="text-sm font-black text-slate-900 truncate tracking-tight">{reserva.disciplina || "Não informada"}</p>
+            </div>
             
             <div className="space-y-1">
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
@@ -94,11 +103,18 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
               </div>
             </div>
 
-            <div className="space-y-1 col-span-2">
+            <div className="space-y-1">
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                 <BookOpen className="h-3 w-3" /> Recurso
               </div>
               <p className="text-sm font-black text-slate-900 tracking-tight">{recurso?.nome}</p>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <Info className="h-3 w-3" /> Status
+              </div>
+              <p className="text-sm font-black text-slate-900 tracking-tight capitalize">{reserva.status || "Pendente"}</p>
             </div>
           </div>
 
