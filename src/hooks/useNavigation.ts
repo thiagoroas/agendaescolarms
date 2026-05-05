@@ -13,12 +13,14 @@ import {
   LucideIcon
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAvisos } from "@/hooks/useAvisos";
 
 export interface MenuItem {
   icon: LucideIcon;
   label: string;
   path: string;
   roles?: string[];
+  badge?: number;
 }
 
 export interface NavigationSection {
@@ -28,7 +30,10 @@ export interface NavigationSection {
 
 export const useNavigation = () => {
   const { profile } = useAuth();
+  const { avisos } = useAvisos();
   const role = profile?.role || "";
+
+  const activeAvisosCount = avisos.filter(a => a.ativo).length;
 
   const mainItems: MenuItem[] = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -43,7 +48,13 @@ export const useNavigation = () => {
 
   const adminItems: MenuItem[] = [
     { icon: CheckCircle, label: "Central do Laboratório", path: "/admin/aprovacoes", roles: ["admin_lab", "admin_plataforma"] },
-    { icon: Bell, label: "Avisos", path: "/admin/avisos", roles: ["admin_lab", "admin_plataforma"] },
+    { 
+      icon: Bell, 
+      label: "Avisos", 
+      path: "/admin/avisos", 
+      roles: ["admin_lab", "admin_plataforma"],
+      badge: activeAvisosCount > 0 ? activeAvisosCount : undefined
+    },
     { icon: Clock, label: "Horários", path: "/admin/horarios", roles: ["admin_lab", "admin_plataforma"] },
     { icon: Users, label: "Professores", path: "/admin/professores", roles: ["admin_lab", "admin_plataforma"] },
     { icon: Monitor, label: "Recursos", path: "/admin/recursos", roles: ["admin_lab", "admin_plataforma"] },

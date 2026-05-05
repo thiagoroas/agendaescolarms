@@ -1,4 +1,4 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useEscolas } from "@/hooks/useEscolas";
 import { 
@@ -15,7 +15,6 @@ import { cn } from "@/lib/utils";
 import { 
   Sheet, 
   SheetContent, 
-  SheetHeader, 
   SheetTitle, 
   SheetTrigger,
   SheetClose,
@@ -73,28 +72,33 @@ const MobileBottomNav = () => {
             <span className="text-[10px] tracking-tight uppercase font-bold">Menu</span>
           </button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-[min(88vw,380px)] p-0 border-l-0 bg-slate-50 shadow-2xl overflow-hidden">
-          <div className="flex flex-col h-full bg-slate-50">
-            {/* Bloco 1: Área do Usuário */}
-            <SheetHeader className="p-5 text-left bg-white shrink-0 shadow-sm border-b border-slate-100">
-              <div className="flex items-center gap-4 mb-5">
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white text-xl font-bold shadow-lg ring-4 ring-blue-50">
-                  {profile?.full_name?.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <SheetTitle className="text-lg font-extrabold text-slate-900 truncate leading-tight">
-                    {profile?.full_name}
-                  </SheetTitle>
-                  <SheetDescription className="sr-only">
-                    Menu de navegação e configurações do usuário
-                  </SheetDescription>
-                  <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider mt-0.5 bg-blue-50 self-start px-2 py-0.5 rounded-full">
-                    {profile?.role === "admin_plataforma" ? "Admin Plataforma" : 
-                     profile?.role === "admin_lab" ? "Admin Lab" : "Professor"}
-                  </p>
-                </div>
+        <SheetContent side="right" className="w-[min(85vw,360px)] p-0 border-l-0 bg-slate-50 shadow-2xl overflow-hidden flex flex-col">
+          {/* Header com Degradê similar à Sidebar */}
+          <div className="bg-gradient-to-br from-[#1E3A8A] to-[#2563EB] p-6 pb-8 text-white relative shrink-0">
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-xl font-bold shadow-lg border border-white/20">
+                {profile?.full_name?.charAt(0).toUpperCase()}
               </div>
+              <div className="flex flex-col min-w-0">
+                <SheetTitle className="text-xl font-black text-white truncate leading-tight">
+                  {profile?.full_name}
+                </SheetTitle>
+                <SheetDescription className="sr-only">
+                  Menu de navegação e configurações do usuário
+                </SheetDescription>
+                <p className="text-[10px] font-bold text-blue-100/70 uppercase tracking-[0.2em] mt-1 flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {profile?.role === "admin_plataforma" ? "Admin Plataforma" : 
+                   profile?.role === "admin_lab" ? "Admin Laboratório" : "Professor"}
+                </p>
+              </div>
+            </div>
+            {/* Elemento decorativo */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl" />
+          </div>
 
+          <div className="flex-1 flex flex-col min-h-0 bg-slate-50 -mt-4 rounded-t-2xl relative z-20 overflow-hidden">
+            <div className="p-6 pb-2 shrink-0">
               {/* Unidade Ativa Card */}
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 block px-1">
@@ -139,9 +143,9 @@ const MobileBottomNav = () => {
                   </div>
                 )}
               </div>
-            </SheetHeader>
+            </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-6">
+            <div className="flex-1 overflow-y-auto px-4 py-4">
               <nav className="space-y-8 pb-8">
                 {sections.map((section, idx) => (
                   <div key={section.title || idx} className="space-y-3">
@@ -177,8 +181,10 @@ const MobileBottomNav = () => {
                                   <item.icon className={cn("h-5 w-5 shrink-0")} />
                                 </div>
                                 <span className="text-[15px] font-bold tracking-tight">{item.label}</span>
-                                {isActive && (
-                                  <div className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-600" />
+                                {item.badge && item.badge > 0 && (
+                                  <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-lg border border-red-400/20">
+                                    {item.badge}
+                                  </span>
                                 )}
                               </>
                             )}
@@ -195,17 +201,18 @@ const MobileBottomNav = () => {
             <div className="p-5 bg-white border-t border-slate-100 shrink-0 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
               <button
                 onClick={async () => {
-                  await logout();
-                  navigate("/login", { replace: true });
+                  try {
+                    await logout();
+                    navigate("/login", { replace: true });
+                  } catch (error) {
+                    toast.error("Erro ao sair");
+                  }
                 }}
                 className="flex w-full items-center justify-center gap-3 rounded-2xl bg-red-50 px-4 py-4.5 text-[15px] font-extrabold text-red-600 transition-all active:scale-[0.98] border border-red-100 hover:bg-red-100/50 shadow-sm"
               >
                 <LogOut className="h-5 w-5" />
                 SAIR DO SISTEMA
               </button>
-              <p className="text-center text-[10px] text-slate-400 font-bold tracking-widest uppercase mt-4 opacity-50">
-                Agenda Escolar Digital v2.0
-              </p>
             </div>
           </div>
         </SheetContent>
