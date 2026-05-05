@@ -634,9 +634,32 @@ const AgendaPage = () => {
               {weekDates.map((date, i) => {
                 const isToday = isSameDay(date, new Date());
                 return (
-                  <div key={i} className={`cal-header-cell ${isToday ? 'today' : ''}`}>
-                    <div className="cal-day-label">{diasSemana[i].substring(0, 3)}</div>
-                    <div className={`cal-day-num ${isToday ? 'today' : ''}`}>{format(date, "d")}</div>
+                  <div 
+                    key={i} 
+                    className={cn(
+                      "cal-header-cell",
+                      isToday && "today bg-gradient-to-b from-blue-50 to-white border-blue-200 shadow-[inset_0_-2px_0_0_#2563eb]"
+                    )}
+                  >
+                    <div className={cn(
+                      "cal-day-label",
+                      isToday && "text-blue-700 font-black"
+                    )}>
+                      {diasSemana[i].substring(0, 3)}
+                    </div>
+                    <div className={cn(
+                      "cal-day-num",
+                      isToday && "today scale-110"
+                    )}>
+                      {format(date, "d")}
+                    </div>
+                    {isToday && (
+                      <div className="absolute top-1 right-1">
+                        <span className="bg-blue-600 text-[8px] font-black text-white px-1.5 py-0.5 rounded-full uppercase tracking-tighter shadow-sm animate-pulse">
+                          Hoje
+                        </span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
