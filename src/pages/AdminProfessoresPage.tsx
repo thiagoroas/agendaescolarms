@@ -5,7 +5,7 @@ import { Usuario } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
 import { getMockUsuarios, saveMockUsuarios } from "../data/storage";
 import { Button } from "@/components/ui/button";
-import { Plus, UserPlus, UserCheck, Search, Info, Building2, Trash2, Edit2, Loader2, Key, Power, ArchiveX } from "lucide-react";
+import { Plus, UserPlus, UserCheck, Search, Info, Building2, Trash2, Edit2, Loader2, Key, Power, ArchiveX, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -44,14 +44,26 @@ const AdminProfessoresPage = () => {
       try {
         let query = supabase.from("profile_escolas").select("*, profile:profiles(*)");
         
-        // Filter by role in the link
-        query = query.in("papel", ["professor", "admin_lab"]);
+        const isAdminPlataforma = profile?.role === "admin_plataforma";
+        const isAdminLab = profile?.role === "admin_lab";
 
-        // Permission filtering - must be linked to the current school
-        if (profile?.role === "admin_lab") {
-          query = query.eq("escola_id", profile.escola_id);
-        } else if (profile?.role === "admin_plataforma" && selectedEscolaId) {
-          query = query.eq("escola_id", selectedEscolaId);
+        // Filtering based on role and context
+        if (isAdminLab) {
+          // Admin Lab: only see professors from their own school
+          query = query.eq("escola_id", profile.escola_id).eq("papel", "professor");
+        } else if (isAdminPlataforma) {
+          // Admin Plataforma:
+          // Filter by role based on tab
+          if (activeTab === "professores") {
+            query = query.eq("papel", "professor");
+          } else if (activeTab === "usuarios_lab") {
+            query = query.eq("papel", "admin_lab");
+          }
+
+          // Filter by selected school if applicable
+          if (selectedEscolaId && selectedEscolaId !== "todas") {
+            query = query.eq("escola_id", selectedEscolaId);
+          }
         }
 
         const { data, error } = await query;
@@ -89,7 +101,8 @@ const AdminProfessoresPage = () => {
   const isAdminLab = profile?.role === "admin_lab";
   
   const filteredUsers = localUsers.filter(u => {
-    // Tab filter
+    // Note: Database query already filters by papel for activeTab in Supabase mode.
+    // This frontend filter is kept for mock mode and extra safety.
     if (activeTab === "professores" && u.papel !== "professor") return false;
     if (activeTab === "usuarios_lab" && u.papel !== "admin_lab") return false;
 
@@ -113,16 +126,15 @@ const AdminProfessoresPage = () => {
       setConfirmarSenha("");
       setPapel(u.papel as any);
       setEscolaId(u.escola_id);
-      setDisciplinas(u.disciplinas?.join(", ") || "");
-      setStatus(u.status);
     } else {
+      const defaultPapel = activeTab === "usuarios_lab" ? "admin_lab" : "professor";
       setEditingUserId(null);
       setNome("");
       setEmail("");
       setSenha("");
       setConfirmarSenha("");
-      setPapel(activeTab === "professores" ? "professor" : "admin_lab");
-      setEscolaId(isAdminLab ? (profile?.escola_id || "") : (selectedEscolaId || ""));
+      setPapel(defaultPapel);
+      setEscolaId(isAdminLab ? (profile?.escola_id || "") : (selectedEscolaId && selectedEscolaId !== "todas" ? selectedEscolaId : ""));
       setDisciplinas("");
       setStatus("ativo");
     }
@@ -142,8 +154,8 @@ const AdminProfessoresPage = () => {
       toast.error("A nova senha deve ter no mínimo 6 caracteres"); return;
     }
 
-    if (!escolaId) {
-      toast.error("Vínculo com escola é obrigatório");
+    if (!escolaId || escolaId === "todas") {
+      toast.error("Vínculo com uma escola específica é obrigatório");
       return;
     }
 
@@ -294,24 +306,31 @@ const AdminProfessoresPage = () => {
       <DiagnosticPanel />
       
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Usuários do Sistema</h1>
-          <p className="text-sm text-slate-500">Gerencie professores e administradores de laboratório.</p>
+        <div className="flex items-center gap-3">
+          <div className="bg-blue-100 p-2.5 rounded-xl">
+            <ShieldCheck className="h-6 w-6 text-blue-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Usuários do Sistema</h1>
+            <p className="text-sm text-slate-500">Gerencie professores e administradores de laboratório.</p>
+          </div>
         </div>
         {(isAdminPlataforma || (isAdminLab && activeTab === "professores")) && (
           <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => openModal()}>
             <UserPlus className="mr-2 h-4 w-4" />
-            Novo {activeTab === "professores" ? "Professor" : "Administrador"}
+            Novo {papel === "professor" ? "Professor" : "Administrador"}
           </Button>
         )}
       </header>
 
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-slate-100 p-1 mb-2">
-          <TabsTrigger value="professores" className="data-[state=active]:bg-white">Professores</TabsTrigger>
-          <TabsTrigger value="usuarios_lab" className="data-[state=active]:bg-white">Usuários Laboratório</TabsTrigger>
-        </TabsList>
+        {isAdminPlataforma && (
+          <TabsList className="bg-slate-100 p-1 mb-2">
+            <TabsTrigger value="professores" className="data-[state=active]:bg-white">Professores</TabsTrigger>
+            <TabsTrigger value="usuarios_lab" className="data-[state=active]:bg-white">Usuários Laboratório</TabsTrigger>
+          </TabsList>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
           <div className="relative flex-1">
@@ -324,6 +343,19 @@ const AdminProfessoresPage = () => {
             />
           </div>
           <div className="w-full sm:w-48">
+            {isAdminPlataforma && (
+              <Select value={selectedEscolaId || "todas"} onValueChange={(val) => setSelectedEscolaId(val === "todas" ? "todas" : val)}>
+                <SelectTrigger className="mb-2">
+                  <SelectValue placeholder="Filtrar por Escola" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas as escolas</SelectItem>
+                  {escolas.map(e => (
+                    <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Status" />
@@ -355,7 +387,7 @@ const AdminProfessoresPage = () => {
                 <TableRow className="bg-slate-50">
                   <TableHead>Nome</TableHead>
                   <TableHead>E-mail</TableHead>
-                  {isAdminPlataforma && <TableHead>Escola</TableHead>}
+                  {isAdminPlataforma && (selectedEscolaId === "todas" || !selectedEscolaId) && <TableHead>Escola</TableHead>}
                   {activeTab === "professores" && <TableHead>Disciplinas</TableHead>}
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -382,7 +414,7 @@ const AdminProfessoresPage = () => {
                     <TableRow key={u.id}>
                       <TableCell className="font-medium text-slate-900">{u.nome}</TableCell>
                       <TableCell className="text-slate-500">{u.email}</TableCell>
-                      {isAdminPlataforma && (
+                      {isAdminPlataforma && (selectedEscolaId === "todas" || !selectedEscolaId) && (
                         <TableCell className="text-slate-500">
                           <div className="flex items-center gap-1">
                             <Building2 className="h-3 w-3 text-slate-400" />
