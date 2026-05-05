@@ -31,21 +31,54 @@ export const useReservas = (escolaId?: string) => {
         console.log("[RESERVAS] escolaId usado:", targetEscolaId);
         const { data, error: supabaseError } = await supabase
           .from("reservas")
-          .select(`
-            *,
-            professor:profiles!reservas_profile_id_fkey(id, nome, email),
-            recurso:recursos!reservas_recurso_id_fkey(id, nome, tipo)
-          `)
+          .select("*")
           .eq("escola_id", targetEscolaId);
 
         if (supabaseError) throw supabaseError;
 
-        setReservas(data as Reserva[]);
+        // Se o Supabase estiver configurado e o join falhou anteriormente,
+        // vamos carregar professor e recurso separadamente para cada reserva
+        // para garantir que os dados completos apareçam sem quebrar a query principal.
+        const reservasBasicas = data as Reserva[];
+        
+        try {
+          // Buscar profiles (professores)
+          const profileIds = [...new Set(reservasBasicas.map(r => r.profile_id))].filter(Boolean);
+          const recursoIds = [...new Set(reservasBasicas.map(r => r.recurso_id))].filter(Boolean);
+
+          const [profilesRes, recursosRes] = await Promise.all([
+            profileIds.length > 0 
+              ? supabase.from("profiles").select("id, nome, email").in("id", profileIds)
+              : Promise.resolve({ data: [] }),
+            recursoIds.length > 0
+              ? supabase.from("recursos").select("id, nome, tipo").in("id", recursoIds)
+              : Promise.resolve({ data: [] })
+          ]);
+
+          const profilesMap = (profilesRes.data || []).reduce((acc: any, p: any) => ({ ...acc, [p.id]: p }), {});
+          const recursosMap = (recursosRes.data || []).reduce((acc: any, r: any) => ({ ...acc, [r.id]: r }), {});
+
+          const reservasCompletas = reservasBasicas.map(r => ({
+            ...r,
+            professor: profilesMap[r.profile_id],
+            recurso: recursosMap[r.recurso_id]
+          }));
+
+          setReservas(reservasCompletas as Reserva[]);
+        } catch (enrichError) {
+          console.error("[RESERVAS] Erro ao enriquecer dados:", enrichError);
+          setReservas(reservasBasicas);
+        }
       } catch (err: any) {
-        console.error("[RESERVAS] Error fetching reservas:", err.message, err);
+        console.error("[RESERVAS] Error fetching reservas:", {
+          message: err.message,
+          code: err.code,
+          details: err.details,
+          hint: err.hint
+        });
         setError(err.message);
         
-        toast.error("Erro ao carregar reservas", {
+        toast.error("Erro ao carregar reservas. Verifique o console para detalhes.", {
           id: "erro-carregar-reservas"
         });
       } finally {
