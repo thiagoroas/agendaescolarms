@@ -71,6 +71,9 @@ export interface Reserva {
   criado_em: string;
   aviso_confirmado_id?: string;
   aviso_confirmado_em?: string;
+  // Campos relacionados (opcionais para compatibilidade)
+  professor?: { id: string; nome: string; email: string };
+  recurso?: { id: string; nome: string; tipo: string };
 }
 
 export const escolas: Escola[] = [

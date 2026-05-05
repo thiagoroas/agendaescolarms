@@ -183,7 +183,7 @@ const AgendaPage = () => {
 
     if (isSupabaseConfigured && !isValidUUID(currentSchoolId)) return [];
 
-    return reservasState.filter(r =>
+    const filtered = reservasState.filter(r =>
       r.data === dateStr &&
       r.aula === aula &&
       r.escola_id === currentSchoolId &&
@@ -191,10 +191,16 @@ const AgendaPage = () => {
       (!onlyBlocks || r.status === "manutencao" || r.status === "bloqueada") &&
       (!selectedRecurso || r.recurso_id === selectedRecurso) &&
       (!searchQuery ||
-        r.nome_professor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (r.professor?.nome || r.nome_professor || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.turma.toLowerCase().includes(searchQuery.toLowerCase())
       )
     );
+
+    if (filtered.length > 0) {
+      console.log('[AGENDA RESERVAS SAMPLE]', filtered[0]);
+    }
+
+    return filtered;
   };
 
   const filteredReservationsCount = useMemo(() => {
@@ -243,6 +249,7 @@ const AgendaPage = () => {
     
     const targetReserva = specificReserva || (resList.length > 0 ? resList[0] : null);
 
+    console.log('[RESERVA CARD CLICK]', targetReserva);
     console.log('[AGENDA CLICK]', {
       hasReserva: !!targetReserva,
       slotStatus: status,
@@ -689,11 +696,13 @@ const AgendaPage = () => {
                               >
                                 <div className="event-title">
                                   <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo) }}>
-                                    {initialsOf(reserva.nome_professor)}
+                                    {initialsOf(reserva.professor?.nome || reserva.nome_professor || "P")}
                                   </span>
                                   <div className="flex flex-col min-w-0">
                                     <div className="flex items-center gap-1">
-                                      <span className="truncate leading-tight">{reserva.nome_professor}</span>
+                                      <span className="truncate leading-tight font-bold">
+                                        {reserva.professor?.nome || reserva.nome_professor || "Professor não encontrado"}
+                                      </span>
                                       {status === "ended" && (
                                         <span className="px-1 bg-red-100 text-[8px] font-black uppercase text-red-600 rounded shrink-0">Encerrada</span>
                                       )}
@@ -701,21 +710,18 @@ const AgendaPage = () => {
                                         <span className="px-1 bg-amber-100 text-[8px] font-black uppercase text-amber-600 rounded shrink-0 animate-pulse">Em andamento</span>
                                       )}
                                     </div>
+                                    <div className="flex items-center gap-1 overflow-hidden">
+                                      <span className="text-[10px] text-slate-500 truncate">{reserva.disciplina || "Sem disciplina"}</span>
+                                    </div>
                                     {reserva.status === "pendente" && (
                                       <span className="text-[8px] font-black uppercase text-amber-600 tracking-tighter">Pendente</span>
                                     )}
                                   </div>
                                 </div>
-                                <div className="event-meta">
-                                  <span className="truncate flex-1" title={reserva.turma}>{reserva.turma}</span>
-                                  {reserva.disciplina && (
-                                    <>
-                                      <span className="shrink-0">•</span>
-                                      <span className="truncate flex-1" title={reserva.disciplina}>{reserva.disciplina}</span>
-                                    </>
-                                  )}
+                                <div className="event-meta mt-1">
+                                  <span className="truncate flex-1" title={reserva.turma}>{reserva.turma || "Sem turma"}</span>
                                   <span className="shrink-0">•</span>
-                                  <span className="truncate flex-1 font-bold" title={recurso.nome}>{recurso.nome}</span>
+                                  <span className="truncate flex-1 font-bold" title={recurso.nome}>{recurso.nome || "Recurso não encontrado"}</span>
                                 </div>
                                 <div className="event-actions">
                                   {status === "ended" ? (
@@ -827,16 +833,23 @@ const AgendaPage = () => {
                                   <div className="flex items-center justify-between gap-2 mb-1">
                                     <div className="flex items-center gap-2">
                                       <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo), width: '22px', height: '22px', fontSize: '10px' }}>
-                                        {initialsOf(reserva.nome_professor)}
+                                        {initialsOf(reserva.professor?.nome || reserva.nome_professor || "P")}
                                       </span>
-                                      <span className="text-[13px] font-bold text-slate-900 leading-none truncate block">{reserva.nome_professor}</span>
+                                      <div className="flex flex-col min-w-0">
+                                        <span className="text-[13px] font-bold text-slate-900 leading-none truncate block">
+                                          {reserva.professor?.nome || reserva.nome_professor || "Professor não encontrado"}
+                                        </span>
+                                        <span className="text-[10px] text-slate-500 truncate">{reserva.disciplina || "Sem disciplina"}</span>
+                                      </div>
                                     </div>
-                                    {status === "ended" && (
-                                      <span className="px-1.5 py-0.5 bg-red-100 text-[9px] font-black uppercase text-red-600 rounded">Encerrada</span>
-                                    )}
-                                    {status === "ongoing" && (
-                                      <span className="px-1.5 py-0.5 bg-amber-100 text-[9px] font-black uppercase text-amber-600 rounded animate-pulse">Em andamento</span>
-                                    )}
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      {status === "ended" && (
+                                        <span className="px-1.5 py-0.5 bg-red-100 text-[9px] font-black uppercase text-red-600 rounded">Encerrada</span>
+                                      )}
+                                      {status === "ongoing" && (
+                                        <span className="px-1.5 py-0.5 bg-amber-100 text-[9px] font-black uppercase text-amber-600 rounded animate-pulse">Em andamento</span>
+                                      )}
+                                    </div>
                                   </div>
                                   <div className="flex items-center gap-2 mt-auto min-w-0 flex-wrap">
                                     <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md shrink-0">{reserva.turma}</span>
