@@ -1,7 +1,14 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useEscolas } from "@/hooks/useEscolas";
-// ... keep existing code
+import { 
+  Calendar, 
+  ChevronDown,
+  Building,
+  LogOut
+} from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useNavigation } from "@/hooks/useNavigation";
 
