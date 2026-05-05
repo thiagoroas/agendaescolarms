@@ -67,21 +67,25 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                 <User className="h-3 w-3" /> Professor
               </div>
-              <p className="text-sm font-black text-slate-900 truncate tracking-tight">{reserva.nome_professor}</p>
+              <p className="text-sm font-black text-slate-900 truncate tracking-tight">
+                {reserva.professor?.nome || reserva.nome_professor || "Professor não encontrado"}
+              </p>
             </div>
 
             <div className="space-y-1">
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                 <BookOpen className="h-3 w-3" /> Disciplina
               </div>
-              <p className="text-sm font-black text-slate-900 truncate tracking-tight">{reserva.disciplina || "Não informada"}</p>
+              <p className="text-sm font-black text-slate-900 truncate tracking-tight">
+                {reserva.disciplina || reserva.recurso?.nome || "Não informada"}
+              </p>
             </div>
             
             <div className="space-y-1">
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                 <Users className="h-3 w-3" /> Turma
               </div>
-              <p className="text-sm font-black text-slate-900 tracking-tight">{reserva.turma}</p>
+              <p className="text-sm font-black text-slate-900 tracking-tight">{reserva.turma || "Não informada"}</p>
             </div>
 
             <div className="space-y-1">
@@ -107,7 +111,9 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                 <BookOpen className="h-3 w-3" /> Recurso
               </div>
-              <p className="text-sm font-black text-slate-900 tracking-tight">{recurso?.nome}</p>
+              <p className="text-sm font-black text-slate-900 tracking-tight">
+                {reserva.recurso?.nome || recurso?.nome || "Não informado"}
+              </p>
             </div>
 
             <div className="space-y-1">
