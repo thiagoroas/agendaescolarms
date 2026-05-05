@@ -395,15 +395,29 @@
   background: var(--c-soft, var(--accent-blue-soft));
   color: var(--c-text, var(--accent-blue-text));
   overflow: hidden;
-  transition: transform 0.12s, box-shadow 0.12s;
+  transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s;
   user-select: none;
   text-align: left;
   width: 100%;
+}
+.agenda-proto .event.ended {
+  opacity: 0.6;
+  border-left-color: var(--danger) !important;
+  background: #f1f5f9 !important; /* slate-100 */
+  color: var(--text-muted) !important;
+}
+.agenda-proto .event.ongoing {
+  border-left-color: var(--accent-amber) !important;
+  box-shadow: 0 0 0 1px var(--accent-amber) inset, 0 4px 12px rgba(245, 158, 11, 0.1);
 }
 .agenda-proto .event:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
   z-index: 2;
+}
+.agenda-proto .event.ended:hover {
+  transform: none;
+  box-shadow: none;
 }
 .agenda-proto .event.conflict {
   border-left-color: var(--danger);
