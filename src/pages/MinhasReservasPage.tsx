@@ -236,6 +236,7 @@ const MinhasReservasPage = () => {
               } else {
                 await cancelReserva(reservaParaCancelar.id, motivo);
               }
+              await refreshReservas();
             } finally {
               setCancelando(false);
               setReservaParaCancelar(null);
