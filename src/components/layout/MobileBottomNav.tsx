@@ -1,4 +1,4 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useEscolas } from "@/hooks/useEscolas";
 import { 
@@ -15,7 +15,6 @@ import { cn } from "@/lib/utils";
 import { 
   Sheet, 
   SheetContent, 
-  SheetHeader, 
   SheetTitle, 
   SheetTrigger,
   SheetClose,
@@ -98,9 +97,8 @@ const MobileBottomNav = () => {
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl" />
           </div>
 
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50 -mt-4 rounded-t-2xl relative z-20">
-
-
+          <div className="flex-1 flex flex-col min-h-0 bg-slate-50 -mt-4 rounded-t-2xl relative z-20 overflow-hidden">
+            <div className="p-6 pb-2 shrink-0">
               {/* Unidade Ativa Card */}
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 block px-1">
@@ -145,9 +143,9 @@ const MobileBottomNav = () => {
                   </div>
                 )}
               </div>
-            </SheetHeader>
+            </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-6">
+            <div className="flex-1 overflow-y-auto px-4 py-4">
               <nav className="space-y-8 pb-8">
                 {sections.map((section, idx) => (
                   <div key={section.title || idx} className="space-y-3">
@@ -183,8 +181,10 @@ const MobileBottomNav = () => {
                                   <item.icon className={cn("h-5 w-5 shrink-0")} />
                                 </div>
                                 <span className="text-[15px] font-bold tracking-tight">{item.label}</span>
-                                {isActive && (
-                                  <div className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-600" />
+                                {item.badge && item.badge > 0 && (
+                                  <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-lg border border-red-400/20">
+                                    {item.badge}
+                                  </span>
                                 )}
                               </>
                             )}
@@ -201,17 +201,18 @@ const MobileBottomNav = () => {
             <div className="p-5 bg-white border-t border-slate-100 shrink-0 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
               <button
                 onClick={async () => {
-                  await logout();
-                  navigate("/login", { replace: true });
+                  try {
+                    await logout();
+                    navigate("/login", { replace: true });
+                  } catch (error) {
+                    toast.error("Erro ao sair");
+                  }
                 }}
                 className="flex w-full items-center justify-center gap-3 rounded-2xl bg-red-50 px-4 py-4.5 text-[15px] font-extrabold text-red-600 transition-all active:scale-[0.98] border border-red-100 hover:bg-red-100/50 shadow-sm"
               >
                 <LogOut className="h-5 w-5" />
                 SAIR DO SISTEMA
               </button>
-              <p className="text-center text-[10px] text-slate-400 font-bold tracking-widest uppercase mt-4 opacity-50">
-                Agenda Escolar Digital v2.0
-              </p>
             </div>
           </div>
         </SheetContent>
