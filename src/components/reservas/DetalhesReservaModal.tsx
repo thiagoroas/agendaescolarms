@@ -121,6 +121,21 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
             </div>
           )}
 
+          {(reserva.criado_por || reserva.criado_em) && (
+            <div className="flex flex-col gap-1 px-1">
+              {reserva.criado_por && (
+                <p className="text-[10px] text-slate-400 font-medium">
+                  Criado por: <span className="font-bold">{reserva.criado_por}</span>
+                </p>
+              )}
+              {reserva.criado_em && (
+                <p className="text-[10px] text-slate-400 font-medium">
+                  Em: <span className="font-bold">{format(new Date(reserva.criado_em), "dd/MM/yyyy HH:mm")}</span>
+                </p>
+              )}
+            </div>
+          )}
+
           {isPast && (
             <div className="space-y-3 bg-slate-100 p-5 rounded-2xl border border-slate-200 mb-6">
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
