@@ -35,13 +35,13 @@ const Sidebar = () => {
             <Calendar className="h-5 w-5" />
           </div>
           <div className="lg:block hidden group-hover/sidebar:block transition-all overflow-hidden">
-            <h1 className="text-lg font-bold tracking-tight text-white leading-none">Agenda Escolar</h1>
-            <p className="text-[10px] font-medium text-blue-100/70 mt-1 uppercase tracking-wider">Laboratório de Informática</p>
+            <h1 className="text-lg font-bold tracking-tight text-[#FFFFFF] leading-none">Agenda Escolar</h1>
+            <p className="text-[10px] font-bold text-[#BFDBFE] mt-1 uppercase tracking-wider">Laboratório de Informática</p>
           </div>
         </div>
 
         <div className="mb-2 lg:block hidden group-hover/sidebar:block">
-          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-100/50 mb-3 block px-1">
+          <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C7D2FE] mb-3 block px-1">
             {profile?.role === "admin_plataforma" ? "Plataforma" : "Minha escola"}
           </label>
           
@@ -50,24 +50,24 @@ const Sidebar = () => {
               "flex items-center gap-3 p-3 rounded-2xl border transition-all duration-300 shadow-lg backdrop-blur-md cursor-pointer",
               !escola 
                 ? "bg-red-500/20 border-red-400/30" 
-                : "bg-white/10 border-white/20 hover:bg-white/15 hover:border-white/30"
+                : "bg-white/10 border-white/20 hover:bg-white/20 hover:border-white/30"
             )}>
               <div className={cn(
                 "rounded-xl p-2 text-white shrink-0 shadow-inner",
-                !escola ? "bg-red-500" : "bg-blue-500/50 backdrop-blur-sm"
+                !escola ? "bg-red-500" : "bg-blue-500/60 backdrop-blur-sm"
               )}>
                 <Building className="h-5 w-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1">
-                  <p className="text-sm font-bold text-white truncate leading-none">
+                  <p className="text-sm font-bold text-[#FFFFFF] truncate leading-none">
                     {loading ? "Carregando..." : (escola?.nome || "Sem escola")}
                   </p>
-                  <ChevronDown className="h-3.5 w-3.5 text-blue-100/50 shrink-0" />
+                  <ChevronDown className="h-3.5 w-3.5 text-[#DBEAFE] shrink-0" />
                 </div>
                 <p className={cn(
-                  "text-[10px] mt-1.5 font-semibold truncate leading-none uppercase tracking-wide",
-                  !escola ? "text-red-300" : "text-blue-100/70"
+                  "text-[10px] mt-1.5 font-bold truncate leading-none uppercase tracking-wide",
+                  !escola ? "text-red-300" : "text-[#BFDBFE]"
                 )}>
                   {!escola ? "Vínculo ausente" : "Trocar escola"}
                 </p>
@@ -93,7 +93,7 @@ const Sidebar = () => {
         {sections.map((section, idx) => (
           <div key={section.title || idx} className="space-y-3">
             {section.title && (
-              <div className="px-4 text-[10px] font-bold uppercase tracking-[0.3em] text-blue-100/40 lg:block hidden group-hover/sidebar:block truncate">
+              <div className="px-4 text-[10px] font-bold uppercase tracking-[0.3em] text-[#C7D2FE] lg:block hidden group-hover/sidebar:block truncate">
                 {section.title}
               </div>
             )}
@@ -104,10 +104,10 @@ const Sidebar = () => {
                   to={item.path}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-300 group border border-transparent",
+                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-300 group border border-transparent font-medium",
                       isActive 
-                        ? "bg-white/15 text-white font-bold border-white/10 shadow-lg backdrop-blur-sm" 
-                        : "text-blue-100/70 hover:bg-white/5 hover:text-white"
+                        ? "bg-white/20 text-[#FFFFFF] font-bold border-white/22 shadow-lg backdrop-blur-sm" 
+                        : "text-[#DBEAFE] hover:bg-white/10 hover:text-white"
                     )
                   }
                 >
@@ -117,7 +117,7 @@ const Sidebar = () => {
                         "h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-300",
                         isActive 
                           ? "bg-white text-blue-700 shadow-md" 
-                          : "bg-white/10 text-blue-100/50 group-hover:bg-white/20 group-hover:text-white"
+                          : "bg-white/15 text-[#BFDBFE] group-hover:bg-white/20 group-hover:text-white"
                       )}>
                         <item.icon className="h-4 w-4" />
                       </div>
@@ -138,15 +138,15 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      <div className="mt-auto p-4 space-y-3 border-t border-white/10 bg-black/10 backdrop-blur-md">
+      <div className="mt-auto p-4 space-y-3 border-t border-white/10 bg-black/20 backdrop-blur-md">
         <NavLink
           to="/perfil"
           className={({ isActive }) =>
             cn(
               "flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 group border border-transparent",
               isActive 
-                ? "bg-white/15 border-white/20 shadow-lg" 
-                : "hover:bg-white/5"
+                ? "bg-white/20 border-white/22 shadow-lg" 
+                : "hover:bg-white/10"
             )
           }
         >
@@ -154,8 +154,8 @@ const Sidebar = () => {
             {profile?.full_name?.charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col min-w-0 lg:flex hidden group-hover/sidebar:flex transition-all">
-            <p className="text-sm font-bold text-white truncate leading-tight">{profile?.full_name}</p>
-            <p className="text-[10px] font-medium text-blue-100/60 uppercase tracking-wider mt-0.5">Meu Perfil</p>
+            <p className="text-sm font-bold text-[#FFFFFF] truncate leading-tight">{profile?.full_name}</p>
+            <p className="text-[10px] font-bold text-[#BFDBFE] uppercase tracking-wider mt-0.5">Meu Perfil</p>
           </div>
         </NavLink>
         
