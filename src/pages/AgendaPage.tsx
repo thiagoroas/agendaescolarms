@@ -954,8 +954,8 @@ const AgendaPage = () => {
                     <div 
                       key={i} 
                       className={cn(
-                        "bg-white border rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-all",
-                        isToday ? "border-blue-200 bg-blue-50/30" : "border-slate-100",
+                        "bg-white border rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-all relative overflow-hidden",
+                        isToday ? "border-blue-400 bg-blue-50/50 ring-2 ring-blue-100" : "border-slate-100",
                         isPast && "opacity-75 grayscale-[0.3]"
                       )}
                       onClick={() => {
@@ -963,6 +963,13 @@ const AgendaPage = () => {
                         setMobileView("dia");
                       }}
                     >
+                      {isToday && (
+                        <div className="absolute top-0 right-0">
+                          <div className="bg-blue-600 text-[9px] font-black text-white px-3 py-1 rounded-bl-xl uppercase tracking-widest shadow-sm">
+                            Hoje
+                          </div>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center mb-3">
                         <div className="flex items-center gap-3">
                           <div className={cn(
