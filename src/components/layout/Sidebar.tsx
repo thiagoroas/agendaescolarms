@@ -37,28 +37,52 @@ const Sidebar = () => {
           <span className="text-lg font-bold tracking-tight text-slate-900 truncate lg:block hidden group-hover/sidebar:block transition-all">Agenda Escolar</span>
         </div>
 
-        {profile?.role === "admin_plataforma" ? (
-          <div className="mb-2 lg:block hidden group-hover/sidebar:block">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-1.5 block px-1 truncate">
-              Escola ativa
-            </label>
-            <div className="relative group/select">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 border border-blue-200 hover:bg-blue-100/50 transition-all duration-200 cursor-pointer shadow-sm group-hover/select:shadow group-focus-within:ring-2 group-focus-within:ring-blue-100">
-                <div className="bg-blue-600 rounded-lg p-2 text-white shrink-0 shadow-sm">
-                  <Building className="h-4 w-4" />
-                </div>
-                <div className="flex-1 min-w-0 lg:block hidden group-hover/sidebar:block transition-all">
-                  <div className="flex items-center justify-between gap-1">
-                    <p className="text-sm font-bold text-slate-900 truncate leading-none">
-                      {loading ? "Carregando..." : (escola?.nome || "Selecione...")}
-                    </p>
-                    <ChevronDown className="h-3.5 w-3.5 text-blue-600 shrink-0" />
-                  </div>
-                  <p className="text-[10px] text-blue-600/80 mt-1 font-medium truncate leading-none">
-                    Troque para gerenciar outra escola
-                  </p>
-                </div>
+        <div className="mb-2 lg:block hidden group-hover/sidebar:block">
+          <label className={cn(
+            "text-[10px] font-bold uppercase tracking-wider mb-1.5 block px-1 truncate",
+            profile?.role === "admin_plataforma" ? "text-blue-600" : "text-slate-400"
+          )}>
+            {profile?.role === "admin_plataforma" ? "Escola ativa" : "Minha escola"}
+          </label>
+          
+          <div className="relative group/select">
+            <div className={cn(
+              "flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 shadow-sm",
+              !escola ? "bg-red-50 border-red-100" :
+              profile?.role === "admin_plataforma" 
+                ? "bg-blue-50 border-blue-200 hover:bg-blue-100/50 cursor-pointer group-hover/select:shadow group-focus-within:ring-2 group-focus-within:ring-blue-100"
+                : profile?.role === "admin_lab" 
+                  ? "bg-emerald-50 border-emerald-100" 
+                  : "bg-blue-50 border-blue-100"
+            )}>
+              <div className={cn(
+                "rounded-lg p-2 text-white shrink-0 shadow-sm",
+                !escola ? "bg-red-600" :
+                profile?.role === "admin_lab" ? "bg-emerald-600" : "bg-blue-600"
+              )}>
+                <Building className="h-4 w-4" />
               </div>
+              <div className="flex-1 min-w-0 lg:block hidden group-hover/sidebar:block transition-all">
+                <div className="flex items-center justify-between gap-1">
+                  <p className="text-sm font-bold text-slate-900 truncate leading-none">
+                    {loading ? "Carregando..." : (escola?.nome || "Sem escola")}
+                  </p>
+                  {profile?.role === "admin_plataforma" && (
+                    <ChevronDown className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                  )}
+                </div>
+                <p className={cn(
+                  "text-[10px] mt-1 font-medium truncate leading-none capitalize",
+                  !escola ? "text-red-600" :
+                  profile?.role === "admin_lab" ? "text-emerald-600" : "text-blue-600"
+                )}>
+                  {!escola ? "Procure o administrador" : 
+                   profile?.role === "admin_lab" ? "Usuário Laboratório" : 
+                   profile?.role === "admin_plataforma" ? "Trocar escola" : "Professor"}
+                </p>
+              </div>
+            </div>
+            {profile?.role === "admin_plataforma" && (
               <select 
                 value={selectedEscolaId || ""} 
                 onChange={(e) => handleEscolaChange(e.target.value)}
@@ -69,39 +93,9 @@ const Sidebar = () => {
                   <option key={e.id} value={e.id}>{e.nome}</option>
                 ))}
               </select>
-            </div>
+            )}
           </div>
-        ) : (
-          <div className="mb-2 lg:block hidden group-hover/sidebar:block">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block px-1 truncate">
-              Minha escola
-            </label>
-            <div className={cn(
-              "flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 shadow-sm",
-              profile?.role === "admin_lab" 
-                ? "bg-emerald-50 border-emerald-100" 
-                : "bg-blue-50 border-blue-100"
-            )}>
-              <div className={cn(
-                "rounded-lg p-2 text-white shrink-0 shadow-sm",
-                profile?.role === "admin_lab" ? "bg-emerald-600" : "bg-blue-600"
-              )}>
-                <Building className="h-4 w-4" />
-              </div>
-              <div className="flex-1 min-w-0 lg:block hidden group-hover/sidebar:block">
-                <p className="text-sm font-bold text-slate-900 truncate leading-none">
-                  {escola?.nome || "Sem Escola"}
-                </p>
-                <p className={cn(
-                  "text-[10px] mt-1 font-medium truncate leading-none capitalize",
-                  profile?.role === "admin_lab" ? "text-emerald-600" : "text-blue-600"
-                )}>
-                  {profile?.role === "admin_lab" ? "Usuário Laboratório" : "Professor"}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
 
       <div className="px-4">
