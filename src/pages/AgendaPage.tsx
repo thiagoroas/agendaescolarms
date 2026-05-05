@@ -994,7 +994,7 @@ const AgendaPage = () => {
         onDelete={handleExcluirReserva}
         reserva={activeReserva?.reserva || null}
         recurso={activeReserva?.recurso || null}
-        isPast={getSlotStatus(activeReserva?.reserva.data ? new Date(activeReserva.reserva.data + 'T12:00:00') : new Date(), activeReserva?.reserva.horario.split(' - ')[0] || "00:00", activeReserva?.reserva.horario.split(' - ')[1] || "23:59") === "ended"}
+        isPast={activeReserva?.reserva ? getSlotStatus(new Date(activeReserva.reserva.data + 'T12:00:00'), activeReserva.reserva.horario.split(' - ')[0] || "00:00", activeReserva.reserva.horario.split(' - ')[1] || "23:59") === "ended" : false}
         canEdit={
           (activeReserva?.reserva.profile_id === user?.id || profile?.role !== 'professor') &&
           !(profile?.role === 'professor' && (activeReserva?.reserva.status === 'manutencao' || activeReserva?.reserva.status === 'bloqueada'))
