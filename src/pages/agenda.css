@@ -352,6 +352,17 @@
 }
 .agenda-proto .cal-cell:first-of-type { border-left: none; }
 .agenda-proto .cal-cell:hover { background: var(--primary-soft); }
+.agenda-proto .cal-cell.ended {
+  background: #f8fafc; /* slate-50 */
+  cursor: not-allowed;
+  border-left: 1px solid var(--border);
+}
+.agenda-proto .cal-cell.ended:hover {
+  background: #fee2e2; /* red-100 soft */
+}
+.agenda-proto .cal-cell.ongoing {
+  background: #fffbeb; /* amber-50 */
+}
 .agenda-proto .cal-cell .add-hint {
   position: absolute;
   inset: 6px;
