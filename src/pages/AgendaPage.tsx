@@ -1058,5 +1058,6 @@ const AgendaPage = () => {
       />
     </div>
   );
+};
 
 export default AgendaPage;
