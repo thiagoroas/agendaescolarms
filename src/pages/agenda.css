@@ -656,6 +656,15 @@
   border-radius: 12px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
+  transition: opacity 0.2s, background 0.2s;
+}
+.agenda-proto .mobile-slot.ended {
+  opacity: 0.8;
+  background: #f8fafc; /* slate-50 */
+}
+.agenda-proto .mobile-slot.ongoing {
+  background: #fffbeb; /* amber-50 */
+  border-color: var(--accent-amber);
 }
 
 .agenda-proto .mobile-slot-time {
