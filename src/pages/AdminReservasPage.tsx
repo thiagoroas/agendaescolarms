@@ -24,7 +24,7 @@ const AdminReservasPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const initialStatus = searchParams.get("status") || "todas";
   const [statusFilter, setStatusFilter] = useState(initialStatus);
-  const { reservas, cancelReserva } = useReservas();
+  const { reservas, cancelReserva, refresh: refreshReservas } = useReservas();
   const [reservaParaCancelar, setReservaParaCancelar] = useState<Reserva | null>(null);
   const [cancelando, setCancelando] = useState(false);
 
