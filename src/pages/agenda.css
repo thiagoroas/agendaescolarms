@@ -752,6 +752,17 @@
   gap: 4px;
   text-align: left;
   overflow: hidden;
+  transition: opacity 0.2s, background 0.2s;
+}
+.agenda-proto .mobile-card-event.ended {
+  opacity: 0.6;
+  border-left-color: var(--danger) !important;
+  background: #f1f5f9 !important;
+  color: var(--text-muted) !important;
+}
+.agenda-proto .mobile-card-event.ongoing {
+  border-left-color: var(--accent-amber) !important;
+  box-shadow: 0 0 0 1px var(--accent-amber) inset;
 }
 
 .agenda-proto .mobile-slot.is-break {
