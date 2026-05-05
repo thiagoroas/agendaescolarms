@@ -25,6 +25,7 @@ import { AlertTriangle, Info } from "lucide-react";
 interface NovaReservaModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
   initialData?: { date?: string; aula?: number; turno?: "manha" | "tarde" };
 }
 
@@ -47,7 +48,7 @@ const formatDateLocal = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
-const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProps) => {
+const NovaReservaModal = ({ isOpen, onClose, onSuccess, initialData }: NovaReservaModalProps) => {
   const { user, profile } = useAuth();
   const { recursos: availableRecursos } = useRecursos();
   const { createReserva } = useReservas();
@@ -369,6 +370,7 @@ const NovaReservaModal = ({ isOpen, onClose, initialData }: NovaReservaModalProp
           }
         }
       }
+      onSuccess?.();
       onClose();
     } catch (err: any) {
       console.error("Erro no fluxo de criação de reserva:", err);

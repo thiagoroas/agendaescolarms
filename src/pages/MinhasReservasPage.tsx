@@ -16,7 +16,7 @@ import { ConfirmCancelModal } from "@/components/reservas/ConfirmCancelModal";
 
 const MinhasReservasPage = () => {
   const { user, profile, selectedEscolaId } = useAuth();
-  const { reservas, cancelReserva } = useReservas();
+  const { reservas, cancelReserva, refresh: refreshReservas } = useReservas();
   const { recursos } = useRecursos();
   const [reservaParaCancelar, setReservaParaCancelar] = useState<Reserva | null>(null);
   const [cancelando, setCancelando] = useState(false);
@@ -236,6 +236,7 @@ const MinhasReservasPage = () => {
               } else {
                 await cancelReserva(reservaParaCancelar.id, motivo);
               }
+              await refreshReservas();
             } finally {
               setCancelando(false);
               setReservaParaCancelar(null);

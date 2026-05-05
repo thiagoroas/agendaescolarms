@@ -947,6 +947,7 @@ const AgendaPage = () => {
       <NovaReservaModal
         isOpen={isModalNovaOpen}
         onClose={() => { setIsModalNovaOpen(false); setSelectedSlot(null); }}
+        onSuccess={refreshReservas}
         initialData={selectedSlot || undefined}
       />
 
@@ -1003,6 +1004,7 @@ const AgendaPage = () => {
               } else {
                 await cancelReserva(reservaParaCancelar.id, motivo);
               }
+              await refreshReservas();
             } finally {
               setCancelando(false);
               setReservaParaCancelar(null);
