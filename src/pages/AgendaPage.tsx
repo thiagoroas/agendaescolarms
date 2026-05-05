@@ -815,13 +815,15 @@ const AgendaPage = () => {
                     .flatMap(h => getReservasForSlot(date, h.ordem));
                   
                   const isToday = isSameDay(date, new Date());
+                  const isPast = isBefore(startOfDay(date), startOfDay(new Date()));
 
                   return (
                     <div 
                       key={i} 
                       className={cn(
                         "bg-white border rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-all",
-                        isToday ? "border-blue-200 bg-blue-50/30" : "border-slate-100"
+                        isToday ? "border-blue-200 bg-blue-50/30" : "border-slate-100",
+                        isPast && "opacity-75 grayscale-[0.3]"
                       )}
                       onClick={() => {
                         setCurrentDate(date);
@@ -832,13 +834,17 @@ const AgendaPage = () => {
                         <div className="flex items-center gap-3">
                           <div className={cn(
                             "w-10 h-10 rounded-xl flex flex-col items-center justify-center font-bold",
-                            isToday ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600"
+                            isToday ? "bg-blue-600 text-white" : isPast ? "bg-slate-200 text-slate-500" : "bg-slate-100 text-slate-600"
                           )}>
                             <span className="text-[10px] uppercase leading-none mb-0.5">{diasSemana[i].substring(0, 3)}</span>
                             <span className="text-lg leading-none">{format(date, "dd")}</span>
                           </div>
                           <div>
-                            <h4 className="font-bold text-slate-900 text-sm">{diasSemana[i]}</h4>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-bold text-slate-900 text-sm">{diasSemana[i]}</h4>
+                              {isPast && <span className="px-1.5 py-0.5 bg-slate-100 text-[8px] font-black uppercase text-slate-500 rounded">Encerrado</span>}
+                              {isToday && <span className="px-1.5 py-0.5 bg-blue-100 text-[8px] font-black uppercase text-blue-600 rounded">Hoje</span>}
+                            </div>
                             <p className="text-[11px] font-medium text-slate-500">
                               {reservasDoDia.length} {reservasDoDia.length === 1 ? 'reserva' : 'reservas'}
                             </p>
