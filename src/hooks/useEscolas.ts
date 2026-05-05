@@ -33,15 +33,13 @@ export const useEscolas = () => {
     if (authLoading) return;
     
     setLoading(true);
-    console.log("[LOOP DEBUG] fetch escolas");
+    console.log("[LOOP DEBUG] fetch escolas, profile role:", profile?.role);
     if (isSupabaseConfigured) {
       try {
+        // Para admin_plataforma, busca todas. 
+        // Para outros, o RLS já filtra as escolas vinculadas em profile_escolas.
         let query = supabase.from("escolas").select("*").order("nome");
         
-        if (profile && profile.role !== "admin_plataforma" && profile.escola_id) {
-          query = query.eq("id", profile.escola_id);
-        }
-
         const { data, error } = await query;
 
         if (error) throw error;
@@ -54,14 +52,21 @@ export const useEscolas = () => {
           status: e.status
         }));
         
+        console.log("[LOOP DEBUG] escolas carregadas:", mappedEscolas.length);
         setEscolas(mappedEscolas);
 
         // Auto-seleção de escola real (apenas se ainda não houve auto-seleção nesta sessão)
-        if (isSupabaseConfigured && !authLoading && mappedEscolas.length > 0 && !autoSelectedSchoolRef.current) {
+        if (mappedEscolas.length > 0 && !autoSelectedSchoolRef.current) {
           const currentId = selectedEscolaId || profile?.escola_id;
-          if (!currentId || !isValidUUID(currentId)) {
+          // Se o currentId não estiver na lista de escolas permitidas, seleciona a primeira
+          const isCurrentValid = currentId && mappedEscolas.some(e => e.id === currentId);
+          
+          if (!isCurrentValid || !isValidUUID(currentId as string)) {
             console.log("[LOOP DEBUG] auto select escola:", mappedEscolas[0].id);
             setSelectedEscolaId(mappedEscolas[0].id);
+            autoSelectedSchoolRef.current = true;
+          } else {
+            // Se já é válido, marcamos como auto-selecionado para não sobrescrever depois
             autoSelectedSchoolRef.current = true;
           }
         }
