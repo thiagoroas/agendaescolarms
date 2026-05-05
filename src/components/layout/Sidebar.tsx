@@ -138,15 +138,15 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      <div className="mt-auto p-4 space-y-3 border-t border-white/10 bg-black/10 backdrop-blur-md">
+      <div className="mt-auto p-4 space-y-3 border-t border-white/10 bg-black/20 backdrop-blur-md">
         <NavLink
           to="/perfil"
           className={({ isActive }) =>
             cn(
               "flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 group border border-transparent",
               isActive 
-                ? "bg-white/15 border-white/20 shadow-lg" 
-                : "hover:bg-white/5"
+                ? "bg-white/20 border-white/22 shadow-lg" 
+                : "hover:bg-white/10"
             )
           }
         >
@@ -154,8 +154,8 @@ const Sidebar = () => {
             {profile?.full_name?.charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col min-w-0 lg:flex hidden group-hover/sidebar:flex transition-all">
-            <p className="text-sm font-bold text-white truncate leading-tight">{profile?.full_name}</p>
-            <p className="text-[10px] font-medium text-blue-100/60 uppercase tracking-wider mt-0.5">Meu Perfil</p>
+            <p className="text-sm font-bold text-[#FFFFFF] truncate leading-tight">{profile?.full_name}</p>
+            <p className="text-[10px] font-bold text-[#BFDBFE] uppercase tracking-wider mt-0.5">Meu Perfil</p>
           </div>
         </NavLink>
         
