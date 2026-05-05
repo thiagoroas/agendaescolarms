@@ -177,7 +177,6 @@ const Sidebar = () => {
         </button>
       </div>
     </aside>
-    </aside>
   );
 };
 
