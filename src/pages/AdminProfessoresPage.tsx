@@ -42,32 +42,30 @@ const AdminProfessoresPage = () => {
     if (isSupabaseConfigured) {
       setLoading(true);
       try {
-        let query = supabase.from("profiles").select("*");
+        let query = supabase.from("profile_escolas").select("*, profile:profiles(*)");
         
-        // Filter by role: professor or admin_lab
+        // Filter by role in the link
         query = query.in("papel", ["professor", "admin_lab"]);
 
-        // Permission filtering
+        // Permission filtering - must be linked to the current school
         if (profile?.role === "admin_lab") {
           query = query.eq("escola_id", profile.escola_id);
         } else if (profile?.role === "admin_plataforma" && selectedEscolaId) {
-          // If admin plataforma has a school selected, we filter, otherwise we show all
-          // But usually we want to see users of the active school
           query = query.eq("escola_id", selectedEscolaId);
         }
 
         const { data, error } = await query;
         if (error) throw error;
 
-        const mapped: Usuario[] = (data || []).map(p => ({
-          id: p.id,
-          nome: p.nome,
-          email: p.email || "",
-          escola_id: p.escola_id || "",
-          papel: p.papel,
-          status: p.status,
-          disciplinas: p.disciplinas || [],
-          senha: "" // Never expose
+        const mapped: Usuario[] = (data || []).map(link => ({
+          id: link.profile.id,
+          nome: link.profile.nome,
+          email: link.profile.email || "",
+          escola_id: link.escola_id,
+          papel: link.papel,
+          status: link.status,
+          disciplinas: link.disciplinas || [],
+          senha: ""
         }));
         setLocalUsers(mapped);
       } catch (err: any) {
