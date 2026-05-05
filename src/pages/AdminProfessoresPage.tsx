@@ -5,7 +5,7 @@ import { Usuario } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
 import { getMockUsuarios, saveMockUsuarios } from "../data/storage";
 import { Button } from "@/components/ui/button";
-import { Plus, UserPlus, UserCheck, Search, Info, Building2, Trash2, Edit2, Loader2, Key, Power, ArchiveX, ShieldCheck } from "lucide-react";
+import { Plus, UserPlus, UserCheck, Search, Info, Building2, Trash2, Edit2, Loader2, Key, Power, ArchiveX, ShieldCheck, Bug } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DiagnosticPanel } from "@/components/admin/DiagnosticPanel";
-
+import { Card, CardContent } from "@/components/ui/card";
 
 const AdminProfessoresPage = () => {
   const { user, profile, selectedEscolaId, setSelectedEscolaId } = useAuth();
@@ -26,6 +26,10 @@ const AdminProfessoresPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("professores");
+  
+  // Debug State
+  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [showDebug, setShowDebug] = useState(false);
   
   // Modal Form State
   const [nome, setNome] = useState("");
@@ -41,65 +45,113 @@ const AdminProfessoresPage = () => {
   const fetchUsers = async () => {
     if (isSupabaseConfigured) {
       setLoading(true);
+      const diagnostics: any = {
+        timestamp: new Date().toISOString(),
+        version: "users-multi-school-debug-2026-05-05",
+        env: {
+          supabaseUrl: (import.meta as any).env.VITE_SUPABASE_URL?.split('.')[0] + "... (Redacted)",
+          hasUrl: !!(import.meta as any).env.VITE_SUPABASE_URL,
+          hasKey: !!(import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY
+        },
+        user: {
+          id: user?.id,
+          email: user?.email,
+          role: profile?.role
+        }
+      };
+
       try {
-        let query = supabase.from("profile_escolas").select("*, profile:profiles(*)");
+        console.log("[DEBUG] Starting Manual Fetch Diagnostic...");
+
+        // 1. Simple Test: profile_escolas
+        const testPe = await supabase.from('profile_escolas').select('*').limit(5);
+        diagnostics.test_profile_escolas = {
+          count: testPe.data?.length || 0,
+          error: testPe.error ? { code: testPe.error.code, message: testPe.error.message } : null
+        };
+
+        // 2. Simple Test: profiles
+        const testP = await supabase.from('profiles').select('id,nome,email,papel,status').limit(5);
+        diagnostics.test_profiles = {
+          count: testP.data?.length || 0,
+          error: testP.error ? { code: testP.error.code, message: testP.error.message } : null
+        };
+
+        // 3. Simple Test: escolas
+        const testE = await supabase.from('escolas').select('id,nome,status').limit(5);
+        diagnostics.test_escolas = {
+          count: testE.data?.length || 0,
+          error: testE.error ? { code: testE.error.code, message: testE.error.message } : null
+        };
+
+        // 4. Manual Fallback Query Strategy
+        let peQuery = supabase.from("profile_escolas").select("*");
         
         const isAdminPlataforma = profile?.role === "admin_plataforma";
         const isAdminLab = profile?.role === "admin_lab";
 
-        console.log("[DEBUG] Fetching users. Profile:", profile?.role, "UserEmail:", user?.email, "SelectedEscola:", selectedEscolaId, "Tab:", activeTab);
-
-        // Filtering based on role and context
         if (isAdminLab) {
-          query = query.eq("escola_id", profile.escola_id).eq("papel", "professor");
+          peQuery = peQuery.eq("escola_id", profile.escola_id).eq("papel", "professor");
         } else if (isAdminPlataforma) {
           if (activeTab === "professores") {
-            query = query.eq("papel", "professor");
+            peQuery = peQuery.eq("papel", "professor");
           } else if (activeTab === "usuarios_lab") {
-            query = query.eq("papel", "admin_lab");
+            peQuery = peQuery.eq("papel", "admin_lab");
           }
-
           if (selectedEscolaId && selectedEscolaId !== "todas") {
-            query = query.eq("escola_id", selectedEscolaId);
+            peQuery = peQuery.eq("escola_id", selectedEscolaId);
           }
         }
 
-        const { data, error } = await query;
+        const { data: vinculosData, error: vinculosError } = await peQuery;
         
-        if (error) {
-          console.error("[SUPABASE ERROR]", {
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            userId: user?.id,
-            userEmail: user?.email,
-            userRole: profile?.role
-          });
-          toast.error(`Erro Supabase: [${error.code}] ${error.message}`);
-          throw error;
+        if (vinculosError) {
+          diagnostics.final_query_error = { code: vinculosError.code, message: vinculosError.message };
+          throw vinculosError;
         }
 
-        if (!data || data.length === 0) {
-          console.log("[DEBUG] No users found for the current filters.");
+        if (!vinculosData || vinculosData.length === 0) {
           setLocalUsers([]);
+          setDebugInfo(diagnostics);
           return;
         }
 
-        const mapped: Usuario[] = data.map(link => ({
-          id: link.profile?.id || link.profile_id,
-          nome: link.profile?.nome || "Usuário sem perfil",
-          email: link.profile?.email || "",
-          escola_id: link.escola_id,
-          papel: link.papel,
-          status: link.status,
-          disciplinas: link.disciplinas || [],
-          senha: ""
-        }));
+        // Fetch Profiles manually
+        const profileIds = Array.from(new Set(vinculosData.map(v => v.profile_id)));
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("profiles")
+          .select("id, nome, email")
+          .in("id", profileIds);
+
+        if (profilesError) {
+          diagnostics.profiles_fetch_error = { code: profilesError.code, message: profilesError.message };
+          throw profilesError;
+        }
+
+        // Map data together
+        const mapped: Usuario[] = vinculosData.map(link => {
+          const profileInfo = profilesData?.find(p => p.id === link.profile_id);
+          return {
+            id: link.profile_id,
+            nome: profileInfo?.nome || "Usuário sem perfil",
+            email: profileInfo?.email || "",
+            escola_id: link.escola_id,
+            papel: link.papel,
+            status: link.status,
+            disciplinas: link.disciplinas || [],
+            senha: ""
+          };
+        });
+
         setLocalUsers(mapped);
+        diagnostics.mapped_count = mapped.length;
+        setDebugInfo(diagnostics);
+
       } catch (err: any) {
-        console.error("Error fetching users:", err.message);
-        toast.error("Erro ao carregar usuários");
+        console.error("[DIAGNOSTIC ERROR]", err);
+        diagnostics.exception = err.message;
+        setDebugInfo(diagnostics);
+        toast.error(`Erro: [${err.code || 'EXCEPTION'}] ${err.message}`);
       } finally {
         setLoading(false);
       }
@@ -322,6 +374,53 @@ const AdminProfessoresPage = () => {
     <div className="space-y-6">
       <DiagnosticPanel />
       
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200">
+          <div className="flex items-center gap-2 text-slate-600">
+            <Bug className="h-4 w-4" />
+            <span className="text-xs font-mono">Debug Mode: {debugInfo?.version || "Loading..."}</span>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowDebug(!showDebug)}
+            className="text-[10px] h-7"
+          >
+            {showDebug ? "Ocultar Diagnóstico" : "Ver Diagnóstico"}
+          </Button>
+        </div>
+
+        {showDebug && debugInfo && (
+          <Card className="border-amber-200 bg-amber-50">
+            <CardContent className="p-4 space-y-3">
+              <h3 className="text-sm font-bold text-amber-900 flex items-center gap-2">
+                <Bug className="h-4 w-4" /> Painel de Diagnóstico Supabase
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[10px] font-mono">
+                <div className="space-y-1 bg-white p-2 rounded border border-amber-100">
+                  <p className="font-bold text-amber-700 underline">Ambiente:</p>
+                  <p>Runtime URL: {debugInfo.env.supabaseUrl}</p>
+                  <p>User: {debugInfo.user.email} ({debugInfo.user.role})</p>
+                  <p>ID: {debugInfo.user.id}</p>
+                </div>
+                <div className="space-y-1 bg-white p-2 rounded border border-amber-100">
+                  <p className="font-bold text-amber-700 underline">Consultas Simples (RLS Check):</p>
+                  <p>profile_escolas: {debugInfo.test_profile_escolas.error ? `FAIL [${debugInfo.test_profile_escolas.error.code}]` : `OK (${debugInfo.test_profile_escolas.count})`}</p>
+                  <p>profiles: {debugInfo.test_profiles.error ? `FAIL [${debugInfo.test_profiles.error.code}]` : `OK (${debugInfo.test_profiles.count})`}</p>
+                  <p>escolas: {debugInfo.test_escolas.error ? `FAIL [${debugInfo.test_escolas.error.code}]` : `OK (${debugInfo.test_escolas.count})`}</p>
+                </div>
+              </div>
+              {debugInfo.final_query_error && (
+                <div className="p-2 bg-red-100 border border-red-200 rounded text-red-800 text-[10px] font-mono">
+                  <p className="font-bold">ERRO QUERY FINAL:</p>
+                  <p>[{debugInfo.final_query_error.code}] {debugInfo.final_query_error.message}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="bg-blue-100 p-2.5 rounded-xl">
