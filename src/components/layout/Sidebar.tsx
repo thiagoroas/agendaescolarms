@@ -117,7 +117,7 @@ const Sidebar = () => {
                         "h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-300",
                         isActive 
                           ? "bg-white text-blue-700 shadow-md" 
-                          : "bg-white/10 text-blue-100/50 group-hover:bg-white/20 group-hover:text-white"
+                          : "bg-white/15 text-[#BFDBFE] group-hover:bg-white/20 group-hover:text-white"
                       )}>
                         <item.icon className="h-4 w-4" />
                       </div>
