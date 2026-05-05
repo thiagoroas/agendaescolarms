@@ -803,12 +803,23 @@ const AgendaPage = () => {
           <div className="mobile-timeline">
             {mobileView === "dia" ? (
               <>
-                <div className="mobile-day-header w-full box-border">
+                <div className={cn(
+                  "mobile-day-header w-full box-border",
+                  isSameDay(currentDate, new Date()) && "bg-blue-50 border-blue-200"
+                )}>
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <CalendarIcon size={18} className="text-blue-600 shrink-0" />
-                    <span className="mobile-day-label truncate text-sm sm:text-base">
-                      {format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
-                    </span>
+                    <CalendarIcon size={18} className={cn("shrink-0", isSameDay(currentDate, new Date()) ? "text-blue-700" : "text-blue-600")} />
+                    <div className="flex flex-col">
+                      {isSameDay(currentDate, new Date()) && (
+                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 leading-none mb-1">Hoje</span>
+                      )}
+                      <span className={cn(
+                        "mobile-day-label truncate text-sm sm:text-base",
+                        isSameDay(currentDate, new Date()) && "font-black text-blue-900"
+                      )}>
+                        {format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
+                      </span>
+                    </div>
                   </div>
                   <button 
                     className="text-[11px] font-black uppercase tracking-widest text-blue-600 px-2 py-1 rounded-md bg-blue-50"
