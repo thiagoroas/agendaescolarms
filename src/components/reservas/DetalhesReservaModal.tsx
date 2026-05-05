@@ -88,9 +88,17 @@ const DetalhesReservaModal = ({ isOpen, onClose, onDelete, reserva, recurso, can
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                 <Clock className="h-3 w-3" /> Horário
               </div>
-              <p className="text-sm font-black text-slate-900 tracking-tight">
-                Aula {reserva.aula} • {reserva.horario}
-              </p>
+              <div className="text-sm font-black text-slate-900 tracking-tight">
+                <p>Aula {reserva.aula}</p>
+                <p className="text-[10px] text-slate-500 font-bold">{reserva.horario}</p>
+              </div>
+            </div>
+
+            <div className="space-y-1 col-span-2">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <BookOpen className="h-3 w-3" /> Recurso
+              </div>
+              <p className="text-sm font-black text-slate-900 tracking-tight">{recurso?.nome}</p>
             </div>
           </div>
 

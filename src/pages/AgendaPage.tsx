@@ -241,24 +241,26 @@ const AgendaPage = () => {
     const status = getSlotStatus(date, h.hora_inicio, h.hora_fim);
     const resList = getReservasForSlot(date, h.ordem);
     
-    // Se o horário está encerrado
+    // 1. Primeiro verificar se existe reserva no slot (mesmo se encerrado)
+    if (resList.length > 0) {
+      const res = resList[0];
+      const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
+      setActiveReserva({ reserva: res, recurso: rec! });
+      setIsModalDetalhesOpen(true);
+      return;
+    }
+
+    // 2. Se não existe reserva e o horário está encerrado
     if (status === "ended") {
-      if (resList.length > 0) {
-        const res = resList[0];
-        const rec = schoolRecursosList.find(r => r.id === res.recurso_id);
-        setActiveReserva({ reserva: res, recurso: rec! });
-        setIsModalDetalhesOpen(true);
-      } else {
-        setSelectedHorarioData({
-          escola: escola?.nome || "Escola não identificada",
-          data: format(date, "yyyy-MM-dd"),
-          aula: h.ordem,
-          horarioInicio: h.hora_inicio,
-          horarioFim: h.hora_fim,
-          turno: h.turno
-        });
-        setIsModalHorarioOpen(true);
-      }
+      setSelectedHorarioData({
+        escola: escola?.nome || "Escola não identificada",
+        data: format(date, "yyyy-MM-dd"),
+        aula: h.ordem,
+        horarioInicio: h.hora_inicio,
+        horarioFim: h.hora_fim,
+        turno: h.turno
+      });
+      setIsModalHorarioOpen(true);
       return;
     }
 
@@ -680,8 +682,7 @@ const AgendaPage = () => {
                                 )}
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
-                                  setActiveReserva({ reserva, recurso });
-                                  setIsModalDetalhesOpen(true);
+                                  handleSlotClick(date, h);
                                 }}
                                 title={`${reserva.nome_professor} • ${reserva.turma} • ${recurso.nome} (${reserva.status})`}
                               >
@@ -710,6 +711,9 @@ const AgendaPage = () => {
                                   <span className="truncate flex-1 font-bold" title={recurso.nome}>{recurso.nome}</span>
                                 </div>
                                 <div className="event-actions">
+                                  {status === "ended" ? (
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Ver detalhes</span>
+                                  ) : null}
                                   {status !== "ended" && (profile?.role === 'admin_plataforma' || 
                                     (profile?.role === 'admin_lab' && reserva.escola_id === profile.escola_id) ||
                                     (profile?.role === 'professor' && reserva.profile_id === user?.id)) && (
@@ -807,10 +811,7 @@ const AgendaPage = () => {
                                     status === "ended" && "ended",
                                     status === "ongoing" && "ongoing"
                                   )}
-                                  onClick={() => {
-                                    setActiveReserva({ reserva, recurso });
-                                    setIsModalDetalhesOpen(true);
-                                  }}
+                                  onClick={() => handleSlotClick(currentDate, h)}
                                 >
                                   <div className="flex items-center justify-between gap-2 mb-1">
                                     <div className="flex items-center gap-2">
@@ -829,6 +830,10 @@ const AgendaPage = () => {
                                   <div className="flex items-center gap-2 mt-auto min-w-0">
                                     <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md shrink-0">{reserva.turma}</span>
                                     <span className="text-[11px] font-medium text-slate-500 truncate">• {recurso.nome}</span>
+                                  </div>
+                                  <div className="mt-2 pt-1.5 border-t border-slate-900/5 flex items-center justify-between">
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Ver detalhes da reserva</span>
+                                    <ChevronRight size={12} className="text-slate-400" />
                                   </div>
                                 </button>
                               );
