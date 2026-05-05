@@ -452,13 +452,46 @@ const AgendaPage = () => {
           )}
 
           <div className="toolbar-meta">
-            <span><strong>{filteredReservationsCount}</strong> reservas</span>
-            <div className="legend">
-              <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--accent-blue)' }} />Lab</span>
-              <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--accent-green)' }} />Projetor</span>
-              <span className="legend-item"><span className="legend-swatch" style={{ background: 'var(--danger)' }} />Conflito</span>
+            <div className="flex items-center gap-4">
+              <span><strong>{filteredReservationsCount}</strong> reservas</span>
+              
+              {/* Desktop Legend */}
+              <div className="hidden lg:flex items-center gap-3 ml-2 border-l pl-4 border-slate-200">
+                <div className="legend-item"><span className="legend-swatch border border-dashed border-slate-400 bg-slate-50" /> Disponível</div>
+                <div className="legend-item"><span className="legend-swatch bg-blue-500" /> Reservado</div>
+                <div className="legend-item"><span className="legend-swatch bg-amber-500 animate-pulse" /> Em andamento</div>
+                <div className="legend-item"><span className="legend-swatch bg-slate-300 border-l-2 border-red-500" /> Encerrado</div>
+                <div className="legend-item"><span className="legend-swatch bg-orange-600" /> Bloqueio</div>
+              </div>
+
+              {/* Mobile Legend Trigger */}
+              <div className="lg:hidden">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-7 text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 hover:bg-blue-100"
+                  onClick={() => setShowLegend(!showLegend)}
+                >
+                  <Info size={12} className="mr-1" />
+                  {showLegend ? "Fechar legenda" : "Ver legenda"}
+                </Button>
+              </div>
             </div>
           </div>
+          
+          {/* Mobile Legend Content */}
+          {isMobile && showLegend && (
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl mt-2 animate-in fade-in slide-in-from-top-2 duration-200">
+              <h5 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 px-1">Legenda de Status</h5>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="legend-item bg-white p-2 rounded-lg border border-slate-100"><span className="legend-swatch border border-dashed border-slate-400 bg-slate-50" /> Disponível</div>
+                <div className="legend-item bg-white p-2 rounded-lg border border-slate-100"><span className="legend-swatch bg-blue-500" /> Reservado</div>
+                <div className="legend-item bg-white p-2 rounded-lg border border-slate-100"><span className="legend-swatch bg-amber-500" /> Em andamento</div>
+                <div className="legend-item bg-white p-2 rounded-lg border border-slate-100"><span className="legend-swatch bg-slate-300 border-l-2 border-red-500" /> Encerrado</div>
+                <div className="legend-item bg-white p-2 rounded-lg border border-slate-100 col-span-2"><span className="legend-swatch bg-orange-600" /> Manutenção / Bloqueio</div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
