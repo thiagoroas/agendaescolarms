@@ -285,7 +285,6 @@ const AgendaPage = () => {
     });
     setIsModalNovaOpen(true);
   };
-  };
 
   const [reservaParaCancelar, setReservaParaCancelar] = useState<Reserva | null>(null);
   const [cancelando, setCancelando] = useState(false);
