@@ -159,13 +159,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setError("profile_not_found");
         setProfile(null);
       } else {
+        const userVinculos: EscolaVinculo[] = (vinculosData || []).map(v => ({
+          escola_id: v.escola_id,
+          papel: v.papel as UserRole,
+          status: v.status,
+          disciplinas: v.disciplinas,
+          escola: v.escola
+        }));
+        
+        setVinculos(userVinculos);
+
+        // Se o usuário não tem vínculos em profile_escolas, tentamos o fallback do profile.escola_id
+        const fallbackEscolaId = data.escola_id;
+        const fallbackRole = data.papel as UserRole;
+        const activeEscolaId = userVinculos.length > 0 ? userVinculos[0].escola_id : fallbackEscolaId;
+        const activeRole = userVinculos.length > 0 ? userVinculos[0].papel : fallbackRole;
+
         const mappedProfile: Profile = {
           id: data.id,
           full_name: data.nome,
-          escola_id: data.escola_id,
-          role: data.papel as UserRole,
+          escola_id: activeEscolaId,
+          role: activeRole,
           status: data.status as "ativo" | "pendente" | "bloqueado",
-          disciplinas: data.disciplinas
+          disciplinas: userVinculos.length > 0 ? userVinculos[0].disciplinas : data.disciplinas
         };
         
         setProfile(mappedProfile);
@@ -174,14 +190,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Valida se o ID salvo é compatível com o modo atual
         const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
         if (isSupabaseConfigured && savedEscolaId && !isValidUUID(savedEscolaId)) {
-          if (selectedEscolaId !== data.escola_id) {
-            setSelectedEscolaIdState(data.escola_id);
+          if (selectedEscolaId !== activeEscolaId) {
+            setSelectedEscolaIdState(activeEscolaId);
           }
           localStorage.removeItem("agenda_selected_escola_id");
         } else if (savedEscolaId && selectedEscolaId !== savedEscolaId) {
-          setSelectedEscolaIdState(savedEscolaId);
-        } else if (!savedEscolaId && data.escola_id && selectedEscolaId !== data.escola_id) {
-          setSelectedEscolaIdState(data.escola_id);
+          // Verifica se o savedEscolaId está entre os vínculos permitidos
+          const hasVinculo = userVinculos.some(v => v.escola_id === savedEscolaId) || (fallbackEscolaId === savedEscolaId) || (data.papel === "admin_plataforma");
+          if (hasVinculo) {
+            setSelectedEscolaIdState(savedEscolaId);
+          } else {
+            setSelectedEscolaIdState(activeEscolaId);
+          }
+        } else if (!savedEscolaId && activeEscolaId && selectedEscolaId !== activeEscolaId) {
+          setSelectedEscolaIdState(activeEscolaId);
         }
       }
     } catch (err) {
