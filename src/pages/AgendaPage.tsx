@@ -717,9 +717,15 @@ const AgendaPage = () => {
 
                 {escolaHorarios.map((h, hIdx) => {
                   const reservasNoSlot = getReservasForSlot(currentDate, h.ordem);
+                  const status = getSlotStatus(currentDate, h.hora_inicio, h.hora_fim);
 
                   return (
-                    <div key={hIdx} className={`mobile-slot ${h.tipo === 'intervalo' ? 'is-break' : ''}`}>
+                    <div key={hIdx} className={cn(
+                      "mobile-slot",
+                      h.tipo === 'intervalo' ? 'is-break' : '',
+                      status === "ended" && "ended",
+                      status === "ongoing" && "ongoing"
+                    )}>
                       <div className="mobile-slot-time">
                         <span className="mobile-slot-label">{h.nome.replace("Aula ", "A")}</span>
                         <span className="mobile-slot-hour">{h.hora_inicio.substring(0, 5)}</span>
@@ -736,17 +742,30 @@ const AgendaPage = () => {
                               return (
                                 <button 
                                   key={reserva.id}
-                                  className={`mobile-card-event ${tipoColor(recurso.tipo)}`}
+                                  className={cn(
+                                    "mobile-card-event",
+                                    tipoColor(recurso.tipo),
+                                    status === "ended" && "ended",
+                                    status === "ongoing" && "ongoing"
+                                  )}
                                   onClick={() => {
                                     setActiveReserva({ reserva, recurso });
                                     setIsModalDetalhesOpen(true);
                                   }}
                                 >
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo), width: '22px', height: '22px', fontSize: '10px' }}>
-                                      {initialsOf(reserva.nome_professor)}
-                                    </span>
-                                    <span className="text-[13px] font-bold text-slate-900 leading-none truncate block">{reserva.nome_professor}</span>
+                                  <div className="flex items-center justify-between gap-2 mb-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="event-avatar" style={{ background: tipoSwatch(recurso.tipo), width: '22px', height: '22px', fontSize: '10px' }}>
+                                        {initialsOf(reserva.nome_professor)}
+                                      </span>
+                                      <span className="text-[13px] font-bold text-slate-900 leading-none truncate block">{reserva.nome_professor}</span>
+                                    </div>
+                                    {status === "ended" && (
+                                      <span className="px-1.5 py-0.5 bg-red-100 text-[9px] font-black uppercase text-red-600 rounded">Encerrada</span>
+                                    )}
+                                    {status === "ongoing" && (
+                                      <span className="px-1.5 py-0.5 bg-amber-100 text-[9px] font-black uppercase text-amber-600 rounded animate-pulse">Em andamento</span>
+                                    )}
                                   </div>
                                   <div className="flex items-center gap-2 mt-auto min-w-0">
                                     <span className="text-[11px] font-medium bg-white/50 px-2 py-0.5 rounded-md shrink-0">{reserva.turma}</span>
@@ -758,11 +777,29 @@ const AgendaPage = () => {
                           </div>
                         ) : (
                           <button 
-                            className="mobile-card-available"
+                            className={cn(
+                              "mobile-card-available",
+                              status === "ended" && "ended"
+                            )}
                             onClick={() => handleSlotClick(currentDate, h)}
+                            disabled={status === "ended"}
                           >
-                            <Plus size={14} className="mr-2 text-blue-400" />
-                            Disponível — toque para reservar
+                            {status === "ended" ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-black uppercase tracking-widest text-red-500">Encerrado</span>
+                                <span className="text-[10px] text-slate-400 font-medium">— Horário já passou</span>
+                              </div>
+                            ) : status === "ongoing" ? (
+                              <div className="flex items-center gap-2">
+                                <Plus size={14} className="text-amber-500" />
+                                <span className="text-[11px] font-black uppercase tracking-widest text-amber-600">Em andamento</span>
+                              </div>
+                            ) : (
+                              <>
+                                <Plus size={14} className="mr-2 text-blue-400" />
+                                Disponível — toque para reservar
+                              </>
+                            )}
                           </button>
                         )}
                       </div>
