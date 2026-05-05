@@ -5,7 +5,7 @@ import { Usuario } from "../data/mockData";
 import { useEscolas } from "@/hooks/useEscolas";
 import { getMockUsuarios, saveMockUsuarios } from "../data/storage";
 import { Button } from "@/components/ui/button";
-import { Plus, UserPlus, UserCheck, Search, Info, Building2, Trash2, Edit2, Loader2, Key, Power, ArchiveX } from "lucide-react";
+import { Plus, UserPlus, UserCheck, Search, Info, Building2, Trash2, Edit2, Loader2, Key, Power, ArchiveX, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -306,9 +306,14 @@ const AdminProfessoresPage = () => {
       <DiagnosticPanel />
       
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Usuários do Sistema</h1>
-          <p className="text-sm text-slate-500">Gerencie professores e administradores de laboratório.</p>
+        <div className="flex items-center gap-3">
+          <div className="bg-blue-100 p-2.5 rounded-xl">
+            <ShieldCheck className="h-6 w-6 text-blue-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Usuários do Sistema</h1>
+            <p className="text-sm text-slate-500">Gerencie professores e administradores de laboratório.</p>
+          </div>
         </div>
         {(isAdminPlataforma || (isAdminLab && activeTab === "professores")) && (
           <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => openModal()}>
