@@ -12,11 +12,12 @@ import {
 import { toast } from "sonner";
 
 const TopHeader = () => {
-  const { profile, selectedEscolaId, setSelectedEscolaId } = useAuth();
+  const { profile, selectedEscolaId, setSelectedEscolaId, vinculos } = useAuth();
   const { escolas, loading } = useEscolas();
   
   const escola = escolas.find(e => e.id === (selectedEscolaId || profile?.escola_id));
   const isAdminPlataforma = profile?.role === "admin_plataforma";
+  const hasMultipleVinculos = vinculos.length > 1;
 
   const handleEscolaChange = (id: string) => {
     const novaEscola = escolas.find(e => e.id === id);
@@ -49,7 +50,7 @@ const TopHeader = () => {
                   <ChevronRight className="h-3 w-3 shrink-0 group-data-[state=open]:rotate-90 transition-transform text-blue-400" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 z-[50]">
+              <DropdownMenuContent align="start" className="w-56 z-[50] max-h-[70vh] overflow-y-auto">
                 <div className="px-2 py-1.5 text-[10px] font-bold text-slate-400 uppercase border-b mb-1">
                   Mudar escola ativa
                 </div>
@@ -64,6 +65,39 @@ const TopHeader = () => {
                   >
                     <Building className={cn("h-3 w-3 mr-2", selectedEscolaId === e.id ? "text-blue-600" : "text-slate-400")} />
                     {e.nome}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : hasMultipleVinculos ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all border border-blue-200 group shadow-sm">
+                  <Building className="h-3.5 w-3.5 shrink-0 text-blue-600" />
+                  <span className="text-xs font-bold truncate max-w-[120px] sm:max-w-[200px]">
+                    {escola?.nome || "Selecionar Escola"}
+                  </span>
+                  <ChevronRight className="h-3 w-3 shrink-0 group-data-[state=open]:rotate-90 transition-transform text-blue-400" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 z-[50]">
+                <div className="px-2 py-1.5 text-[10px] font-bold text-slate-400 uppercase border-b mb-1">
+                  Minhas Escolas
+                </div>
+                {vinculos.map((v) => (
+                  <DropdownMenuItem 
+                    key={v.escola_id}
+                    onClick={() => handleEscolaChange(v.escola_id)}
+                    className={cn(
+                      "text-xs cursor-pointer py-2 px-3",
+                      selectedEscolaId === v.escola_id && "bg-blue-50 text-blue-700 font-bold"
+                    )}
+                  >
+                    <Building className={cn("h-3 w-3 mr-2", selectedEscolaId === v.escola_id ? "text-blue-600" : "text-slate-400")} />
+                    {v.escola?.nome || "Escola"}
+                    <Badge variant="outline" className="ml-auto text-[8px] px-1 h-4 border-slate-200 text-slate-400">
+                      {v.papel === "admin_lab" ? "Admin" : "Prof"}
+                    </Badge>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>

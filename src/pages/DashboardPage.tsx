@@ -140,6 +140,9 @@ const DashboardPage = () => {
     
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
+    } else if (profile?.role === "admin_lab") {
+      // Garantir que admin_lab só vê reservas da escola ativa
+      list = list.filter(r => r.escola_id === currentEscolaId);
     }
     
     return list.sort((a, b) => a.aula - b.aula);
@@ -173,6 +176,8 @@ const DashboardPage = () => {
     
     if (profile?.role === "professor") {
       list = list.filter(r => r.profile_id === user?.id);
+    } else if (profile?.role === "admin_lab") {
+      list = list.filter(r => r.escola_id === currentEscolaId);
     }
     
     const limit = profile?.role === "professor" ? 3 : 15;

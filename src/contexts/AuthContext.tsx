@@ -13,9 +13,20 @@ export interface Profile {
   disciplinas?: string[];
 }
 
+interface EscolaVinculo {
+  escola_id: string;
+  papel: UserRole;
+  status: string;
+  disciplinas?: string[];
+  escola?: {
+    nome: string;
+  };
+}
+
 interface AuthContextType {
   user: User | null;
   profile: Profile | null;
+  vinculos: EscolaVinculo[];
   loading: boolean;
   error: string | null;
   selectedEscolaId: string | null;
@@ -31,6 +42,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [vinculos, setVinculos] = useState<EscolaVinculo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEscolaId, setSelectedEscolaIdState] = useState<string | null>(null);
@@ -71,6 +83,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("[LOOP DEBUG] selectedEscolaId mudou:", id);
       setSelectedEscolaIdState(id);
       localStorage.setItem("agenda_selected_escola_id", id);
+      
+      // Atualiza o papel do profile baseado no vínculo da escola selecionada
+      if (profile) {
+        const vinculo = vinculos.find(v => v.escola_id === id);
+        if (vinculo) {
+          console.log("[AUTH] Atualizando papel do profile para:", vinculo.papel);
+          setProfile({
+            ...profile,
+            escola_id: id,
+            role: vinculo.papel,
+            disciplinas: vinculo.disciplinas
+          });
+        }
+      }
     }
   };
 
@@ -94,6 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!session?.user) {
         setUser(null);
         setProfile(null);
+        setVinculos([]);
         setError(null);
         isLoadingProfileRef.current = false;
         setLoading(false);
@@ -104,13 +131,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(currentUser);
 
       console.log("[AUTH] fetch profile start id:", currentUser.id);
-      const { data, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", currentUser.id)
-        .maybeSingle();
+      const [profileRes, vinculosRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", currentUser.id)
+          .maybeSingle(),
+        supabase
+          .from("profile_escolas")
+          .select("*, escola:escolas(nome)")
+          .eq("profile_id", currentUser.id)
+          .eq("status", "ativo")
+      ]);
+
+      const { data, error: profileError } = profileRes;
+      const { data: vinculosData, error: vinculosError } = vinculosRes;
 
       console.log("[AUTH] fetch profile result", data ? "profile found" : "profile not found");
+      console.log("[AUTH] fetch vinculos result", vinculosData?.length || 0, "vinculos found");
 
       if (profileError) {
         console.error("[AUTH] erro ao buscar profile", profileError);
@@ -121,13 +159,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setError("profile_not_found");
         setProfile(null);
       } else {
+        const userVinculos: EscolaVinculo[] = (vinculosData || []).map(v => ({
+          escola_id: v.escola_id,
+          papel: v.papel as UserRole,
+          status: v.status,
+          disciplinas: v.disciplinas,
+          escola: v.escola
+        }));
+        
+        setVinculos(userVinculos);
+
+        // Se o usuário não tem vínculos em profile_escolas, tentamos o fallback do profile.escola_id
+        const fallbackEscolaId = data.escola_id;
+        const fallbackRole = data.papel as UserRole;
+        const activeEscolaId = userVinculos.length > 0 ? userVinculos[0].escola_id : fallbackEscolaId;
+        const activeRole = userVinculos.length > 0 ? userVinculos[0].papel : fallbackRole;
+
         const mappedProfile: Profile = {
           id: data.id,
           full_name: data.nome,
-          escola_id: data.escola_id,
-          role: data.papel as UserRole,
+          escola_id: activeEscolaId,
+          role: activeRole,
           status: data.status as "ativo" | "pendente" | "bloqueado",
-          disciplinas: data.disciplinas
+          disciplinas: userVinculos.length > 0 ? userVinculos[0].disciplinas : data.disciplinas
         };
         
         setProfile(mappedProfile);
@@ -136,14 +190,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Valida se o ID salvo é compatível com o modo atual
         const savedEscolaId = localStorage.getItem("agenda_selected_escola_id");
         if (isSupabaseConfigured && savedEscolaId && !isValidUUID(savedEscolaId)) {
-          if (selectedEscolaId !== data.escola_id) {
-            setSelectedEscolaIdState(data.escola_id);
+          if (selectedEscolaId !== activeEscolaId) {
+            setSelectedEscolaIdState(activeEscolaId);
           }
           localStorage.removeItem("agenda_selected_escola_id");
         } else if (savedEscolaId && selectedEscolaId !== savedEscolaId) {
-          setSelectedEscolaIdState(savedEscolaId);
-        } else if (!savedEscolaId && data.escola_id && selectedEscolaId !== data.escola_id) {
-          setSelectedEscolaIdState(data.escola_id);
+          // Verifica se o savedEscolaId está entre os vínculos permitidos
+          const hasVinculo = userVinculos.some(v => v.escola_id === savedEscolaId) || (fallbackEscolaId === savedEscolaId) || (data.papel === "admin_plataforma");
+          if (hasVinculo) {
+            setSelectedEscolaIdState(savedEscolaId);
+          } else {
+            setSelectedEscolaIdState(activeEscolaId);
+          }
+        } else if (!savedEscolaId && activeEscolaId && selectedEscolaId !== activeEscolaId) {
+          setSelectedEscolaIdState(activeEscolaId);
         }
       }
     } catch (err) {
@@ -178,6 +238,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log("[AUTH] signed out");
         setUser(null);
         setProfile(null);
+        setVinculos([]);
         setError(null);
         setLoading(false);
       }
@@ -227,7 +288,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pageshow", handlePageShow);
     };
-  }, [user?.id, profile?.id, selectedEscolaId]);
+  }, [user?.id, profile?.id, selectedEscolaId, vinculos.length]);
 
   const login = async (email: string, senha: string, remember: boolean): Promise<{ success: boolean; error?: string }> => {
     setError(null);
@@ -258,6 +319,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setUser(null);
     setProfile(null);
+    setVinculos([]);
     setError(null);
     
     Object.keys(localStorage)
@@ -279,9 +341,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider value={{ 
       user, 
       profile, 
+      vinculos,
       loading, 
       error, 
-      selectedEscolaId, 
+      selectedEscolaId,
       login, 
       logout, 
       setSelectedEscolaId, 

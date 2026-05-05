@@ -216,6 +216,54 @@ export type Database = {
           },
         ]
       }
+      profile_escolas: {
+        Row: {
+          created_at: string
+          disciplinas: string[] | null
+          escola_id: string
+          id: string
+          papel: string
+          profile_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          disciplinas?: string[] | null
+          escola_id: string
+          id?: string
+          papel?: string
+          profile_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          disciplinas?: string[] | null
+          escola_id?: string
+          id?: string
+          papel?: string
+          profile_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_escolas_escola_id_fkey"
+            columns: ["escola_id"]
+            isOneToOne: false
+            referencedRelation: "escolas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_escolas_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
