@@ -90,6 +90,7 @@ const AgendaPage = () => {
     }
   }, [errorReservas, errorRecursos, errorAvisos]);
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
+  const [isModalBloqueioOpen, setIsModalBloqueioOpen] = useState(false);
   const [isModalRelatorioOpen, setIsModalRelatorioOpen] = useState(false);
   const [showAllAvisos, setShowAllAvisos] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
