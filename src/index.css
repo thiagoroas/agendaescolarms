@@ -71,3 +71,7 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+#lovable-badge {
+  display: none !important;
+}
