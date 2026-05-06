@@ -10,6 +10,7 @@ import {
   CheckCircle,
   Bell,
   Clock,
+  Activity,
   LucideIcon
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
