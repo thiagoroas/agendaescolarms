@@ -24,6 +24,7 @@ import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
 import RelatorioReservasModal from "../components/reservas/RelatorioReservasModal";
 import DetalhesHorarioModal from "../components/reservas/DetalhesHorarioModal";
 import "./agenda.css";
+import BloqueioHorarioModal from "@/components/reservas/BloqueioHorarioModal";
 
 const tipoColor = (tipo: string) => {
   switch (tipo) {
@@ -89,6 +90,7 @@ const AgendaPage = () => {
     }
   }, [errorReservas, errorRecursos, errorAvisos]);
   const [isModalNovaOpen, setIsModalNovaOpen] = useState(false);
+  const [isModalBloqueioOpen, setIsModalBloqueioOpen] = useState(false);
   const [isModalRelatorioOpen, setIsModalRelatorioOpen] = useState(false);
   const [showAllAvisos, setShowAllAvisos] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
@@ -374,9 +376,14 @@ const AgendaPage = () => {
           {!isMobile && (
             <div className="flex items-center gap-2">
               {(profile?.role === 'admin_plataforma' || profile?.role === 'admin_lab') && (
-                <button className="btn btn-outline gap-2" onClick={() => setIsModalRelatorioOpen(true)}>
-                  <FileText size={16} /> Relatório
-                </button>
+                <>
+                  <button className="btn btn-outline gap-2 bg-slate-800 text-white border-slate-700 hover:bg-slate-700" onClick={() => setIsModalBloqueioOpen(true)}>
+                    <AlertTriangle size={16} /> Bloquear
+                  </button>
+                  <button className="btn btn-outline gap-2" onClick={() => setIsModalRelatorioOpen(true)}>
+                    <FileText size={16} /> Relatório
+                  </button>
+                </>
               )}
               <button className="btn btn-primary" onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}>
                 <Plus size={16} /> Nova reserva
@@ -1076,6 +1083,14 @@ const AgendaPage = () => {
         isOpen={isModalHorarioOpen}
         onClose={() => setIsModalHorarioOpen(false)}
         data={selectedHorarioData}
+      />
+
+      <BloqueioHorarioModal 
+        isOpen={isModalBloqueioOpen}
+        onClose={() => setIsModalBloqueioOpen(false)}
+        onSuccess={() => {
+          refreshReservas();
+        }}
       />
 
       <RelatorioReservasModal

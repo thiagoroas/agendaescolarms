@@ -20,7 +20,8 @@ import {
   Info,
   AlertTriangle,
   ChevronRight,
-  Trash2
+  Trash2,
+  Wrench
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { resetMockData } from "../data/storage";
 import { useToast } from "@/hooks/use-toast";
+import BloqueioHorarioModal from "@/components/reservas/BloqueioHorarioModal";
 
 const DashboardPage = () => {
   const { user, profile, selectedEscolaId, loading: authLoading } = useAuth();
@@ -49,6 +51,7 @@ const DashboardPage = () => {
   // Central do Laboratório usa o hook useReservas que já carrega os dados da escola selecionada
   const { reservas: todasReservas, loading: loadingReservas, error: errorReservas } = useReservas();
   const { avisos, loading: loadingAvisos, error: errorAvisos } = useAvisos();
+  const [isModalBloqueioOpen, setIsModalBloqueioOpen] = useState(false);
 
   const [todasEscolas, setTodasEscolas] = useState<Escola[]>([]);
   const hasShownErrorToastRef = useRef(false);
@@ -254,6 +257,15 @@ const DashboardPage = () => {
         </div>
         
         <div className="flex items-center gap-2">
+          {(profile?.role === 'admin_plataforma' || profile?.role === 'admin_lab') && (
+            <Button 
+              onClick={() => setIsModalBloqueioOpen(true)} 
+              variant="outline"
+              className="h-11 px-5 rounded-xl font-bold uppercase tracking-widest text-[11px] border-slate-200 hover:bg-slate-50 transition-all"
+            >
+              <Wrench className="mr-2 h-4 w-4 text-slate-500" /> Bloquear Horário
+            </Button>
+          )}
           <Button 
             onClick={() => navigate("/agenda")} 
             className="bg-blue-600 hover:bg-blue-700 h-11 px-5 rounded-xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-blue-100 transition-all hover:scale-105"
@@ -548,6 +560,14 @@ const DashboardPage = () => {
           </div>
         </div>
       )}
+
+      <BloqueioHorarioModal 
+        isOpen={isModalBloqueioOpen}
+        onClose={() => setIsModalBloqueioOpen(false)}
+        onSuccess={() => {
+          // O hook useReservas já deve atualizar os dados via useEffect
+        }}
+      />
     </div>
   );
 };
