@@ -108,7 +108,7 @@ const MobileBottomNav = () => {
                     "flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 shadow-lg backdrop-blur-md border",
                     !escola 
                       ? "bg-red-500/20 border-red-400/30" 
-                      : "bg-white/10 border-white/20"
+                      : "bg-white/10 border-white/20 active:bg-white/20 active:border-white/30"
                   )}>
                     <div className={cn(
                       "rounded-xl p-2.5 text-white shrink-0 shadow-md",
@@ -129,17 +129,16 @@ const MobileBottomNav = () => {
                     </div>
                     <ChevronRight className="h-5 w-5 text-[#DBEAFE] shrink-0" />
                   </div>
-                  {isAdminPlataforma && (
-                    <select 
-                      value={selectedEscolaId || ""} 
-                      onChange={(e) => handleEscolaChange(e.target.value)}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    >
-                      {escolas.map(e => (
-                        <option key={e.id} value={e.id}>{e.nome}</option>
-                      ))}
-                    </select>
-                  )}
+                  <select 
+                    value={selectedEscolaId || ""} 
+                    onChange={(e) => handleEscolaChange(e.target.value)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  >
+                    {!escola && <option value="">Selecionar...</option>}
+                    {escolas.map(e => (
+                      <option key={e.id} value={e.id}>{e.nome}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
