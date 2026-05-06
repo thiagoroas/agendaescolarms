@@ -256,21 +256,25 @@ const DashboardPage = () => {
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide -mx-2 px-2 sm:mx-0 sm:px-0">
           {(profile?.role === 'admin_plataforma' || profile?.role === 'admin_lab') && (
             <Button 
               onClick={() => setIsModalBloqueioOpen(true)} 
               variant="outline"
-              className="h-11 px-5 rounded-xl font-bold uppercase tracking-widest text-[11px] border-slate-200 hover:bg-slate-50 transition-all"
+              className="h-11 px-4 sm:px-5 rounded-xl font-bold uppercase tracking-widest text-[10px] sm:text-[11px] border-slate-200 hover:bg-slate-50 transition-all shrink-0"
             >
-              <Wrench className="mr-2 h-4 w-4 text-slate-500" /> Bloquear Horário
+              <Wrench className="mr-1.5 sm:mr-2 h-4 w-4 text-slate-500" /> 
+              <span className="sm:hidden">Bloquear</span>
+              <span className="hidden sm:inline">Bloquear Horário</span>
             </Button>
           )}
           <Button 
             onClick={() => navigate("/agenda")} 
-            className="bg-blue-600 hover:bg-blue-700 h-11 px-5 rounded-xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-blue-100 transition-all hover:scale-105"
+            className="bg-blue-600 hover:bg-blue-700 h-11 px-4 sm:px-5 rounded-xl font-bold uppercase tracking-widest text-[10px] sm:text-[11px] shadow-lg shadow-blue-100 transition-all hover:scale-105 shrink-0"
           >
-            <Calendar className="mr-2 h-4 w-4" /> Agenda Completa
+            <Calendar className="mr-1.5 sm:mr-2 h-4 w-4" /> 
+            <span className="sm:hidden">Agenda</span>
+            <span className="hidden sm:inline">Agenda Completa</span>
           </Button>
         </div>
       </header>

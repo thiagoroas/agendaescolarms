@@ -1037,10 +1037,10 @@ const AgendaPage = () => {
       </div>
 
       {isMobile && (
-        <div className="fixed bottom-28 right-6 flex flex-col gap-4 z-40 mb-[env(safe-area-inset-bottom,0px)]">
+        <div className="fixed bottom-[calc(92px+env(safe-area-inset-bottom))] right-6 flex flex-col gap-4 z-40">
           {(profile?.role === 'admin_plataforma' || profile?.role === 'admin_lab') && (
             <button 
-              className="w-12 h-12 rounded-2xl bg-white/90 backdrop-blur-md shadow-xl flex items-center justify-center text-blue-600 border border-white/50 active:scale-90 transition-all duration-300"
+              className="w-12 h-12 rounded-2xl bg-white shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex items-center justify-center text-blue-600 border border-slate-100 active:scale-90 transition-all duration-300"
               onClick={() => setIsModalRelatorioOpen(true)}
               aria-label="Relatório"
             >
@@ -1048,12 +1048,12 @@ const AgendaPage = () => {
             </button>
           )}
           <button 
-            className="w-16 h-16 rounded-[2rem] bg-gradient-to-br from-blue-500 to-blue-700 shadow-[0_10px_25px_-5px_rgba(37,99,235,0.5)] flex items-center justify-center text-white border-2 border-white/20 active:scale-95 active:shadow-inner transition-all duration-300 relative group"
+            className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 shadow-[0_16px_35px_rgba(37,99,235,0.35)] flex items-center justify-center text-white border-2 border-white/30 active:scale-95 hover:scale-105 transition-all duration-300 relative group overflow-hidden"
             onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}
             aria-label="Nova reserva"
           >
-            <div className="absolute inset-0 rounded-[2rem] bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Plus size={32} className="stroke-[3px] drop-shadow-md" />
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Plus size={32} className="stroke-[3.5px] drop-shadow-md" />
           </button>
         </div>
       )}

@@ -56,7 +56,7 @@ const MobileBottomNav = () => {
           className={({ isActive }) =>
             cn(
               "flex flex-col items-center gap-1.5 p-2 transition-all duration-300 relative group",
-              isActive ? "text-white" : "text-white/50 hover:text-white/80"
+              isActive ? "text-white scale-105" : "text-white/70 hover:text-white/90"
             )
           }
         >
@@ -66,14 +66,14 @@ const MobileBottomNav = () => {
                 <div className="absolute inset-0 bg-white/10 rounded-2xl blur-md -z-10 animate-pulse" />
               )}
               <div className={cn(
-                "p-2 rounded-xl transition-all duration-300",
-                isActive ? "bg-white/20 shadow-lg scale-110" : "group-active:scale-95"
+                "p-2.5 rounded-xl transition-all duration-300",
+                isActive ? "bg-white/30 shadow-xl scale-110 ring-1 ring-white/40" : "group-active:scale-95"
               )}>
-                <item.icon className={cn("h-5 w-5", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
+                <item.icon className={cn("h-5 w-5", isActive ? "stroke-[3px]" : "stroke-[2.2px]")} />
               </div>
               <span className={cn(
                 "text-[9px] tracking-[0.05em] uppercase font-black transition-all duration-300",
-                isActive ? "opacity-100 translate-y-0" : "opacity-70 translate-y-0.5"
+                isActive ? "opacity-100 translate-y-0 scale-105" : "opacity-85 translate-y-0.5"
               )}>
                 {item.label}
               </span>
@@ -84,11 +84,11 @@ const MobileBottomNav = () => {
 
       <Sheet>
         <SheetTrigger asChild>
-          <button className="flex flex-col items-center gap-1.5 p-2 text-white/50 hover:text-white/80 transition-all group">
-            <div className="p-2 rounded-xl group-active:scale-95 transition-all">
-              <Menu className="h-5 w-5 stroke-[2px]" />
+          <button className="flex flex-col items-center gap-1.5 p-2 text-white/70 hover:text-white/90 transition-all group">
+            <div className="p-2.5 rounded-xl group-active:scale-95 transition-all">
+              <Menu className="h-5 w-5 stroke-[2.2px]" />
             </div>
-            <span className="text-[9px] tracking-[0.05em] uppercase font-black opacity-70">Menu</span>
+            <span className="text-[9px] tracking-[0.05em] uppercase font-black opacity-85">Menu</span>
           </button>
         </SheetTrigger>
         <SheetContent side="right" className="w-[min(85vw,360px)] p-0 border-l-0 bg-gradient-to-b from-[#1E3A8A] via-[#2563EB] to-[#1E1B4B] shadow-2xl overflow-hidden flex flex-col">
