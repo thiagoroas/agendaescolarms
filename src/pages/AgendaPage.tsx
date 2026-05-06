@@ -1030,7 +1030,7 @@ const AgendaPage = () => {
       </div>
 
       {isMobile && (
-        <div className="fixed bottom-24 right-6 flex flex-col gap-4 z-40 mb-[env(safe-area-inset-bottom,0px)]">
+        <div className="fixed bottom-28 right-6 flex flex-col gap-4 z-40 mb-[env(safe-area-inset-bottom,0px)]">
           {(profile?.role === 'admin_plataforma' || profile?.role === 'admin_lab') && (
             <button 
               className="w-12 h-12 rounded-2xl bg-white/90 backdrop-blur-md shadow-xl flex items-center justify-center text-blue-600 border border-white/50 active:scale-90 transition-all duration-300"
