@@ -560,6 +560,14 @@ const DashboardPage = () => {
           </div>
         </div>
       )}
+
+      <BloqueioHorarioModal 
+        isOpen={isModalBloqueioOpen}
+        onClose={() => setIsModalBloqueioOpen(false)}
+        onSuccess={() => {
+          // O hook useReservas já deve atualizar os dados via useEffect
+        }}
+      />
     </div>
   );
 };
