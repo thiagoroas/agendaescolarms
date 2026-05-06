@@ -287,8 +287,8 @@ const AdminProfessoresPage = () => {
         setIsModalOpen(false);
         fetchUsers();
       } catch (err: any) {
-        console.error("Error managing user:", err.message);
-        toast.error(`Erro: ${err.message}`);
+        if (isDevOrDebug) console.error("Error managing user:", err.message);
+        toast.error(isDevOrDebug ? `Erro: ${err.message}` : "Não foi possível salvar o usuário. Tente novamente.");
       } finally {
         setLoading(false);
       }
