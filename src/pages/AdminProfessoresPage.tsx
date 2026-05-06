@@ -27,6 +27,14 @@ const AdminProfessoresPage = () => {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("professores");
   
+  // Permission & Debug Checks
+  const isAdminPlataforma = profile?.role === "admin_plataforma";
+  const isAdminLab = profile?.role === "admin_lab";
+  const isDevOrDebug = isAdminPlataforma && (
+    import.meta.env.DEV === true || 
+    localStorage.getItem('debug_users') === 'true'
+  );
+
   // Debug State
   const [debugInfo, setDebugInfo] = useState<any>(null);
   const [showDebug, setShowDebug] = useState(false);
