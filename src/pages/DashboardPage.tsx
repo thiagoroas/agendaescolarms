@@ -41,6 +41,7 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { resetMockData } from "../data/storage";
 import { useToast } from "@/hooks/use-toast";
+import BloqueioHorarioModal from "@/components/reservas/BloqueioHorarioModal";
 
 const DashboardPage = () => {
   const { user, profile, selectedEscolaId, loading: authLoading } = useAuth();
