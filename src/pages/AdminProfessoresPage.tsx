@@ -253,7 +253,7 @@ const AdminProfessoresPage = () => {
           // Se preencheu senha na edição, é um reset
           if (senha) {
             const { data: { session: resetSession } } = await supabase.auth.getSession();
-            console.log("[DEBUG] Invocando reset_password, token presente?", !!resetSession?.access_token);
+            if (isDevOrDebug) console.log("[DEBUG] Invocando reset_password, token presente?", !!resetSession?.access_token);
             const { error: resetError } = await supabase.functions.invoke('manage-user', {
               body: { action: 'reset_password', userData: { id: editingUserId, password: senha } }
             });
