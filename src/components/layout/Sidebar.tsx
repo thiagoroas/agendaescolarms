@@ -5,9 +5,17 @@ import {
   Calendar, 
   ChevronDown,
   Building,
-  LogOut
+  LogOut,
+  Check
 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useNavigation } from "@/hooks/useNavigation";
@@ -48,47 +56,85 @@ const Sidebar = () => {
             {profile?.role === "admin_plataforma" ? "Plataforma" : "Minha escola"}
           </label>
           
-          <div className="relative group/select">
-            <div className={cn(
-              "flex items-center gap-3 p-3 rounded-2xl border transition-all duration-300 shadow-lg backdrop-blur-md cursor-pointer",
-              !escola 
-                ? "bg-red-500/20 border-red-400/30" 
-                : "bg-white/10 border-white/20 hover:bg-white/20 hover:border-white/30"
-            )}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <div className={cn(
-                "rounded-xl p-2 text-white shrink-0 shadow-inner",
-                !escola ? "bg-red-500" : "bg-blue-500/60 backdrop-blur-sm"
+                "flex items-center gap-3 p-3 rounded-2xl border transition-all duration-300 shadow-lg backdrop-blur-md cursor-pointer group/select-btn",
+                !escola 
+                  ? "bg-red-500/20 border-red-400/30" 
+                  : "bg-white/10 border-white/20 hover:bg-white/20 hover:border-white/30"
               )}>
-                <Building className="h-5 w-5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-1">
-                  <p className="text-sm font-bold text-[#FFFFFF] truncate leading-none">
-                    {loading ? "Carregando..." : (escola?.nome || "Sem escola")}
-                  </p>
-                  <ChevronDown className="h-3.5 w-3.5 text-[#DBEAFE] shrink-0" />
-                </div>
-                <p className={cn(
-                  "text-[10px] mt-1.5 font-bold truncate leading-none uppercase tracking-wide",
-                  !escola ? "text-red-300" : "text-[#BFDBFE]"
+                <div className={cn(
+                  "rounded-xl p-2 text-white shrink-0 shadow-inner",
+                  !escola ? "bg-red-500" : "bg-blue-500/60 backdrop-blur-sm"
                 )}>
-                  {!escola ? "Vínculo ausente" : "Trocar escola"}
-                </p>
+                  <Building className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1">
+                    <p className="text-sm font-bold text-[#FFFFFF] truncate leading-none">
+                      {loading ? "Carregando..." : (escola?.nome || "Sem escola")}
+                    </p>
+                    <ChevronDown className="h-3.5 w-3.5 text-[#DBEAFE] shrink-0" />
+                  </div>
+                  <p className={cn(
+                    "text-[10px] mt-1.5 font-bold truncate leading-none uppercase tracking-wide",
+                    !escola ? "text-red-300" : "text-[#BFDBFE]"
+                  )}>
+                    {!escola ? "Vínculo ausente" : "Trocar escola"}
+                  </p>
+                </div>
               </div>
-            </div>
-            {profile?.role === "admin_plataforma" && (
-              <select 
-                value={selectedEscolaId || ""} 
-                onChange={(e) => handleEscolaChange(e.target.value)}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                title="Trocar escola"
-              >
-                {escolas.map(e => (
-                  <option key={e.id} value={e.id}>{e.nome}</option>
+            </DropdownMenuTrigger>
+            
+            <DropdownMenuContent 
+              className="w-[240px] bg-[#1E3A8A] border-white/20 text-white shadow-2xl backdrop-blur-xl z-[100]"
+              align="start"
+              side="right"
+              sideOffset={10}
+            >
+              <DropdownMenuLabel className="text-[#BFDBFE] text-[10px] uppercase tracking-widest font-bold px-3 py-2">
+                Selecionar Unidade
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-white/10" />
+              
+              <div className="max-h-[300px] overflow-y-auto py-1">
+                {escolas.length === 0 && !loading && (
+                  <div className="px-3 py-4 text-center">
+                    <p className="text-xs text-red-300 font-bold">Nenhum vínculo encontrado.</p>
+                  </div>
+                )}
+                
+                {escolas.map((e) => (
+                  <DropdownMenuItem
+                    key={e.id}
+                    onClick={() => handleEscolaChange(e.id)}
+                    className={cn(
+                      "flex flex-col items-start gap-1 px-3 py-3 cursor-pointer transition-colors focus:bg-white/10 focus:text-white",
+                      e.id === escola?.id ? "bg-white/20" : "hover:bg-white/5"
+                    )}
+                  >
+                    <div className="flex items-center justify-between w-full gap-2">
+                      <span className="font-bold text-sm truncate">{e.nome}</span>
+                      {e.id === escola?.id && <Check className="h-4 w-4 text-emerald-400 shrink-0" />}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        "text-[9px] uppercase font-black px-1.5 py-0.5 rounded border leading-none",
+                        e.id === escola?.id ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400" : "bg-white/10 border-white/20 text-[#BFDBFE]"
+                      )}>
+                        {profile?.role === "admin_plataforma" ? "Admin" : 
+                         profile?.role === "admin_lab" ? "Admin Lab" : "Professor"}
+                      </span>
+                      {e.id === escola?.id && (
+                        <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-tighter">Ativo agora</span>
+                      )}
+                    </div>
+                  </DropdownMenuItem>
                 ))}
-              </select>
-            )}
-          </div>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
