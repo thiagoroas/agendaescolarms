@@ -16,6 +16,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         <TopHeader />
         <div className={cn(
           "flex-1 w-full min-h-0",
+          "pb-[calc(85px+env(safe-area-inset-bottom))] md:pb-0", // Padding para MobileBottomNav
           isAgenda ? "flex flex-col overflow-hidden" : "mx-auto max-w-7xl p-4 md:p-6 lg:p-8 overflow-y-auto"
         )}>
           {children}
