@@ -77,6 +77,9 @@ export const DiagnosticPanel = () => {
   }, [user, profile, edgeFunctionStatus]);
 
   if (profile?.role !== "admin_plataforma") return null;
+  
+  const isDevOrDebug = import.meta.env.DEV === true || localStorage.getItem('debug_users') === 'true';
+  if (!isDevOrDebug) return null;
 
   return (
     <div className="mb-6">

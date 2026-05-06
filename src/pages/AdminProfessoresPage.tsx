@@ -27,6 +27,14 @@ const AdminProfessoresPage = () => {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("professores");
   
+  // Permission & Debug Checks
+  const isAdminPlataforma = profile?.role === "admin_plataforma";
+  const isAdminLab = profile?.role === "admin_lab";
+  const isDevOrDebug = isAdminPlataforma && (
+    import.meta.env.DEV === true || 
+    localStorage.getItem('debug_users') === 'true'
+  );
+
   // Debug State
   const [debugInfo, setDebugInfo] = useState<any>(null);
   const [showDebug, setShowDebug] = useState(false);
@@ -61,7 +69,7 @@ const AdminProfessoresPage = () => {
       };
 
       try {
-        console.log("[DEBUG] Starting Manual Fetch Diagnostic...");
+        if (isDevOrDebug) console.log("[DEBUG] Starting Manual Fetch Diagnostic...");
 
         // 1. Simple Test: profile_escolas
         const testPe = await supabase.from('profile_escolas').select('*').limit(5);
@@ -87,8 +95,6 @@ const AdminProfessoresPage = () => {
         // 4. Manual Fallback Query Strategy
         let peQuery = supabase.from("profile_escolas").select("*");
         
-        const isAdminPlataforma = profile?.role === "admin_plataforma";
-        const isAdminLab = profile?.role === "admin_lab";
 
         if (isAdminLab) {
           peQuery = peQuery.eq("escola_id", profile.escola_id).eq("papel", "professor");
@@ -148,10 +154,10 @@ const AdminProfessoresPage = () => {
         setDebugInfo(diagnostics);
 
       } catch (err: any) {
-        console.error("[DIAGNOSTIC ERROR]", err);
+        if (isDevOrDebug) console.error("[DIAGNOSTIC ERROR]", err);
         diagnostics.exception = err.message;
         setDebugInfo(diagnostics);
-        toast.error(`Erro: [${err.code || 'EXCEPTION'}] ${err.message}`);
+        toast.error(`Não foi possível carregar os usuários. Tente atualizar a página.`);
       } finally {
         setLoading(false);
       }
@@ -166,9 +172,6 @@ const AdminProfessoresPage = () => {
     fetchUsers();
   }, [profile, selectedEscolaId, activeTab]);
 
-  const isAdminPlataforma = profile?.role === "admin_plataforma";
-  const isAdminLab = profile?.role === "admin_lab";
-  
   const filteredUsers = localUsers.filter(u => {
     // Note: Database query already filters by papel for activeTab in Supabase mode.
     // This frontend filter is kept for mock mode and extra safety.
@@ -248,7 +251,7 @@ const AdminProfessoresPage = () => {
           // Se preencheu senha na edição, é um reset
           if (senha) {
             const { data: { session: resetSession } } = await supabase.auth.getSession();
-            console.log("[DEBUG] Invocando reset_password, token presente?", !!resetSession?.access_token);
+            if (isDevOrDebug) console.log("[DEBUG] Invocando reset_password, token presente?", !!resetSession?.access_token);
             const { error: resetError } = await supabase.functions.invoke('manage-user', {
               body: { action: 'reset_password', userData: { id: editingUserId, password: senha } }
             });
@@ -259,7 +262,7 @@ const AdminProfessoresPage = () => {
           userData.password = senha;
         }
 
-        console.log("[DEBUG] Invocando manage-user action:", action);
+        if (isDevOrDebug) console.log("[DEBUG] Invocando manage-user action:", action);
         const { data, error: invokeError } = await supabase.functions.invoke('manage-user', {
           body: { action, userData }
         });
@@ -282,8 +285,8 @@ const AdminProfessoresPage = () => {
         setIsModalOpen(false);
         fetchUsers();
       } catch (err: any) {
-        console.error("Error managing user:", err.message);
-        toast.error(`Erro: ${err.message}`);
+        if (isDevOrDebug) console.error("Error managing user:", err.message);
+        toast.error(isDevOrDebug ? `Erro: ${err.message}` : "Não foi possível salvar o usuário. Tente novamente.");
       } finally {
         setLoading(false);
       }
@@ -346,8 +349,8 @@ const AdminProfessoresPage = () => {
           toast.success("Usuário removido da escola.");
           fetchUsers();
         } catch (err: any) {
-          console.error("Error removing user:", err.message);
-          toast.error("Erro ao remover usuário");
+          if (isDevOrDebug) console.error("Error removing user:", err.message);
+          toast.error(isDevOrDebug ? `Erro: ${err.message}` : "Erro ao remover usuário");
         } finally {
           setLoading(false);
         }
@@ -372,54 +375,56 @@ const AdminProfessoresPage = () => {
 
   return (
     <div className="space-y-6">
-      <DiagnosticPanel />
+      {isDevOrDebug && <DiagnosticPanel />}
       
-      <div className="flex flex-col gap-4 mb-6">
-        <div className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200">
-          <div className="flex items-center gap-2 text-slate-600">
-            <Bug className="h-4 w-4" />
-            <span className="text-xs font-mono">Debug Mode: {debugInfo?.version || "Loading..."}</span>
+      {isDevOrDebug && (
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <div className="flex items-center gap-2 text-slate-600">
+              <Bug className="h-4 w-4" />
+              <span className="text-xs font-mono">Debug Mode: {debugInfo?.version || "Loading..."}</span>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setShowDebug(!showDebug)}
+              className="text-[10px] h-7"
+            >
+              {showDebug ? "Ocultar Diagnóstico" : "Ver Diagnóstico"}
+            </Button>
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setShowDebug(!showDebug)}
-            className="text-[10px] h-7"
-          >
-            {showDebug ? "Ocultar Diagnóstico" : "Ver Diagnóstico"}
-          </Button>
-        </div>
 
-        {showDebug && debugInfo && (
-          <Card className="border-amber-200 bg-amber-50">
-            <CardContent className="p-4 space-y-3">
-              <h3 className="text-sm font-bold text-amber-900 flex items-center gap-2">
-                <Bug className="h-4 w-4" /> Painel de Diagnóstico Supabase
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[10px] font-mono">
-                <div className="space-y-1 bg-white p-2 rounded border border-amber-100">
-                  <p className="font-bold text-amber-700 underline">Ambiente:</p>
-                  <p>Runtime URL: {debugInfo.env.supabaseUrl}</p>
-                  <p>User: {debugInfo.user.email} ({debugInfo.user.role})</p>
-                  <p>ID: {debugInfo.user.id}</p>
+          {showDebug && debugInfo && (
+            <Card className="border-amber-200 bg-amber-50">
+              <CardContent className="p-4 space-y-3">
+                <h3 className="text-sm font-bold text-amber-900 flex items-center gap-2">
+                  <Bug className="h-4 w-4" /> Painel de Diagnóstico Supabase
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[10px] font-mono">
+                  <div className="space-y-1 bg-white p-2 rounded border border-amber-100">
+                    <p className="font-bold text-amber-700 underline">Ambiente:</p>
+                    <p>Runtime URL: {debugInfo.env.supabaseUrl}</p>
+                    <p>User: {debugInfo.user.email} ({debugInfo.user.role})</p>
+                    <p>ID: {debugInfo.user.id}</p>
+                  </div>
+                  <div className="space-y-1 bg-white p-2 rounded border border-amber-100">
+                    <p className="font-bold text-amber-700 underline">Consultas Simples (RLS Check):</p>
+                    <p>profile_escolas: {debugInfo.test_profile_escolas.error ? `FAIL [${debugInfo.test_profile_escolas.error.code}]` : `OK (${debugInfo.test_profile_escolas.count})`}</p>
+                    <p>profiles: {debugInfo.test_profiles.error ? `FAIL [${debugInfo.test_profiles.error.code}]` : `OK (${debugInfo.test_profiles.count})`}</p>
+                    <p>escolas: {debugInfo.test_escolas.error ? `FAIL [${debugInfo.test_escolas.error.code}]` : `OK (${debugInfo.test_escolas.count})`}</p>
+                  </div>
                 </div>
-                <div className="space-y-1 bg-white p-2 rounded border border-amber-100">
-                  <p className="font-bold text-amber-700 underline">Consultas Simples (RLS Check):</p>
-                  <p>profile_escolas: {debugInfo.test_profile_escolas.error ? `FAIL [${debugInfo.test_profile_escolas.error.code}]` : `OK (${debugInfo.test_profile_escolas.count})`}</p>
-                  <p>profiles: {debugInfo.test_profiles.error ? `FAIL [${debugInfo.test_profiles.error.code}]` : `OK (${debugInfo.test_profiles.count})`}</p>
-                  <p>escolas: {debugInfo.test_escolas.error ? `FAIL [${debugInfo.test_escolas.error.code}]` : `OK (${debugInfo.test_escolas.count})`}</p>
-                </div>
-              </div>
-              {debugInfo.final_query_error && (
-                <div className="p-2 bg-red-100 border border-red-200 rounded text-red-800 text-[10px] font-mono">
-                  <p className="font-bold">ERRO QUERY FINAL:</p>
-                  <p>[{debugInfo.final_query_error.code}] {debugInfo.final_query_error.message}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-      </div>
+                {debugInfo.final_query_error && (
+                  <div className="p-2 bg-red-100 border border-red-200 rounded text-red-800 text-[10px] font-mono">
+                    <p className="font-bold">ERRO QUERY FINAL:</p>
+                    <p>[{debugInfo.final_query_error.code}] {debugInfo.final_query_error.message}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
