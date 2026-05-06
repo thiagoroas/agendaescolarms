@@ -51,6 +51,7 @@ const DashboardPage = () => {
   // Central do Laboratório usa o hook useReservas que já carrega os dados da escola selecionada
   const { reservas: todasReservas, loading: loadingReservas, error: errorReservas } = useReservas();
   const { avisos, loading: loadingAvisos, error: errorAvisos } = useAvisos();
+  const [isModalBloqueioOpen, setIsModalBloqueioOpen] = useState(false);
 
   const [todasEscolas, setTodasEscolas] = useState<Escola[]>([]);
   const hasShownErrorToastRef = useRef(false);
