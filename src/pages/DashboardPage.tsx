@@ -257,6 +257,15 @@ const DashboardPage = () => {
         </div>
         
         <div className="flex items-center gap-2">
+          {(profile?.role === 'admin_plataforma' || profile?.role === 'admin_lab') && (
+            <Button 
+              onClick={() => setIsModalBloqueioOpen(true)} 
+              variant="outline"
+              className="h-11 px-5 rounded-xl font-bold uppercase tracking-widest text-[11px] border-slate-200 hover:bg-slate-50 transition-all"
+            >
+              <Wrench className="mr-2 h-4 w-4 text-slate-500" /> Bloquear Horário
+            </Button>
+          )}
           <Button 
             onClick={() => navigate("/agenda")} 
             className="bg-blue-600 hover:bg-blue-700 h-11 px-5 rounded-xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-blue-100 transition-all hover:scale-105"
