@@ -20,7 +20,8 @@ import {
   Info,
   AlertTriangle,
   ChevronRight,
-  Trash2
+  Trash2,
+  Wrench
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
