@@ -264,7 +264,7 @@ const AdminProfessoresPage = () => {
           userData.password = senha;
         }
 
-        console.log("[DEBUG] Invocando manage-user action:", action);
+        if (isDevOrDebug) console.log("[DEBUG] Invocando manage-user action:", action);
         const { data, error: invokeError } = await supabase.functions.invoke('manage-user', {
           body: { action, userData }
         });
