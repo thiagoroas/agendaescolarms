@@ -61,7 +61,7 @@ const AdminProfessoresPage = () => {
       };
 
       try {
-        console.log("[DEBUG] Starting Manual Fetch Diagnostic...");
+        if (isDevOrDebug) console.log("[DEBUG] Starting Manual Fetch Diagnostic...");
 
         // 1. Simple Test: profile_escolas
         const testPe = await supabase.from('profile_escolas').select('*').limit(5);
