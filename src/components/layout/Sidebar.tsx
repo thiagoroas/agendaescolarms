@@ -5,9 +5,17 @@ import {
   Calendar, 
   ChevronDown,
   Building,
-  LogOut
+  LogOut,
+  Check
 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useNavigation } from "@/hooks/useNavigation";
