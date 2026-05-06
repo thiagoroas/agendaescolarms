@@ -42,8 +42,8 @@ const Sidebar = () => {
     <aside className="fixed left-0 top-0 hidden h-full w-[80px] lg:w-[264px] flex-col bg-gradient-to-b from-[#1E3A8A] via-[#2563EB] to-[#1E1B4B] md:flex z-40 transition-[width] duration-300 group/sidebar overflow-hidden hover:w-[264px] shadow-2xl pt-[env(safe-area-inset-top,0px)] border-r border-white/10">
       <div className="flex flex-col p-4 lg:p-5">
         <div className="flex items-center gap-3 mb-8 px-1">
-          <div className="rounded-xl bg-white/20 backdrop-blur-md p-2.5 text-white shadow-lg border border-white/20 shrink-0">
-            <Calendar className="h-5 w-5" />
+          <div className="rounded-xl bg-white shadow-lg border border-white/20 shrink-0 overflow-hidden h-9 w-9 flex items-center justify-center p-0.5">
+            <img src="/icon-192.png" alt="Logo" className="w-full h-full object-cover rounded-lg" />
           </div>
           <div className="lg:block hidden group-hover/sidebar:block transition-all overflow-hidden">
             <h1 className="text-lg font-bold tracking-tight text-[#FFFFFF] leading-none">Agenda Escolar</h1>
