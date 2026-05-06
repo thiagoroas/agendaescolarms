@@ -177,6 +177,11 @@ const AprovacoesPage = () => {
         </div>
       </header>
 
+      <BloqueioHorarioModal 
+        isOpen={isManutencaoModalOpen}
+        onClose={() => setIsManutencaoModalOpen(false)}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Lado Esquerdo: Reservas de Hoje e Próximas */}
         <div className="lg:col-span-2 space-y-8">
