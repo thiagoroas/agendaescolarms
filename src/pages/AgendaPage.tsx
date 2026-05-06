@@ -24,6 +24,7 @@ import DetalhesReservaModal from "../components/reservas/DetalhesReservaModal";
 import RelatorioReservasModal from "../components/reservas/RelatorioReservasModal";
 import DetalhesHorarioModal from "../components/reservas/DetalhesHorarioModal";
 import "./agenda.css";
+import BloqueioHorarioModal from "@/components/reservas/BloqueioHorarioModal";
 
 const tipoColor = (tipo: string) => {
   switch (tipo) {
