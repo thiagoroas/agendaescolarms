@@ -351,8 +351,8 @@ const AdminProfessoresPage = () => {
           toast.success("Usuário removido da escola.");
           fetchUsers();
         } catch (err: any) {
-          console.error("Error removing user:", err.message);
-          toast.error("Erro ao remover usuário");
+          if (isDevOrDebug) console.error("Error removing user:", err.message);
+          toast.error(isDevOrDebug ? `Erro: ${err.message}` : "Erro ao remover usuário");
         } finally {
           setLoading(false);
         }
