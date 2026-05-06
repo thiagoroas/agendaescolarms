@@ -151,7 +151,7 @@ const AdminProfessoresPage = () => {
         console.error("[DIAGNOSTIC ERROR]", err);
         diagnostics.exception = err.message;
         setDebugInfo(diagnostics);
-        toast.error(`Erro: [${err.code || 'EXCEPTION'}] ${err.message}`);
+        toast.error(`Não foi possível carregar os usuários. Tente atualizar a página.`);
       } finally {
         setLoading(false);
       }
