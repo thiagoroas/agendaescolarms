@@ -37,6 +37,7 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useHorarios } from "@/hooks/useHorarios";
 import { isValidUUID, isSupabaseConfigured } from "@/lib/supabase";
+import BloqueioHorarioModal from "@/components/reservas/BloqueioHorarioModal";
 
 const AprovacoesPage = () => {
   const { profile, selectedEscolaId, user } = useAuth();
