@@ -377,54 +377,56 @@ const AdminProfessoresPage = () => {
 
   return (
     <div className="space-y-6">
-      <DiagnosticPanel />
+      {isDevOrDebug && <DiagnosticPanel />}
       
-      <div className="flex flex-col gap-4 mb-6">
-        <div className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200">
-          <div className="flex items-center gap-2 text-slate-600">
-            <Bug className="h-4 w-4" />
-            <span className="text-xs font-mono">Debug Mode: {debugInfo?.version || "Loading..."}</span>
+      {isDevOrDebug && (
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <div className="flex items-center gap-2 text-slate-600">
+              <Bug className="h-4 w-4" />
+              <span className="text-xs font-mono">Debug Mode: {debugInfo?.version || "Loading..."}</span>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setShowDebug(!showDebug)}
+              className="text-[10px] h-7"
+            >
+              {showDebug ? "Ocultar Diagnóstico" : "Ver Diagnóstico"}
+            </Button>
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setShowDebug(!showDebug)}
-            className="text-[10px] h-7"
-          >
-            {showDebug ? "Ocultar Diagnóstico" : "Ver Diagnóstico"}
-          </Button>
-        </div>
 
-        {showDebug && debugInfo && (
-          <Card className="border-amber-200 bg-amber-50">
-            <CardContent className="p-4 space-y-3">
-              <h3 className="text-sm font-bold text-amber-900 flex items-center gap-2">
-                <Bug className="h-4 w-4" /> Painel de Diagnóstico Supabase
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[10px] font-mono">
-                <div className="space-y-1 bg-white p-2 rounded border border-amber-100">
-                  <p className="font-bold text-amber-700 underline">Ambiente:</p>
-                  <p>Runtime URL: {debugInfo.env.supabaseUrl}</p>
-                  <p>User: {debugInfo.user.email} ({debugInfo.user.role})</p>
-                  <p>ID: {debugInfo.user.id}</p>
+          {showDebug && debugInfo && (
+            <Card className="border-amber-200 bg-amber-50">
+              <CardContent className="p-4 space-y-3">
+                <h3 className="text-sm font-bold text-amber-900 flex items-center gap-2">
+                  <Bug className="h-4 w-4" /> Painel de Diagnóstico Supabase
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[10px] font-mono">
+                  <div className="space-y-1 bg-white p-2 rounded border border-amber-100">
+                    <p className="font-bold text-amber-700 underline">Ambiente:</p>
+                    <p>Runtime URL: {debugInfo.env.supabaseUrl}</p>
+                    <p>User: {debugInfo.user.email} ({debugInfo.user.role})</p>
+                    <p>ID: {debugInfo.user.id}</p>
+                  </div>
+                  <div className="space-y-1 bg-white p-2 rounded border border-amber-100">
+                    <p className="font-bold text-amber-700 underline">Consultas Simples (RLS Check):</p>
+                    <p>profile_escolas: {debugInfo.test_profile_escolas.error ? `FAIL [${debugInfo.test_profile_escolas.error.code}]` : `OK (${debugInfo.test_profile_escolas.count})`}</p>
+                    <p>profiles: {debugInfo.test_profiles.error ? `FAIL [${debugInfo.test_profiles.error.code}]` : `OK (${debugInfo.test_profiles.count})`}</p>
+                    <p>escolas: {debugInfo.test_escolas.error ? `FAIL [${debugInfo.test_escolas.error.code}]` : `OK (${debugInfo.test_escolas.count})`}</p>
+                  </div>
                 </div>
-                <div className="space-y-1 bg-white p-2 rounded border border-amber-100">
-                  <p className="font-bold text-amber-700 underline">Consultas Simples (RLS Check):</p>
-                  <p>profile_escolas: {debugInfo.test_profile_escolas.error ? `FAIL [${debugInfo.test_profile_escolas.error.code}]` : `OK (${debugInfo.test_profile_escolas.count})`}</p>
-                  <p>profiles: {debugInfo.test_profiles.error ? `FAIL [${debugInfo.test_profiles.error.code}]` : `OK (${debugInfo.test_profiles.count})`}</p>
-                  <p>escolas: {debugInfo.test_escolas.error ? `FAIL [${debugInfo.test_escolas.error.code}]` : `OK (${debugInfo.test_escolas.count})`}</p>
-                </div>
-              </div>
-              {debugInfo.final_query_error && (
-                <div className="p-2 bg-red-100 border border-red-200 rounded text-red-800 text-[10px] font-mono">
-                  <p className="font-bold">ERRO QUERY FINAL:</p>
-                  <p>[{debugInfo.final_query_error.code}] {debugInfo.final_query_error.message}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-      </div>
+                {debugInfo.final_query_error && (
+                  <div className="p-2 bg-red-100 border border-red-200 rounded text-red-800 text-[10px] font-mono">
+                    <p className="font-bold">ERRO QUERY FINAL:</p>
+                    <p>[{debugInfo.final_query_error.code}] {debugInfo.final_query_error.message}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
