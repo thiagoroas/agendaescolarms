@@ -245,8 +245,8 @@ const DashboardPage = () => {
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-100">
-            <LayoutDashboard size={24} />
+          <div className="h-14 w-14 rounded-2xl bg-white flex items-center justify-center shadow-xl shadow-blue-100 overflow-hidden border border-slate-50 p-1">
+            <img src="/icon-192.png" alt="Logo" className="w-full h-full object-cover rounded-xl" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Central do Laboratório</h1>
