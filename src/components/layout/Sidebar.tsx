@@ -13,7 +13,6 @@ import { toast } from "sonner";
 import { useNavigation } from "@/hooks/useNavigation";
 
 const Sidebar = () => {
-  console.log("sidebar-theme-v2-2026-05-05");
   const { profile, logout, selectedEscolaId, setSelectedEscolaId } = useAuth();
   const navigate = useNavigate();
   const { escolas, loading } = useEscolas();
