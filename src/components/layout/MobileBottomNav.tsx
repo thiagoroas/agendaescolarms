@@ -72,9 +72,9 @@ const MobileBottomNav = () => {
             <span className="text-[10px] tracking-tight uppercase font-bold">Menu</span>
           </button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-[min(85vw,360px)] p-0 border-l-0 bg-slate-50 shadow-2xl overflow-hidden flex flex-col">
-          {/* Header com Degradê similar à Sidebar */}
-          <div className="bg-gradient-to-br from-[#1E3A8A] to-[#2563EB] p-6 pb-8 text-white relative shrink-0">
+        <SheetContent side="right" className="w-[min(85vw,360px)] p-0 border-l-0 bg-gradient-to-b from-[#1E3A8A] via-[#2563EB] to-[#1E1B4B] shadow-2xl overflow-hidden flex flex-col">
+          {/* Header similar à Sidebar Desktop */}
+          <div className="p-6 pb-8 text-white relative shrink-0 border-b border-white/10">
             <div className="flex items-center gap-4 relative z-10">
               <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-xl font-bold shadow-lg border border-white/20">
                 {profile?.full_name?.charAt(0).toUpperCase()}
@@ -86,39 +86,50 @@ const MobileBottomNav = () => {
                 <SheetDescription className="sr-only">
                   Menu de navegação e configurações do usuário
                 </SheetDescription>
-                <p className="text-[10px] font-bold text-blue-100/70 uppercase tracking-[0.2em] mt-1 flex items-center gap-1.5">
+                <p className="text-[10px] font-bold text-[#BFDBFE] uppercase tracking-[0.2em] mt-1 flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   {profile?.role === "admin_plataforma" ? "Admin Plataforma" : 
                    profile?.role === "admin_lab" ? "Admin Laboratório" : "Professor"}
                 </p>
               </div>
             </div>
-            {/* Elemento decorativo */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl" />
           </div>
 
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50 -mt-4 rounded-t-2xl relative z-20 overflow-hidden">
+          <div className="flex-1 flex flex-col min-h-0 relative z-20 overflow-hidden">
             <div className="p-6 pb-2 shrink-0">
-              {/* Unidade Ativa Card */}
+              {/* Unidade Ativa Card - Estilo Sidebar Desktop */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 block px-1">
+                <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#C7D2FE] block px-1">
                   {isAdminPlataforma ? "Unidade em Gestão" : "Minha Unidade"}
                 </label>
                 
-                {isAdminPlataforma ? (
-                  <div className="relative group overflow-hidden">
-                    <div className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 group-active:scale-[0.98] group-active:bg-slate-50 transition-all shadow-sm">
-                      <div className="bg-blue-600 rounded-xl p-2.5 text-white shrink-0 shadow-md">
-                        <Building className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0 pr-2">
-                        <p className="text-[13px] font-extrabold text-slate-900 truncate leading-tight">
-                          {loading ? "Carregando..." : (escola?.nome || "Selecionar...")}
-                        </p>
-                        <p className="text-[11px] text-blue-600 font-bold mt-1">Toque para trocar unidade</p>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-slate-300 shrink-0 group-hover:translate-x-1 transition-transform" />
+                <div className="relative group overflow-hidden">
+                  <div className={cn(
+                    "flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 shadow-lg backdrop-blur-md border",
+                    !escola 
+                      ? "bg-red-500/20 border-red-400/30" 
+                      : "bg-white/10 border-white/20"
+                  )}>
+                    <div className={cn(
+                      "rounded-xl p-2.5 text-white shrink-0 shadow-md",
+                      !escola ? "bg-red-500" : "bg-blue-500/60 backdrop-blur-sm"
+                    )}>
+                      <Building className="h-5 w-5" />
                     </div>
+                    <div className="flex-1 min-w-0 pr-2">
+                      <p className="text-[13px] font-extrabold text-[#FFFFFF] truncate leading-tight">
+                        {loading ? "Carregando..." : (escola?.nome || "Sem Unidade")}
+                      </p>
+                      <p className={cn(
+                        "text-[11px] font-bold mt-1 uppercase tracking-wider",
+                        !escola ? "text-red-300" : "text-[#BFDBFE]"
+                      )}>
+                        {!escola ? "Vínculo ausente" : "Toque para trocar"}
+                      </p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-[#DBEAFE] shrink-0" />
+                  </div>
+                  {isAdminPlataforma && (
                     <select 
                       value={selectedEscolaId || ""} 
                       onChange={(e) => handleEscolaChange(e.target.value)}
@@ -128,47 +139,31 @@ const MobileBottomNav = () => {
                         <option key={e.id} value={e.id}>{e.nome}</option>
                       ))}
                     </select>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
-                    <div className="bg-slate-800 rounded-xl p-2.5 text-white shrink-0">
-                      <Building className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-extrabold text-slate-900 truncate">
-                        {escola?.nome || "Sem Unidade"}
-                      </p>
-                      <p className="text-[11px] text-slate-500 font-medium mt-0.5">Unidade vinculada</p>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-4">
+            <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide">
               <nav className="space-y-8 pb-8">
                 {sections.map((section, idx) => (
                   <div key={section.title || idx} className="space-y-3">
                     {section.title && (
-                      <div className="px-1 flex items-center gap-2">
-                        <div className="h-[1px] flex-1 bg-slate-200" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 whitespace-nowrap">
-                          {section.title}
-                        </span>
-                        <div className="h-[1px] flex-1 bg-slate-200" />
+                      <div className="px-2 text-[10px] font-bold uppercase tracking-[0.3em] text-[#C7D2FE] truncate">
+                        {section.title}
                       </div>
                     )}
-                    <div className="grid grid-cols-1 gap-2.5">
+                    <div className="grid grid-cols-1 gap-2">
                       {section.items.map((item) => (
                         <SheetClose asChild key={item.path}>
                           <NavLink
                             to={item.path}
                             className={({ isActive }) =>
                               cn(
-                                "flex flex-row items-center gap-4 rounded-2xl px-4 py-4 min-h-[60px] w-full transition-all duration-300 group border",
+                                "flex flex-row items-center gap-4 rounded-2xl px-4 py-3.5 w-full transition-all duration-300 group border border-transparent font-medium",
                                 isActive 
-                                  ? "bg-white text-blue-700 font-bold shadow-md border-blue-100 ring-2 ring-blue-50" 
-                                  : "bg-white text-slate-600 border-slate-100 hover:border-blue-200 active:scale-[0.98] shadow-sm"
+                                  ? "bg-white/20 text-[#FFFFFF] font-bold border-white/22 shadow-lg backdrop-blur-sm" 
+                                  : "text-[#DBEAFE] hover:bg-white/10 hover:text-white"
                               )
                             }
                           >
@@ -176,7 +171,9 @@ const MobileBottomNav = () => {
                               <>
                                 <div className={cn(
                                   "h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-300",
-                                  isActive ? "bg-blue-600 text-white shadow-blue-200 shadow-lg" : "bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600"
+                                  isActive 
+                                    ? "bg-white text-blue-700 shadow-md" 
+                                    : "bg-white/15 text-[#BFDBFE]"
                                 )}>
                                   <item.icon className={cn("h-5 w-5 shrink-0")} />
                                 </div>
@@ -197,8 +194,8 @@ const MobileBottomNav = () => {
               </nav>
             </div>
 
-            {/* Bloco 4: Ação de Sair */}
-            <div className="p-5 bg-white border-t border-slate-100 shrink-0 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
+            {/* Logout Estilo Sidebar Desktop */}
+            <div className="p-5 mt-auto border-t border-white/10 bg-black/20 backdrop-blur-md">
               <button
                 onClick={async () => {
                   try {
@@ -208,7 +205,7 @@ const MobileBottomNav = () => {
                     toast.error("Erro ao sair");
                   }
                 }}
-                className="flex w-full items-center justify-center gap-3 rounded-2xl bg-red-50 px-4 py-4.5 text-[15px] font-extrabold text-red-600 transition-all active:scale-[0.98] border border-red-100 hover:bg-red-100/50 shadow-sm"
+                className="flex w-full items-center justify-center gap-3 rounded-2xl bg-red-500/10 px-4 py-4 text-[15px] font-bold text-red-400 transition-all active:scale-[0.98] border border-red-500/20 hover:bg-red-500/20 hover:text-red-300 shadow-sm uppercase tracking-widest"
               >
                 <LogOut className="h-5 w-5" />
                 SAIR DO SISTEMA
