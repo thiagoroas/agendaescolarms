@@ -95,8 +95,6 @@ const AdminProfessoresPage = () => {
         // 4. Manual Fallback Query Strategy
         let peQuery = supabase.from("profile_escolas").select("*");
         
-        const isAdminPlataforma = profile?.role === "admin_plataforma";
-        const isAdminLab = profile?.role === "admin_lab";
 
         if (isAdminLab) {
           peQuery = peQuery.eq("escola_id", profile.escola_id).eq("papel", "professor");
