@@ -174,14 +174,6 @@ const AdminProfessoresPage = () => {
     fetchUsers();
   }, [profile, selectedEscolaId, activeTab]);
 
-  const isAdminPlataforma = profile?.role === "admin_plataforma";
-  const isAdminLab = profile?.role === "admin_lab";
-  
-  const isDevOrDebug = isAdminPlataforma && (
-    import.meta.env.DEV === true || 
-    localStorage.getItem('debug_users') === 'true'
-  );
-  
   const filteredUsers = localUsers.filter(u => {
     // Note: Database query already filters by papel for activeTab in Supabase mode.
     // This frontend filter is kept for mock mode and extra safety.
