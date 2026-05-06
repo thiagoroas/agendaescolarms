@@ -63,6 +63,7 @@ export const useNavigation = () => {
 
   const platformItems: MenuItem[] = [
     { icon: Building2, label: "Escolas", path: "/admin/escolas", roles: ["admin_plataforma"] },
+    { icon: Activity, label: "Saúde do Sistema", path: "/admin/monitoramento", roles: ["admin_plataforma"] },
   ];
 
   const filterItems = (items: MenuItem[]) => 
