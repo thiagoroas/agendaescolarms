@@ -141,8 +141,8 @@ const LoginPage = () => {
         ) : (
           <>
             <div className="mb-6 flex flex-col items-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-200">
-                <Calendar className="h-8 w-8" />
+              <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-white text-white shadow-xl shadow-blue-100 overflow-hidden border border-slate-50">
+                <img src="/icon-192.png" alt="Agenda Escolar Digital" className="w-full h-full object-cover" />
               </div>
               <h1 className="text-2xl font-bold text-slate-900">Agenda Escolar Digital</h1>
               <p className="text-sm text-slate-500 text-center mt-1">Faça login para acessar a agenda da sua escola</p>
