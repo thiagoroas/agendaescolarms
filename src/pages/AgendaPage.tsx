@@ -1030,22 +1030,23 @@ const AgendaPage = () => {
       </div>
 
       {isMobile && (
-        <div className="fixed bottom-20 right-4 flex flex-col gap-3 z-50">
+        <div className="fixed bottom-28 right-6 flex flex-col gap-4 z-40 mb-[env(safe-area-inset-bottom,0px)]">
           {(profile?.role === 'admin_plataforma' || profile?.role === 'admin_lab') && (
             <button 
-              className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-slate-600 border border-slate-200"
+              className="w-12 h-12 rounded-2xl bg-white/90 backdrop-blur-md shadow-xl flex items-center justify-center text-blue-600 border border-white/50 active:scale-90 transition-all duration-300"
               onClick={() => setIsModalRelatorioOpen(true)}
               aria-label="Relatório"
             >
-              <FileText size={20} />
+              <FileText size={22} className="stroke-[2px]" />
             </button>
           )}
           <button 
-            className="w-14 h-14 rounded-full bg-blue-600 shadow-lg flex items-center justify-center text-white"
+            className="w-16 h-16 rounded-[2rem] bg-gradient-to-br from-blue-500 to-blue-700 shadow-[0_10px_25px_-5px_rgba(37,99,235,0.5)] flex items-center justify-center text-white border-2 border-white/20 active:scale-95 active:shadow-inner transition-all duration-300 relative group"
             onClick={() => { setSelectedSlot(null); setIsModalNovaOpen(true); }}
             aria-label="Nova reserva"
           >
-            <Plus size={24} />
+            <div className="absolute inset-0 rounded-[2rem] bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Plus size={32} className="stroke-[3px] drop-shadow-md" />
           </button>
         </div>
       )}
