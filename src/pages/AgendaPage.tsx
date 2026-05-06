@@ -1085,6 +1085,14 @@ const AgendaPage = () => {
         data={selectedHorarioData}
       />
 
+      <BloqueioHorarioModal 
+        isOpen={isModalBloqueioOpen}
+        onClose={() => setIsModalBloqueioOpen(false)}
+        onSuccess={() => {
+          refreshReservas();
+        }}
+      />
+
       <RelatorioReservasModal
         isOpen={isModalRelatorioOpen}
         onClose={() => setIsModalRelatorioOpen(false)}
