@@ -48,28 +48,47 @@ const MobileBottomNav = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 flex w-full items-center justify-around border-t border-slate-100 bg-white/95 backdrop-blur-md px-2 py-3 md:hidden z-50 pb-[calc(env(safe-area-inset-bottom,0px)+8px)] shadow-[0_-4px_16px_rgba(0,0,0,0.05)]">
+    <nav className="fixed bottom-0 left-0 flex w-full items-center justify-around bg-gradient-to-r from-[#1E3A8A] via-[#2563EB] to-[#1E3A8A] backdrop-blur-xl px-2 py-3 md:hidden z-[60] pb-[calc(env(safe-area-inset-bottom,0px)+10px)] shadow-[0_-8px_30px_rgba(0,0,0,0.3)] border-t border-white/10">
       {mainNavItems.map((item) => (
         <NavLink
           key={item.path}
           to={item.path}
           className={({ isActive }) =>
             cn(
-              "flex flex-col items-center gap-1 p-1 transition-all duration-200",
-              isActive ? "text-blue-600 font-bold" : "text-slate-400"
+              "flex flex-col items-center gap-1.5 p-2 transition-all duration-300 relative group",
+              isActive ? "text-white" : "text-white/50 hover:text-white/80"
             )
           }
         >
-          <item.icon className={cn("h-5 w-5", "stroke-[2.2px]")} />
-          <span className="text-[10px] tracking-tight uppercase font-bold">{item.label}</span>
+          {({ isActive }) => (
+            <>
+              {isActive && (
+                <div className="absolute inset-0 bg-white/10 rounded-2xl blur-md -z-10 animate-pulse" />
+              )}
+              <div className={cn(
+                "p-2 rounded-xl transition-all duration-300",
+                isActive ? "bg-white/20 shadow-lg scale-110" : "group-active:scale-95"
+              )}>
+                <item.icon className={cn("h-5 w-5", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
+              </div>
+              <span className={cn(
+                "text-[9px] tracking-[0.05em] uppercase font-black transition-all duration-300",
+                isActive ? "opacity-100 translate-y-0" : "opacity-70 translate-y-0.5"
+              )}>
+                {item.label}
+              </span>
+            </>
+          )}
         </NavLink>
       ))}
 
       <Sheet>
         <SheetTrigger asChild>
-          <button className="flex flex-col items-center gap-1 p-1 text-slate-400 hover:text-blue-600 transition-all">
-            <Menu className="h-5 w-5 stroke-[2.2px]" />
-            <span className="text-[10px] tracking-tight uppercase font-bold">Menu</span>
+          <button className="flex flex-col items-center gap-1.5 p-2 text-white/50 hover:text-white/80 transition-all group">
+            <div className="p-2 rounded-xl group-active:scale-95 transition-all">
+              <Menu className="h-5 w-5 stroke-[2px]" />
+            </div>
+            <span className="text-[9px] tracking-[0.05em] uppercase font-black opacity-70">Menu</span>
           </button>
         </SheetTrigger>
         <SheetContent side="right" className="w-[min(85vw,360px)] p-0 border-l-0 bg-gradient-to-b from-[#1E3A8A] via-[#2563EB] to-[#1E1B4B] shadow-2xl overflow-hidden flex flex-col">
