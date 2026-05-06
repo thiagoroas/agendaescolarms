@@ -62,14 +62,47 @@ export const useSaudeSistema = () => {
   const checkFunctions = async () => {
     if (!isSupabaseConfigured) return { status: "ok" as StatusType, message: "Mock: Funções disponíveis." };
     try {
-      const { data, error } = await supabase.rpc('has_school_link');
-      // Não tratamos erro de "function not found" como crítico aqui, apenas informativo
-      if (error) {
-         return { status: "attention" as StatusType, message: `RPC has_school_link indisponível ou erro: ${error.message}` };
+      // 1. Verificar se as funções básicas existem via rpc meta-data ou tentativa controlada
+      // Para testar has_school_link, precisamos de um escola_id.
+      const { data: escolaData } = await supabase.from("escolas").select("id").limit(1).single();
+      
+      const results: string[] = [];
+      let hasError = false;
+
+      // Teste is_admin_plataforma
+      const { error: errAdmin } = await supabase.rpc('is_admin_plataforma');
+      if (errAdmin && errAdmin.code !== 'PGRST202') { // PGRST202 is usually "no rows" or similar, but for RPC it might be different
+        if (errAdmin.message.includes("function") && errAdmin.message.includes("not found")) {
+          results.push("is_admin_plataforma (Não encontrada)");
+          hasError = true;
+        }
+      } else {
+        results.push("is_admin_plataforma (OK)");
       }
-      return { status: "ok" as StatusType, message: "Funções RPC base detectadas." };
+
+      // Teste has_school_link
+      if (escolaData?.id) {
+        const { data: hasLink, error: errLink } = await supabase.rpc('has_school_link', {
+          p_escola_id: escolaData.id,
+          p_papel: null
+        });
+        
+        if (errLink) {
+          results.push(`has_school_link (Erro: ${errLink.message})`);
+          hasError = true;
+        } else {
+          results.push(`has_school_link (OK - Retorno: ${hasLink})`);
+        }
+      } else {
+        results.push("has_school_link (Não testada: sem escola)");
+      }
+
+      return { 
+        status: hasError ? "attention" as StatusType : "ok" as StatusType, 
+        message: results.join(" | ")
+      };
     } catch (err: any) {
-      return { status: "attention" as StatusType, message: `Erro ao testar RPC: ${err.message}` };
+      return { status: "attention" as StatusType, message: `Erro ao testar RPCs: ${err.message}` };
     }
   };
 
